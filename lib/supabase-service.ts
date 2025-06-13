@@ -632,4 +632,22 @@ export const supabaseService = {
       throw error
     }
   },
+
+  updateTicket: async (
+    id: string,
+    updates: { purchaserName?: string; purchaserEmail?: string }
+  ): Promise<void> => {
+    await ensureConnection();
+    const { error } = await supabase
+      .from("tickets")
+      .update({
+        purchaser_name: updates.purchaserName,
+        purchaser_email: updates.purchaserEmail,
+      })
+      .eq("id", id);
+    if (error) {
+      console.error("Error updating ticket:", error);
+      throw new Error(`Failed to update ticket: ${error.message}`);
+    }
+  },
 }

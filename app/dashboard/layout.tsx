@@ -1,6 +1,6 @@
 import type React from "react"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { DashboardSidebar } from "@/components/dashboard-sidebar"
+import { DashboardSidebar, DashboardMobileMenu } from "@/components/dashboard-sidebar"
 
 export default function DashboardLayout({
   children,
@@ -10,8 +10,13 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <DashboardSidebar />
-        <main className="flex-1 p-6">{children}</main>
+        <div className="group peer hidden md:block text-sidebar-foreground">
+          <DashboardSidebar />
+        </div>
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+        <DashboardMobileMenu />
       </div>
     </SidebarProvider>
   )

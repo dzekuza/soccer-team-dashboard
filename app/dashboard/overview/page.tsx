@@ -107,14 +107,14 @@ export default function OverviewPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto px-4 py-8 space-y-8">
       <div>
         <h1 className="text-3xl font-bold">Dashboard Overview</h1>
         <p className="text-gray-600">Complete overview of your soccer team events and tickets</p>
       </div>
 
       {/* Key Metrics */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Events</CardTitle>
@@ -169,7 +169,7 @@ export default function OverviewPage() {
       <CacheStatus />
 
       {/* Recent Events and Activity */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Recent Events</CardTitle>

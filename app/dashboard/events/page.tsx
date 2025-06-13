@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { CreateEventDialog } from "@/components/create-event-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import type { EventWithTiers } from "@/lib/types"
+import type { EventWithTiers, TicketWithDetails } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventWithTiers[]>([])
+  const [tickets, setTickets] = useState<TicketWithDetails[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -24,18 +25,17 @@ export default function EventsPage() {
     setIsLoading(true)
     setError(null)
     try {
-      console.log("Fetching events...")
-      const response = await fetch("/api/events")
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}`)
-      }
-
-      const data = await response.json()
-      console.log("Fetched events:", data)
-      setEvents(data)
+      const [eventsRes, ticketsRes] = await Promise.all([
+        fetch("/api/events"),
+        fetch("/api/tickets"),
+      ])
+      if (!eventsRes.ok) throw new Error("Failed to fetch events")
+      if (!ticketsRes.ok) throw new Error("Failed to fetch tickets")
+      const eventsData = await eventsRes.json()
+      const ticketsData = await ticketsRes.json()
+      setEvents(eventsData)
+      setTickets(ticketsData)
     } catch (error) {
-      console.error("Failed to fetch events:", error)
       setError("Failed to load events. Please try again.")
     } finally {
       setIsLoading(false)
@@ -104,17 +104,21 @@ export default function EventsPage() {
                   <div className="pt-2">
                     <p className="font-medium mb-1">Pricing Tiers:</p>
                     <div className="space-y-1">
-                      {event.pricingTiers.map((tier) => (
-                        <div key={tier.id} className="flex justify-between items-center">
-                          <span>{tier.name}</span>
-                          <div className="flex items-center space-x-2">
-                            <span>{formatCurrency(tier.price)}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {tier.soldQuantity}/{tier.maxQuantity}
-                            </Badge>
+                      {event.pricingTiers.map((tier) => {
+                        const generatedCount = tickets.filter(t => t.tierId === tier.id).length;
+                        const validatedCount = tickets.filter(t => t.tierId === tier.id && t.isValidated).length;
+                        return (
+                          <div key={tier.id} className="flex justify-between items-center">
+                            <span>{tier.name}</span>
+                            <div className="flex items-center space-x-2">
+                              <span>{formatCurrency(tier.price)}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {generatedCount}/{tier.maxQuantity} (validated: {validatedCount})
+                              </Badge>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 </div>

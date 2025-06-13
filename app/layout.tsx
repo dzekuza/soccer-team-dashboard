@@ -8,7 +8,7 @@ import { AuthGuard } from "@/components/auth-guard"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Soccer Team Dashboard",
+  title: "FK Banga tickets dash",
   description: "Manage soccer team events and tickets",
     generator: 'v0.dev'
 }

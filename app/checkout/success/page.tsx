@@ -18,11 +18,13 @@ export default function CheckoutSuccessPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!sessionId) return;
+    if (!sessionId || typeof sessionId !== "string") {
+      setError("Invalid or missing session ID.");
+      return;
+    }
     setLoading(true);
     setError("");
-    // Fetch tickets for this session (API to be implemented)
-    fetch(`/api/checkout/tickets?session_id=${sessionId}`)
+    fetch(`/api/checkout/tickets?session_id=${encodeURIComponent(sessionId)}`)
       .then((res) => res.json())
       .then((data) => {
         if (Array.isArray(data.tickets)) {
@@ -58,7 +60,7 @@ export default function CheckoutSuccessPage() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
+    <div className="container max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
       <h1 className="text-3xl font-bold mb-4 text-green-700">Payment Successful!</h1>
       <p className="mb-4">Thank you for your purchase. Your payment was successful.</p>
       <p className="mb-4">Your ticket(s) will be emailed to you shortly, or you can now access them below.</p>
