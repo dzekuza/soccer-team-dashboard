@@ -14,14 +14,17 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { title, description, date, time, location, pricingTiers } = body
+    const { title, description, date, time, location, pricingTiers, team1Id, team2Id } = body
 
-    console.log("API: Creating event with data:", { title, description, date, time, location, pricingTiers })
+    console.log("API: Creating event with data:", { title, description, date, time, location, pricingTiers, team1Id, team2Id })
 
     // Validate required fields
     if (!title || !description || !date || !time || !location) {
       console.error("API: Missing required event fields")
       return NextResponse.json({ error: "Missing required event fields" }, { status: 400 })
+    }
+    if (!team1Id || !team2Id || team1Id === team2Id) {
+      return NextResponse.json({ error: "Both teams must be selected and different" }, { status: 400 })
     }
 
     if (!pricingTiers || !Array.isArray(pricingTiers) || pricingTiers.length === 0) {
@@ -38,8 +41,8 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Create event with pricing tiers
-      const event = await dbService.createEvent({ title, description, date, time, location }, pricingTiers)
+      // Create event with pricing tiers and teams
+      const event = await dbService.createEvent({ title, description, date, time, location, team1Id, team2Id }, pricingTiers)
       console.log("API: Event created successfully:", event)
       return NextResponse.json(event)
     } catch (createError) {

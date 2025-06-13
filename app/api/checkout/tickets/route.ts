@@ -3,6 +3,7 @@ import Stripe from "stripe"
 import { dbService } from "@/lib/db-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
+import { supabaseService } from "@/lib/supabase-service"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -102,24 +103,58 @@ export async function GET(request: NextRequest) {
         // Generate PDFs
         const pdfBuffers = await Promise.all(
           tickets.map(async (t) => {
-            const ticketWithDetails = allTickets.find(at => at.id === t.id)
-            if (!ticketWithDetails) return null
-            const pdfBlob = await generateTicketPDF(ticketWithDetails)
-            const arrayBuffer = await pdfBlob.arrayBuffer()
+            // Always fetch the latest ticket details from the DB
+            const ticketWithDetails = await dbService.getTicketWithDetails(t.id)
+            if (!ticketWithDetails || !ticketWithDetails.event || !ticketWithDetails.tier) {
+              console.warn("Cannot send ticket email: ticket, event, or tier not found.")
+              return null
+            }
+            const pdfBytes = await generateTicketPDF(ticketWithDetails)
             return {
               filename: `ticket-${t.id}.pdf`,
-              content: Buffer.from(new Uint8Array(arrayBuffer)),
+              content: Buffer.from(pdfBytes),
             }
           })
         )
         // Filter out any nulls
         const attachments: { filename: string; content: Buffer }[] = pdfBuffers.filter(a => a !== null) as { filename: string; content: Buffer }[];
+        // Prepare email body with match info
+        let matchInfo = ''
+        if (tickets.length > 0) {
+          const ticketDetails = await dbService.getTicketWithDetails(tickets[0].id)
+          if (ticketDetails && ticketDetails.event) {
+            // Fetch team names
+            let team1Name = 'Team 1'
+            let team2Name = 'Team 2'
+            if (ticketDetails.event.team1Id) {
+              const team1 = await supabaseService.getTeamById(ticketDetails.event.team1Id)
+              if (team1) team1Name = team1.team_name
+            }
+            if (ticketDetails.event.team2Id) {
+              const team2 = await supabaseService.getTeamById(ticketDetails.event.team2Id)
+              if (team2) team2Name = team2.team_name
+            }
+            matchInfo = `
+              <h2>${ticketDetails.event.title}</h2>
+              <p><b>${team1Name} vs ${team2Name}</b></p>
+              <p>Event date: ${ticketDetails.event.date}</p>
+              <p>Event time: ${ticketDetails.event.time}</p>
+              <p>Location: ${ticketDetails.event.location}</p>
+            `
+          }
+        }
+        const emailHtml = `
+          <p>Hello,</p>
+          <p>Thank you for your purchase. Your ticket(s) are attached as PDF.</p>
+          ${matchInfo}
+          <p>Enjoy the match!</p>
+        `
         // Send email
         await resend.emails.send({
           from: "tickets@soccer-team.app", // Change to your verified sender
           to: purchaserEmail,
           subject: "Your Soccer Event Ticket(s)",
-          text: `Thank you for your purchase!\n\nAttached are your ticket(s) for the event.\n\nEnjoy the match!`,
+          html: emailHtml,
           attachments,
         })
       } catch (err) {

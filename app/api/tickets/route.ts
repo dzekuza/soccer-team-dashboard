@@ -1,5 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { dbService } from "@/lib/db-service"
+import { Resend } from "resend"
+import { generateTicketPDF } from "@/lib/pdf-generator"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,6 +31,40 @@ export async function POST(request: NextRequest) {
       purchaserName,
       purchaserEmail,
     })
+
+    // Send email with PDF ticket
+    if (ticket && purchaserEmail) {
+      try {
+        const event = await dbService.getEventWithTiers(eventId)
+        const tier = await dbService.getPricingTier(tierId)
+        if (!event || !tier) {
+          console.warn("Cannot send ticket email: event or tier not found.")
+        } else {
+          const pdfBytes = await generateTicketPDF({
+            ...ticket,
+            event,
+            tier,
+          })
+          // Debug logging
+          console.log("[Resend] Attempting to send email", {
+            apiKey: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.slice(0, 6) + '...' : undefined,
+            from: "Banga <info@teamup.lt>",
+            to: purchaserEmail,
+            subject: "Your ticket",
+          })
+          const result = await resend.emails.send({
+            from: "Banga <info@teamup.lt>",
+            to: purchaserEmail,
+            subject: "Your ticket",
+            html: `<p>Welcome to the event! Your ticket is attached.</p>` ,
+            attachments: [{ filename: `ticket-${ticket.id}.pdf`, content: Buffer.from(pdfBytes) }],
+          })
+          console.log("[Resend] Email send result:", result)
+        }
+      } catch (err) {
+        console.error("Failed to send manual ticket email:", err)
+      }
+    }
 
     return NextResponse.json(ticket)
   } catch (error) {

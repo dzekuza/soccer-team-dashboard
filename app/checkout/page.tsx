@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { useSearchParams } from "next/navigation";
 
 interface Event {
   id: string;
@@ -18,6 +19,7 @@ interface PricingTier {
 }
 
 export default function CheckoutPage() {
+  const searchParams = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEventId, setSelectedEventId] = useState("");
   const [selectedTierId, setSelectedTierId] = useState("");
@@ -32,6 +34,13 @@ export default function CheckoutPage() {
       .then((res) => res.json())
       .then((data) => setEvents(data));
   }, []);
+
+  useEffect(() => {
+    const eventId = searchParams.get("eventId");
+    const tierId = searchParams.get("tierId");
+    if (eventId) setSelectedEventId(eventId);
+    if (tierId) setSelectedTierId(tierId);
+  }, [searchParams]);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
   const selectedTier = selectedEvent?.pricingTiers.find((t) => t.id === selectedTierId);
@@ -109,6 +118,7 @@ export default function CheckoutPage() {
                   setSelectedTierId("");
                 }}
                 required
+                disabled={!!searchParams.get("eventId")}
               >
                 <option value="">-- Choose an event --</option>
                 {events.map((event) => (
@@ -127,6 +137,7 @@ export default function CheckoutPage() {
                   value={selectedTierId}
                   onChange={(e) => setSelectedTierId(e.target.value)}
                   required
+                  disabled={!!searchParams.get("tierId")}
                 >
                   <option value="">-- Choose a ticket type --</option>
                   {selectedEvent.pricingTiers.map((tier) => (

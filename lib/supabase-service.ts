@@ -1,5 +1,5 @@
 import { supabase, testSupabaseConnection } from "./supabase"
-import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails } from "./types"
+import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Subscription, UserSubscription } from "./types"
 import { generateUniqueId } from "./utils"
 import { v4 as uuidv4 } from "uuid"
 
@@ -35,6 +35,9 @@ export const supabaseService = {
           date: eventData.date,
           time: eventData.time,
           location: eventData.location,
+          team1_id: eventData.team1Id,
+          team2_id: eventData.team2Id,
+          cover_image_url: eventData.coverImageUrl || null,
         })
         .select()
         .single()
@@ -73,6 +76,9 @@ export const supabaseService = {
         location: event.location,
         createdAt: event.created_at,
         updatedAt: event.updated_at,
+        team1Id: event.team1_id,
+        team2Id: event.team2_id,
+        coverImageUrl: event.cover_image_url || undefined,
       }
 
       const convertedTiers: PricingTier[] = (pricingTiers || []).map((tier) => ({
@@ -148,6 +154,9 @@ export const supabaseService = {
         location: event.location,
         createdAt: event.created_at,
         updatedAt: event.updated_at,
+        team1Id: event.team1_id,
+        team2Id: event.team2_id,
+        coverImageUrl: event.cover_image_url || undefined,
       }))
     } catch (error) {
       console.error("Supabase Service: Error in getEvents:", error)
@@ -181,6 +190,8 @@ export const supabaseService = {
         location: event.location,
         createdAt: event.created_at,
         updatedAt: event.updated_at,
+        team1Id: event.team1_id,
+        team2Id: event.team2_id,
         pricingTiers: (event.pricing_tiers || []).map((tier: any) => ({
           id: tier.id,
           eventId: tier.event_id,
@@ -189,6 +200,7 @@ export const supabaseService = {
           maxQuantity: tier.max_quantity,
           soldQuantity: tier.sold_quantity,
         })),
+        coverImageUrl: event.cover_image_url || undefined,
       }))
     } catch (error) {
       console.error("Supabase Service: Error in getEventsWithTiers:", error)
@@ -219,6 +231,9 @@ export const supabaseService = {
         location: data.location,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
+        team1Id: data.team1_id,
+        team2Id: data.team2_id,
+        coverImageUrl: data.cover_image_url || undefined,
       }
     } catch (error) {
       console.error("Supabase Service: Error in getEvent:", error)
@@ -256,6 +271,8 @@ export const supabaseService = {
         location: data.location,
         createdAt: data.created_at,
         updatedAt: data.updated_at,
+        team1Id: data.team1_id,
+        team2Id: data.team2_id,
         pricingTiers: (data.pricing_tiers || []).map((tier: any) => ({
           id: tier.id,
           eventId: tier.event_id,
@@ -264,6 +281,7 @@ export const supabaseService = {
           maxQuantity: tier.max_quantity,
           soldQuantity: tier.sold_quantity,
         })),
+        coverImageUrl: data.cover_image_url || undefined,
       }
     } catch (error) {
       console.error("Supabase Service: Error in getEventWithTiers:", error)
@@ -449,6 +467,7 @@ export const supabaseService = {
           location: ticket.events.location,
           createdAt: ticket.events.created_at,
           updatedAt: ticket.events.updated_at,
+          coverImageUrl: ticket.events.cover_image_url || undefined,
         },
         tier: {
           id: ticket.pricing_tiers.id,
@@ -537,6 +556,7 @@ export const supabaseService = {
           location: data.events.location,
           createdAt: data.events.created_at,
           updatedAt: data.events.updated_at,
+          coverImageUrl: data.events.cover_image_url || undefined,
         },
         tier: {
           id: data.pricing_tiers.id,
@@ -649,5 +669,114 @@ export const supabaseService = {
       console.error("Error updating ticket:", error);
       throw new Error(`Failed to update ticket: ${error.message}`);
     }
+  },
+
+  getTeams: async () => {
+    await ensureConnection();
+    const { data, error } = await supabase
+      .from("teams")
+      .select("id, team_name, logo, fingerprint, created_at");
+    if (error) throw new Error(error.message);
+    return data || [];
+  },
+
+  getTeamById: async (id: string) => {
+    await ensureConnection();
+    const { data, error } = await supabase
+      .from("teams")
+      .select("id, team_name, logo, fingerprint, created_at")
+      .eq("id", id)
+      .single();
+    if (error) return null;
+    return data;
+  },
+
+  getSubscriptions: async (): Promise<Subscription[]> => {
+    await ensureConnection()
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .order("created_at", { ascending: false })
+    if (error) throw new Error(error.message)
+    return (data || []).map((s) => ({
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      price: Number(s.price),
+      durationDays: s.duration_days,
+      createdAt: s.created_at,
+    }))
+  },
+
+  createSubscription: async (sub: Omit<Subscription, "id" | "createdAt">) => {
+    await ensureConnection()
+    // Check if user is authenticated
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error("You must be logged in to create a subscription.");
+    }
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .insert({
+        title: sub.title,
+        description: sub.description,
+        price: sub.price,
+        duration_days: sub.durationDays,
+      })
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    return {
+      id: data.id,
+      title: data.title,
+      description: data.description,
+      price: Number(data.price),
+      durationDays: data.duration_days,
+      createdAt: data.created_at,
+    }
+  },
+
+  getUserSubscriptions: async (userId: string): Promise<UserSubscription[]> => {
+    await ensureConnection()
+    const { data, error } = await supabase
+      .from("user_subscriptions")
+      .select("*, subscriptions(*)")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+    if (error) throw new Error(error.message)
+    return (data || []).map((us) => ({
+      id: us.id,
+      userId: us.user_id,
+      subscriptionId: us.subscription_id,
+      purchaseDate: us.purchase_date,
+      expiresAt: us.expires_at,
+      assignedBy: us.assigned_by,
+      createdAt: us.created_at,
+      subscription: us.subscriptions
+        ? {
+            id: us.subscriptions.id,
+            title: us.subscriptions.title,
+            description: us.subscriptions.description,
+            price: Number(us.subscriptions.price),
+            durationDays: us.subscriptions.duration_days,
+            createdAt: us.subscriptions.created_at,
+          }
+        : undefined,
+    }))
+  },
+
+  assignSubscriptionToUser: async (userId: string, subscriptionId: string, assignedBy?: string) => {
+    await ensureConnection()
+    const { data, error } = await supabase
+      .from("user_subscriptions")
+      .insert({
+        user_id: userId,
+        subscription_id: subscriptionId,
+        assigned_by: assignedBy || null,
+      })
+      .select()
+      .single()
+    if (error) throw new Error(error.message)
+    return data
   },
 }

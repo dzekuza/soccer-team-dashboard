@@ -24,63 +24,88 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
-  // Load user from localStorage on initial render (for demo purposes)
+  // Restore session from Supabase Auth on initial render
   useEffect(() => {
-    // For demo purposes, we'll still use localStorage for auth
-    // In production, you'd use Supabase Auth
-    const currentUserStr = localStorage.getItem("soccer_dashboard_current_user")
-    if (currentUserStr) {
-      try {
-        const currentUser = JSON.parse(currentUserStr)
-        setUser(currentUser)
-      } catch (error) {
-        console.error("Error parsing current user:", error)
+    const restoreSession = async () => {
+      setIsLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('[DEBUG] Supabase session:', session)
+      if (session?.user) {
+        const { data: userProfile, error: profileError } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", session.user.id)
+          .single()
+        console.log('[DEBUG] User profile fetch (restoreSession):', { userId: session.user.id, userProfile, profileError })
+        if (userProfile) {
+          setUser({
+            id: userProfile.id,
+            email: userProfile.email,
+            name: userProfile.name,
+            role: userProfile.role,
+            createdAt: userProfile.created_at,
+          })
+        } else {
+          setUser(null)
+        }
+      } else {
+        setUser(null)
       }
+      setIsLoading(false)
     }
-    setIsLoading(false)
+    restoreSession()
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    console.log("Attempting login for:", email)
-
+    setError(null)
+    setIsLoading(true)
     try {
-      // Check if user exists in Supabase
-      const { data: users, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", email)
-        .eq("password", password) // In production, use proper password hashing
-        .single()
-
-      if (error || !users) {
-        console.log("Login failed for:", email)
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      console.log('[DEBUG] Login result:', { signInData, signInError })
+      if (signInError || !signInData.user) {
+        setError(signInError?.message || "Login failed. Please check your credentials.")
+        setIsLoading(false)
         return false
       }
-
-      const foundUser: User = {
-        id: users.id,
-        email: users.email,
-        name: users.name,
-        role: users.role,
-        createdAt: users.created_at,
+      const { data: userProfile, error: profileError } = await supabase
+        .from("users")
+        .select("*")
+        .eq("id", signInData.user.id)
+        .single()
+      console.log('[DEBUG] User profile fetch (login):', { userId: signInData.user.id, userProfile, profileError })
+      if (profileError || !userProfile) {
+        setError("User profile not found.")
+        setIsLoading(false)
+        return false
       }
-
-      console.log("Login successful for:", email)
+      const foundUser: User = {
+        id: userProfile.id,
+        email: userProfile.email,
+        name: userProfile.name,
+        role: userProfile.role,
+        createdAt: userProfile.created_at,
+      }
       setUser(foundUser)
-      localStorage.setItem("soccer_dashboard_current_user", JSON.stringify(foundUser))
+      setIsLoading(false)
       return true
-    } catch (error) {
-      console.error("Login error:", error)
+    } catch (error: any) {
+      setError(error.message || "Unexpected login error.")
+      setIsLoading(false)
+      console.error('[DEBUG] Login error:', error)
       return false
     }
   }
 
-  const logout = () => {
-    console.log("Logging out current user")
+  const logout = async () => {
     setUser(null)
-    localStorage.removeItem("soccer_dashboard_current_user")
+    setError(null)
+    await supabase.auth.signOut()
     router.push("/login")
   }
 

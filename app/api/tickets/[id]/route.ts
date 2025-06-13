@@ -1,8 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { dbService } from "@/lib/db-service"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
+    // Await params for dynamic API routes per Next.js 15+ requirements
+    const { params } = await Promise.resolve(context)
     const ticket = await dbService.getTicketWithDetails(params.id)
 
     if (!ticket) {

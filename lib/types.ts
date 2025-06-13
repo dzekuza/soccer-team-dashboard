@@ -8,6 +8,9 @@ export interface Event {
   location: string
   createdAt: string
   updatedAt: string
+  team1Id?: string
+  team2Id?: string
+  coverImageUrl?: string
 }
 
 export interface PricingTier {
@@ -46,4 +49,33 @@ export interface EventStats {
   totalTickets: number
   validatedTickets: number
   totalRevenue: number
+}
+
+export interface Team {
+  id: string
+  team_name: string
+  logo: string
+  fingerprint?: number
+  created_at?: string
+}
+
+export interface Subscription {
+  id: string
+  title: string
+  description?: string
+  price: number
+  durationDays: number
+  createdAt: string
+}
+
+export interface UserSubscription {
+  id: string
+  userId: string
+  subscriptionId: string
+  purchaseDate: string
+  expiresAt?: string
+  assignedBy?: string
+  createdAt: string
+  // Optionally, include joined subscription info
+  subscription?: Subscription
 }

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -18,6 +18,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Plus, Trash2 } from "lucide-react"
+import Image from "next/image"
+import type { Team } from "@/lib/types"
+import { supabase } from "@/lib/supabase"
 
 interface PricingTier {
   name: string
@@ -46,6 +49,20 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [apiError, setApiError] = useState<string | null>(null)
   const [apiSuccess, setApiSuccess] = useState<string | null>(null)
+  const [teams, setTeams] = useState<Team[]>([])
+  const [team1Id, setTeam1Id] = useState("")
+  const [team2Id, setTeam2Id] = useState("")
+  const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
+  const [coverImageUrl, setCoverImageUrl] = useState<string>("")
+  const [coverImageUploading, setCoverImageUploading] = useState(false)
+
+  useEffect(() => {
+    if (!open) return
+    fetch("/api/teams")
+      .then((res) => res.json())
+      .then((data) => setTeams(data))
+      .catch(() => setTeams([]))
+  }, [open])
 
   const addPricingTier = () => {
     setPricingTiers([...pricingTiers, { name: "", price: 0, maxQuantity: 0 }])
@@ -69,6 +86,11 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     if (!formData.date) newErrors.date = "Date is required"
     if (!formData.time) newErrors.time = "Time is required"
     if (!formData.location.trim()) newErrors.location = "Location is required"
+    if (!team1Id) newErrors.team1Id = "Team 1 is required"
+    if (!team2Id) newErrors.team2Id = "Team 2 is required"
+    if (team1Id && team2Id && team1Id === team2Id) {
+      newErrors.team2Id = "Teams must be different"
+    }
 
     // Validate pricing tiers
     let hasTierError = false
@@ -107,6 +129,32 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setErrors({})
     setApiError(null)
     setApiSuccess(null)
+    setTeam1Id("")
+    setTeam2Id("")
+    setCoverImageFile(null)
+    setCoverImageUrl("")
+    setCoverImageUploading(false)
+  }
+
+  const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverImageFile(file)
+    setCoverImageUploading(true)
+    const fileExt = file.name.split('.').pop()
+    const fileName = `event-cover-${Date.now()}.${fileExt}`
+    const { data, error } = await supabase.storage.from('event-covers').upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+    if (error) {
+      setApiError('Failed to upload cover image')
+      setCoverImageUploading(false)
+      return
+    }
+    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(fileName)
+    setCoverImageUrl(urlData.publicUrl)
+    setCoverImageUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -121,7 +169,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setIsLoading(true)
 
     try {
-      console.log("Submitting event data:", { ...formData, pricingTiers })
+      console.log("Submitting event data:", { ...formData, pricingTiers, team1Id, team2Id, coverImageUrl })
 
       const response = await fetch("/api/events", {
         method: "POST",
@@ -131,6 +179,9 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
         body: JSON.stringify({
           ...formData,
           pricingTiers,
+          team1Id,
+          team2Id,
+          coverImageUrl: coverImageUrl || undefined,
         }),
       })
 
@@ -249,6 +300,57 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="team1">Team 1</Label>
+              <select
+                id="team1"
+                value={team1Id}
+                onChange={(e) => setTeam1Id(e.target.value)}
+                className="w-full border rounded p-2"
+                required
+              >
+                <option value="">Select Team 1</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.team_name}
+                  </option>
+                ))}
+              </select>
+              {team1Id && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Image src={teams.find(t => t.id === team1Id)?.logo || ""} alt="Team 1 Logo" width={32} height={32} />
+                  <span className="text-sm">{teams.find(t => t.id === team1Id)?.team_name}</span>
+                </div>
+              )}
+              {errors.team1Id && <span className="text-red-600 text-xs">{errors.team1Id}</span>}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="team2">Team 2</Label>
+              <select
+                id="team2"
+                value={team2Id}
+                onChange={(e) => setTeam2Id(e.target.value)}
+                className="w-full border rounded p-2"
+                required
+              >
+                <option value="">Select Team 2</option>
+                {teams.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.team_name}
+                  </option>
+                ))}
+              </select>
+              {team2Id && (
+                <div className="flex items-center gap-2 mt-1">
+                  <Image src={teams.find(t => t.id === team2Id)?.logo || ""} alt="Team 2 Logo" width={32} height={32} />
+                  <span className="text-sm">{teams.find(t => t.id === team2Id)?.team_name}</span>
+                </div>
+              )}
+              {errors.team2Id && <span className="text-red-600 text-xs">{errors.team2Id}</span>}
+            </div>
+          </div>
+
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Pricing Tiers</Label>
@@ -315,6 +417,23 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          <div className="mb-4">
+            <Label htmlFor="coverImage">Cover Image</Label>
+            <Input
+              id="coverImage"
+              type="file"
+              accept="image/*"
+              onChange={handleCoverImageChange}
+              disabled={coverImageUploading}
+            />
+            {coverImageUploading && <div className="text-xs text-gray-500 mt-1">Uploading...</div>}
+            {coverImageUrl && (
+              <div className="mt-2">
+                <Image src={coverImageUrl} alt="Cover Preview" width={320} height={180} className="rounded border" />
+              </div>
+            )}
           </div>
 
           <DialogFooter>

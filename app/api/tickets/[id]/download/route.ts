@@ -8,9 +8,8 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 })
     }
-    const pdfBlob = await generateTicketPDF(ticket)
-    const arrayBuffer = await pdfBlob.arrayBuffer()
-    return new NextResponse(Buffer.from(arrayBuffer), {
+    const pdfBytes = await generateTicketPDF(ticket)
+    return new NextResponse(Buffer.from(pdfBytes), {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

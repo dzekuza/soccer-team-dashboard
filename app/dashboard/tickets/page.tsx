@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
-import { generateTicketPDF } from "@/lib/pdf-generator"
 import type { TicketWithDetails } from "@/lib/types"
 import { Download, Plus } from "lucide-react"
 
@@ -43,7 +42,9 @@ export default function TicketsPage() {
 
   const handleDownloadPDF = async (ticket: TicketWithDetails) => {
     try {
-      const pdfBlob = await generateTicketPDF(ticket)
+      const res = await fetch(`/api/tickets/${ticket.id}/pdf`)
+      if (!res.ok) throw new Error("Failed to generate PDF")
+      const pdfBlob = await res.blob()
       const url = URL.createObjectURL(pdfBlob)
       const a = document.createElement("a")
       a.href = url

@@ -47,37 +47,31 @@ export default function RegisterPage() {
     setIsLoading(true)
 
     try {
-      // Check if user already exists
-      const { data: existingUser } = await supabase.from("users").select("id").eq("email", email).single()
-
-      if (existingUser) {
-        setError("User with this email already exists")
+      // Register user with Supabase Auth
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+        },
+      })
+      if (signUpError) {
+        setError(signUpError.message)
         setIsLoading(false)
         return
       }
-
-      // Create new user in Supabase
-      const { data: newUser, error: insertError } = await supabase
-        .from("users")
-        .insert({
+      // Insert user into users table for profile info
+      const { user } = signUpData
+      if (user) {
+        await supabase.from("users").insert({
+          id: user.id,
+          email: user.email,
           name,
-          email,
-          password, // In a real app, this would be hashed
           role: "staff",
         })
-        .select()
-        .single()
-
-      if (insertError) {
-        console.error("Error creating user:", insertError)
-        setError("Failed to create user account")
-        setIsLoading(false)
-        return
       }
-
       // Use the login function from auth context
       const success = await login(email, password)
-
       if (success) {
         console.log("Registration successful, redirecting to dashboard...")
         window.location.href = "/dashboard/overview"
