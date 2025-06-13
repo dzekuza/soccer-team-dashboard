@@ -1,0 +1,10 @@
+.animate-blink {
+  animation: blink-fade 0.4s linear;
+}
+
+@keyframes blink-fade {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+} 

@@ -1,0 +1,171 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { Event, PricingTier } from "@/lib/types"
+
+interface CreateTicketDialogProps {
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  onTicketCreated: () => void
+}
+
+export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: CreateTicketDialogProps) {
+  const [events, setEvents] = useState<Event[]>([])
+  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([])
+  const [selectedEventId, setSelectedEventId] = useState("")
+  const [selectedTierId, setSelectedTierId] = useState("")
+  const [purchaserName, setPurchaserName] = useState("")
+  const [purchaserEmail, setPurchaserEmail] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    if (open) {
+      fetchEvents()
+    }
+  }, [open])
+
+  useEffect(() => {
+    if (selectedEventId) {
+      fetchPricingTiers(selectedEventId)
+    }
+  }, [selectedEventId])
+
+  const fetchEvents = async () => {
+    try {
+      const response = await fetch("/api/events")
+      const data = await response.json()
+      setEvents(data)
+    } catch (error) {
+      console.error("Failed to fetch events:", error)
+    }
+  }
+
+  const fetchPricingTiers = async (eventId: string) => {
+    try {
+      const response = await fetch(`/api/events/${eventId}/pricing-tiers`)
+      const data = await response.json()
+      setPricingTiers(data)
+    } catch (error) {
+      console.error("Failed to fetch pricing tiers:", error)
+      setPricingTiers([])
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+
+    try {
+      const response = await fetch("/api/tickets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eventId: selectedEventId,
+          tierId: selectedTierId,
+          purchaserName,
+          purchaserEmail,
+        }),
+      })
+
+      if (response.ok) {
+        onTicketCreated()
+        setSelectedEventId("")
+        setSelectedTierId("")
+        setPurchaserName("")
+        setPurchaserEmail("")
+      }
+    } catch (error) {
+      console.error("Failed to create ticket:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Generate Ticket</DialogTitle>
+          <DialogDescription>Create a new ticket for an event</DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="event">Event</Label>
+            <Select value={selectedEventId} onValueChange={setSelectedEventId} required>
+              <SelectTrigger>
+                <SelectValue placeholder="Select an event" />
+              </SelectTrigger>
+              <SelectContent>
+                {events.map((event) => (
+                  <SelectItem key={event.id} value={event.id}>
+                    {event.title} - {event.date}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {selectedEventId && (
+            <div className="space-y-2">
+              <Label htmlFor="tier">Pricing Tier</Label>
+              <Select value={selectedTierId} onValueChange={setSelectedTierId} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a pricing tier" />
+                </SelectTrigger>
+                <SelectContent>
+                  {pricingTiers.map((tier) => (
+                    <SelectItem key={tier.id} value={tier.id}>
+                      {tier.name} - ${tier.price}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <Label htmlFor="name">Purchaser Name</Label>
+            <Input id="name" value={purchaserName} onChange={(e) => setPurchaserName(e.target.value)} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="email">Purchaser Email</Label>
+            <Input
+              id="email"
+              type="email"
+              value={purchaserEmail}
+              onChange={(e) => setPurchaserEmail(e.target.value)}
+              required
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Generating..." : "Generate Ticket"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}
