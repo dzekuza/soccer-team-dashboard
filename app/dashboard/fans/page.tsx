@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { saveAs } from "file-saver";
 import { supabaseService } from "@/lib/supabase-service"
 import { supabase } from "@/lib/supabase"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 interface Fan {
   id: string;
@@ -74,9 +75,9 @@ export default function FansPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Gerbėjai</h1>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-3xl font-bold">Gerbėjai</h1>
         <button
           onClick={exportEmails}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold"
@@ -90,40 +91,40 @@ export default function FansPage() {
           placeholder="Filtruoti pagal vardą arba el. paštą..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="border border-gray-300 rounded px-3 py-2 w-full sm:w-64"
         />
       </div>
-      <div className="overflow-x-auto">
-        <table className="min-w-full bg-white border rounded shadow">
-          <thead>
-            <tr>
-              <th className="px-4 py-2 border-b">Vardas</th>
-              <th className="px-4 py-2 border-b">El. paštas</th>
-              <th className="px-4 py-2 border-b">Aplankyti renginiai</th>
-              <th className="px-4 py-2 border-b">Išleista suma (€)</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="bg-white rounded shadow overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Vardas</TableHead>
+              <TableHead>El. paštas</TableHead>
+              <TableHead>Aplankyti renginiai</TableHead>
+              <TableHead>Išleista suma (€)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loading ? (
-              <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-500">Įkeliama...</td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-gray-500">Įkeliama...</TableCell>
+              </TableRow>
             ) : filteredFans.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-500">Gerbėjų nerasta.</td>
-              </tr>
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-gray-500">Gerbėjų nerasta.</TableCell>
+              </TableRow>
             ) : (
               filteredFans.map((fan) => (
-                <tr key={fan.id}>
-                  <td className="px-4 py-2 border-b">{fan.name}</td>
-                  <td className="px-4 py-2 border-b">{fan.email}</td>
-                  <td className="px-4 py-2 border-b text-center">{fan.eventsAttended}</td>
-                  <td className="px-4 py-2 border-b text-right">{fan.moneySpent.toFixed(2)}</td>
-                </tr>
+                <TableRow key={fan.id}>
+                  <TableCell>{fan.name}</TableCell>
+                  <TableCell>{fan.email}</TableCell>
+                  <TableCell className="text-center">{fan.eventsAttended}</TableCell>
+                  <TableCell className="text-right">{fan.moneySpent.toFixed(2)}</TableCell>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

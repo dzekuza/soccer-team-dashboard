@@ -34,6 +34,7 @@ export default function OverviewPage() {
   const [recentTickets, setRecentTickets] = useState<TicketWithDetails[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false)
 
   useEffect(() => {
     fetchDashboardData()
@@ -104,10 +105,29 @@ export default function OverviewPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Suvestinė</h1>
-        <p className="text-gray-600">Pilna Jūsų futbolo komandos renginių ir bilietų apžvalga</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Suvestinė</h1>
+          <p className="text-gray-600">Pilna Jūsų futbolo komandos renginių ir bilietų apžvalga</p>
+        </div>
+        <Button onClick={() => setIsProfileDialogOpen(true)} variant="outline">
+          Redaguoti profilį
+        </Button>
       </div>
+      {/* Profile Edit Dialog Placeholder */}
+      {isProfileDialogOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Redaguoti profilį</h2>
+              <Button variant="ghost" size="icon" onClick={() => setIsProfileDialogOpen(false)}>
+                ✕
+              </Button>
+            </div>
+            <div className="text-gray-500">(Čia bus profilio redagavimo forma...)</div>
+          </div>
+        </div>
+      )}
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
