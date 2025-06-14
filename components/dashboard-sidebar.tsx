@@ -106,13 +106,13 @@ export function DashboardMobileMenu() {
     { name: "Overview", href: "/dashboard/overview", icon: BarChart3 },
     { name: "Events", href: "/dashboard/events", icon: CalendarDays },
     { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
-    { name: "Subscriptions", href: "/dashboard/subscriptions", icon: CreditCard },
-    { name: "Fans", href: "/dashboard/fans", icon: User },
     { name: "QR Scanner", href: "/dashboard/scanner", icon: QrCode },
   ];
 
   // Actions for modal
   const modalActions = [
+    { name: "Subscriptions", href: "/dashboard/subscriptions", icon: CreditCard },
+    { name: "Fans", href: "/dashboard/fans", icon: User },
     { name: "Export", href: "/dashboard/export", icon: Upload },
     { name: "System", href: "/dashboard/system", icon: Settings },
     { name: "Logout", action: logout, icon: LogOut },

@@ -176,7 +176,7 @@ export default function EventsPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2">
           {events.map((event) => {
             const team1 = getTeam(event.team1Id)
             const team2 = getTeam(event.team2Id)
@@ -214,7 +214,7 @@ export default function EventsPage() {
                     </div>
                   )}
                   <CardTitle>
-                    <Link href={`/dashboard/events/${event.id}`} className="hover:underline text-blue-700">
+                    <Link href={`/dashboard/events/${event.id}`} className="hover:underline text-black text-base font-semibold">
                       {event.title}
                     </Link>
                   </CardTitle>
