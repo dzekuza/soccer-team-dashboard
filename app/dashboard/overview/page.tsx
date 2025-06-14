@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { CalendarDays, Ticket, Users, DollarSign, TrendingUp, Clock } from "lucide-react"
 import type { Event, TicketWithDetails } from "@/lib/types"
-import { CacheStatus } from "@/components/cache-status"
+import { supabaseService } from "@/lib/supabase-service"
 // import { initializeDemoData } from "@/lib/init-demo-data"
 
 interface DashboardStats {
@@ -41,15 +41,11 @@ export default function OverviewPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsResponse, eventsResponse, ticketsResponse] = await Promise.all([
-        fetch("/api/stats"),
-        fetch("/api/events"),
-        fetch("/api/tickets"),
+      const [statsData, eventsData, ticketsData] = await Promise.all([
+        supabaseService.getEventStats(),
+        supabaseService.getEvents(),
+        supabaseService.getTicketsWithDetails(),
       ])
-
-      const statsData = await statsResponse.json()
-      const eventsData = await eventsResponse.json()
-      const ticketsData = await ticketsResponse.json()
 
       setStats(statsData)
       setRecentEvents(eventsData.slice(0, 3))
@@ -165,9 +161,6 @@ export default function OverviewPage() {
         </Card>
       </div>
 
-      {/* Cache Status */}
-      <CacheStatus />
-
       {/* Recent Events and Activity */}
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card>
@@ -266,38 +259,6 @@ export default function OverviewPage() {
             ) : (
               <p className="text-gray-500 text-center py-4">No tickets generated yet</p>
             )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common tasks and shortcuts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3">
-            <Button className="h-20 flex flex-col space-y-2" onClick={() => (window.location.href = "/dashboard")}>
-              <CalendarDays className="h-6 w-6" />
-              <span>Create Event</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-20 flex flex-col space-y-2"
-              onClick={() => (window.location.href = "/dashboard/tickets")}
-            >
-              <Ticket className="h-6 w-6" />
-              <span>Generate Ticket</span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-20 flex flex-col space-y-2"
-              onClick={() => (window.location.href = "/dashboard/scanner")}
-            >
-              <Users className="h-6 w-6" />
-              <span>Scan QR Code</span>
-            </Button>
           </div>
         </CardContent>
       </Card>

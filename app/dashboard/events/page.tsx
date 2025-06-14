@@ -15,6 +15,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { addDays, startOfWeek, endOfWeek, isSameDay, format, isToday, parseISO } from 'date-fns'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
+import { supabaseService } from "@/lib/supabase-service"
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventWithTiers[]>([])
@@ -36,14 +37,10 @@ export default function EventsPage() {
     setIsLoading(true)
     setError(null)
     try {
-      const [eventsRes, ticketsRes] = await Promise.all([
-        fetch("/api/events"),
-        fetch("/api/tickets"),
+      const [eventsData, ticketsData] = await Promise.all([
+        supabaseService.getEventsWithTiers(),
+        supabaseService.getTicketsWithDetails(),
       ])
-      if (!eventsRes.ok) throw new Error("Failed to fetch events")
-      if (!ticketsRes.ok) throw new Error("Failed to fetch tickets")
-      const eventsData = await eventsRes.json()
-      const ticketsData = await ticketsRes.json()
       setEvents(eventsData)
       setTickets(ticketsData)
     } catch (error) {
@@ -55,9 +52,7 @@ export default function EventsPage() {
 
   const fetchTeams = async () => {
     try {
-      const res = await fetch("/api/teams")
-      if (!res.ok) throw new Error("Failed to fetch teams")
-      const data = await res.json()
+      const data = await supabaseService.getTeams()
       setTeams(data)
     } catch {
       setTeams([])

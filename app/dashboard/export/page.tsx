@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Event, Ticket } from "@/lib/types"
 import { Download } from "lucide-react"
 import { CacheStatus } from "@/components/cache-status"
+import { supabaseService } from "@/lib/supabase-service"
 
 export default function ExportPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -26,15 +27,11 @@ export default function ExportPage() {
 
   const fetchData = async () => {
     try {
-      const [eventsResponse, ticketsResponse, statsResponse] = await Promise.all([
-        fetch("/api/events"),
-        fetch("/api/tickets"),
-        fetch("/api/stats"),
+      const [eventsData, ticketsData, statsData] = await Promise.all([
+        supabaseService.getEvents(),
+        supabaseService.getTicketsWithDetails(),
+        supabaseService.getEventStats(),
       ])
-
-      const eventsData = await eventsResponse.json()
-      const ticketsData = await ticketsResponse.json()
-      const statsData = await statsResponse.json()
 
       setEvents(eventsData)
       setTickets(ticketsData)

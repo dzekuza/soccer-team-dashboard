@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
 import { Download, Plus } from "lucide-react"
+import { supabaseService } from "@/lib/supabase-service"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
@@ -18,17 +19,7 @@ export default function TicketsPage() {
 
   const fetchTickets = async () => {
     try {
-      const response = await fetch("/api/tickets")
-      const ticketIds = await response.json()
-
-      // Fetch detailed ticket information
-      const detailedTickets = await Promise.all(
-        ticketIds.map(async (ticket: any) => {
-          const detailResponse = await fetch(`/api/tickets/${ticket.id}`)
-          return await detailResponse.json()
-        }),
-      )
-
+      const detailedTickets = await supabaseService.getTicketsWithDetails()
       setTickets(detailedTickets)
     } catch (error) {
       console.error("Failed to fetch tickets:", error)

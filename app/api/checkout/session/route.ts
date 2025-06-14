@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
       ],
       mode: "payment",
       customer_email: purchaserEmail,
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout/cancel`,
+      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://soccer-team-dashboard-843v.vercel.app"}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://soccer-team-dashboard-843v.vercel.app"}/checkout/cancel`,
       metadata: {
         eventId,
         tierId,
