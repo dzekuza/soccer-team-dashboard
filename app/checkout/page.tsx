@@ -68,7 +68,7 @@ export default function CheckoutPage() {
               </div>
               <div className="flex items-center justify-between mt-4 border-t pt-4">
                 <span className="text-[#1a1f36] text-lg font-semibold">Total</span>
-                <span className="text-[#1a1f36] text-3xl font-bold tracking-tight">${totalPrice.toFixed(2)}</span>
+                <span className="text-[#1a1f36] text-3xl font-bold tracking-tight">{formatCurrency(totalPrice)}</span>
               </div>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function CheckoutPage() {
                   <option value="">-- Choose a ticket type --</option>
                   {selectedEvent.pricingTiers.map((tier) => (
                     <option key={tier.id} value={tier.id}>
-                      {tier.name} (${tier.price})
+                      {tier.name} ({formatCurrency(tier.price)})
                     </option>
                   ))}
                 </select>
@@ -197,7 +197,7 @@ export default function CheckoutPage() {
                 quantity < 1
               }
             >
-              {loading ? "Redirecting to Stripe..." : `Pay $${totalPrice.toFixed(2)}`}
+              {loading ? "Redirecting to Stripe..." : `Pay ${formatCurrency(totalPrice)}`}
             </button>
             {error && <div className="text-red-600 mt-2">{error}</div>}
           </form>

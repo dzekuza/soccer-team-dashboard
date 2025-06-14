@@ -101,16 +101,16 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Generate Ticket</DialogTitle>
-          <DialogDescription>Create a new ticket for an event</DialogDescription>
+          <DialogTitle>Generuoti bilietą</DialogTitle>
+          <DialogDescription>Sukurkite naują bilietą renginiui</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="event">Event</Label>
+            <Label htmlFor="event">Renginys</Label>
             <Select value={selectedEventId} onValueChange={setSelectedEventId} required>
               <SelectTrigger>
-                <SelectValue placeholder="Select an event" />
+                <SelectValue placeholder="Pasirinkite renginį" />
               </SelectTrigger>
               <SelectContent>
                 {events.map((event) => (
@@ -124,15 +124,15 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
           {selectedEventId && (
             <div className="space-y-2">
-              <Label htmlFor="tier">Pricing Tier</Label>
+              <Label htmlFor="tier">Kainų lygis</Label>
               <Select value={selectedTierId} onValueChange={setSelectedTierId} required>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a pricing tier" />
+                  <SelectValue placeholder="Pasirinkite kainų lygį" />
                 </SelectTrigger>
                 <SelectContent>
                   {pricingTiers.map((tier) => (
                     <SelectItem key={tier.id} value={tier.id}>
-                      {tier.name} - ${tier.price}
+                      {tier.name} - {tier.price} €
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -141,12 +141,12 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="name">Purchaser Name</Label>
+            <Label htmlFor="name">Pirkėjo vardas</Label>
             <Input id="name" value={purchaserName} onChange={(e) => setPurchaserName(e.target.value)} required />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email">Purchaser Email</Label>
+            <Label htmlFor="email">Pirkėjo el. paštas</Label>
             <Input
               id="email"
               type="email"
@@ -156,14 +156,14 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
             />
           </div>
 
-          <DialogFooter>
+          <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              Atšaukti
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Generating..." : "Generate Ticket"}
+              {isLoading ? "Generuojama..." : "Generuoti"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

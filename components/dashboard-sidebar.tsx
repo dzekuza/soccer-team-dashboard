@@ -36,8 +36,8 @@ export function DashboardSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="border-b p-4">
-        <h2 className="text-lg font-semibold">FK Banga tickets dash</h2>
-        <p className="text-sm text-gray-600">Event & Ticket Management</p>
+        <h2 className="text-lg font-semibold">FK Banga bilietų sistema</h2>
+        <p className="text-sm text-gray-600">Renginių ir bilietų valdymas</p>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -48,7 +48,17 @@ export function DashboardSidebar() {
                   <SidebarMenuButton asChild isActive={pathname === item.href}>
                     <Link href={item.href}>
                       <item.icon className="h-4 w-4" />
-                      <span>{item.name}</span>
+                      <span>{
+                        item.name === 'Overview' ? 'Suvestinė' :
+                        item.name === 'Events' ? 'Renginiai' :
+                        item.name === 'Tickets' ? 'Bilietai' :
+                        item.name === 'Subscriptions' ? 'Prenumeratos' :
+                        item.name === 'Fans' ? 'Gerbėjai' :
+                        item.name === 'QR Scanner' ? 'QR skaitytuvas' :
+                        item.name === 'Export' ? 'Eksportas' :
+                        item.name === 'System' ? 'Sistema' :
+                        item.name
+                      }</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -60,7 +70,7 @@ export function DashboardSidebar() {
                   <SidebarMenuButton asChild isActive={pathname === "/register"}>
                     <Link href="/register">
                       <UserPlus className="h-4 w-4" />
-                      <span>Add User</span>
+                      <span>Pridėti vartotoją</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -74,7 +84,7 @@ export function DashboardSidebar() {
           <div className="text-sm">
             <p className="font-medium">{user?.name}</p>
             <p className="text-gray-600">{user?.email}</p>
-            <p className="text-xs text-gray-500">{user?.role}</p>
+            <p className="text-xs text-gray-500">{user?.role === 'admin' ? 'Administratorius' : user?.role === 'staff' ? 'Darbuotojas' : user?.role}</p>
           </div>
           <button onClick={logout} className="flex items-center text-gray-600 hover:text-gray-900">
             <LogOut className="h-4 w-4" />

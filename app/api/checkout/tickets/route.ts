@@ -148,9 +148,10 @@ export async function GET(request: NextRequest) {
         function formatCurrency(amount: number) {
           return new Intl.NumberFormat('lt-LT', { style: 'currency', currency: 'EUR' }).format(amount);
         }
+        const bangaLogoUrl = 'https://ebdfqztiximsqdnvwkqu.supabase.co/storage/v1/object/public/logo//%20Banga.png';
         const emailHtml = `
   <div style="font-family: Inter, sans-serif; color: #ffffff; background-color: #0A165B; padding: 24px;">
-    <img src="https://yourdomain.com/logo.png" alt="FK Banga Logo" width="120" style="margin-bottom: 24px;" />
+    <img src="${bangaLogoUrl}" alt="FK Banga Logo" width="120" style="margin-bottom: 24px;" />
     
     <h2 style="font-size: 20px; font-weight: 500;">Jūsų bilietas į renginį</h2>
     <hr style="border: 0; border-top: 1px solid #2D3B80; margin: 16px 0;" />
@@ -205,7 +206,7 @@ export async function GET(request: NextRequest) {
         await resend.emails.send({
           from: "tickets@soccer-team.app", // Change to your verified sender
           to: purchaserEmail,
-          subject: "Your Soccer Event Ticket(s)",
+          subject: "Jūsų bilietas į renginį",
           html: emailHtml,
           attachments,
         })

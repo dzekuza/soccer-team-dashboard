@@ -1,11 +1,8 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/lib/auth-context"
 import { AuthGuard } from "@/components/auth-guard"
-
-const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "FK Banga tickets dash",
@@ -20,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body>
         <AuthProvider>
           <AuthGuard>{children}</AuthGuard>
         </AuthProvider>

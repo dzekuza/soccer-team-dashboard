@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatCurrency } from "@/lib/utils";
 
 interface SubscriptionPlan {
   id: string;
@@ -70,7 +71,7 @@ export default function SubscriptionCheckoutPage() {
               <option value="">-- Choose a subscription plan --</option>
               {plans.map((plan) => (
                 <option key={plan.id} value={plan.id}>
-                  {plan.title} ({plan.duration_days} days) - ${plan.price}
+                  {plan.title} ({plan.duration_days} days) - {formatCurrency(plan.price)}
                 </option>
               ))}
             </select>
@@ -93,7 +94,7 @@ export default function SubscriptionCheckoutPage() {
                 <span className="text-[#1a1f36] font-medium">Duration:</span>
                 <span>{selectedPlan.duration_days} days</span>
                 <span className="text-[#1a1f36] font-medium ml-6">Price:</span>
-                <span className="text-2xl font-bold">${selectedPlan.price.toFixed(2)}</span>
+                <span className="text-2xl font-bold">{formatCurrency(selectedPlan.price)}</span>
               </div>
             </div>
           )}
@@ -102,7 +103,7 @@ export default function SubscriptionCheckoutPage() {
             className="w-full py-4 mt-2 bg-[#1a1f36] text-white text-lg font-semibold rounded-md shadow hover:bg-[#232946] transition"
             disabled={loading || !selectedPlanId}
           >
-            {loading ? "Redirecting to Stripe..." : selectedPlan ? `Subscribe for $${selectedPlan.price.toFixed(2)}` : "Subscribe"}
+            {loading ? "Redirecting to Stripe..." : selectedPlan ? `Subscribe for ${formatCurrency(selectedPlan.price)}` : "Subscribe"}
           </button>
           {error && <div className="text-red-600 mt-2">{error}</div>}
         </form>

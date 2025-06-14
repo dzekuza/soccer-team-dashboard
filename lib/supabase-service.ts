@@ -779,4 +779,21 @@ export const supabaseService = {
     if (error) throw new Error(error.message)
     return data
   },
+
+  getAllSubscriberEmails: async (): Promise<{ email: string, name?: string }[]> => {
+    await ensureConnection();
+    const { data, error } = await supabase
+      .from('user_subscriptions')
+      .select('user_id, users(email, name)')
+    if (error) throw new Error(error.message)
+    // Deduplicate by email
+    const emails = new Map<string, { email: string, name?: string }>()
+    for (const row of data || []) {
+      const email = row.users?.email
+      if (email && !emails.has(email)) {
+        emails.set(email, { email, name: row.users?.name })
+      }
+    }
+    return Array.from(emails.values())
+  },
 }

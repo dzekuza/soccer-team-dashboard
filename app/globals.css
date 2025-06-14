@@ -2,8 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'DM Sans';
+  src: url('/fonts/DMSans-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+body, html {
+  font-family: 'DM Sans', sans-serif;
 }
 
 @layer utilities {

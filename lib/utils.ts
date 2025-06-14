@@ -12,9 +12,9 @@ export function generateUniqueId(prefix: string): string {
 
 // Format currency
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("lt-LT", {
     style: "currency",
-    currency: "USD",
+    currency: "EUR",
     minimumFractionDigits: 2,
   }).format(amount)
 }

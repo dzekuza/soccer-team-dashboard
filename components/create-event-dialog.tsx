@@ -388,7 +388,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label>Price ($)</Label>
+                    <Label>Kaina (EUR)</Label>
                     <Input
                       type="number"
                       value={tier.price}
