@@ -19,28 +19,35 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [employeeCode, setEmployeeCode] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { login } = useAuth()
+  const EMPLOYEE_CODE = "BANGA2024"
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
 
     // Validate form
-    if (!name || !email || !password) {
-      setError("All fields are required")
+    if (!name || !email || !password || !employeeCode) {
+      setError("Visi laukai yra privalomi")
+      return
+    }
+
+    if (employeeCode !== EMPLOYEE_CODE) {
+      setError("Neteisingas darbuotojo kodas")
       return
     }
 
     if (password !== confirmPassword) {
-      setError("Passwords do not match")
+      setError("Slaptažodžiai nesutampa")
       return
     }
 
     if (password.length < 6) {
-      setError("Password must be at least 6 characters")
+      setError("Slaptažodis turi būti bent 6 simbolių")
       return
     }
 
@@ -88,10 +95,10 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
+      <Card className="w-full mx-4 max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>Enter your information to create an account</CardDescription>
+          <CardTitle className="text-2xl font-bold">Sukurti paskyrą</CardTitle>
+          <CardDescription>Įveskite savo duomenis, kad sukurtumėte paskyrą ir galėtumėte valdyti FB Banga bilietus</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -101,22 +108,22 @@ export default function RegisterPage() {
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+              <Label htmlFor="name">Vardas</Label>
+              <Input id="name" placeholder="Jonas Jonaitis" value={name} onChange={(e) => setName(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">El. paštas</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="john@example.com"
+                placeholder="jonas@pavyzdys.lt"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Slaptažodis</Label>
               <Input
                 id="password"
                 type="password"
@@ -127,7 +134,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword">Pakartokite slaptažodį</Label>
               <Input
                 id="confirmPassword"
                 type="password"
@@ -137,22 +144,32 @@ export default function RegisterPage() {
                 required
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="employeeCode">Darbuotojo kodas</Label>
+              <Input
+                id="employeeCode"
+                placeholder="Įveskite darbuotojo kodą"
+                value={employeeCode}
+                onChange={(e) => setEmployeeCode(e.target.value)}
+                required
+              />
+            </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Kuriama paskyra...
                 </>
               ) : (
-                "Register"
+                "Registruotis"
               )}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-600">
-            Already have an account?{" "}
+            Jau turite paskyrą?{" "}
             <Link href="/login" className="text-blue-600 hover:underline">
-              Login
+              Prisijungti
             </Link>
           </p>
         </CardFooter>

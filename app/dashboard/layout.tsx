@@ -13,7 +13,7 @@ export default function DashboardLayout({
         <div className="group peer hidden md:block text-sidebar-foreground">
           <DashboardSidebar />
         </div>
-        <main className="flex-1 p-6">
+        <main className="flex-1 px-4 sm:px-4 md:px-6 pb-20 md:pb-0 md:pt-8 md:pb-8">
           {children}
         </main>
         <DashboardMobileMenu />

@@ -11,9 +11,10 @@ import type { EventWithTiers, TicketWithDetails, Team } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
-import { Calendar } from '@/components/ui/calendar'
+import { FullScreenCalendar } from '@/components/ui/fullscreen-calendar'
+import { format, parseISO } from 'date-fns'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { addDays, startOfWeek, endOfWeek, isSameDay, format, isToday, parseISO } from 'date-fns'
+import { isSameDay } from 'date-fns'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { supabaseService } from "@/lib/supabase-service"
 
@@ -26,7 +27,6 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [view, setView] = useState<'grid' | 'calendar'>('grid')
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }))
 
   useEffect(() => {
     fetchEvents()
@@ -76,59 +76,29 @@ export default function EventsPage() {
   // Helper: get attendee count for event
   const attendeeCount = (eventId: string) => tickets.filter(t => t.eventId === eventId).length
 
-  // Render weekly calendar
-  const renderWeeklyCalendar = () => {
-    const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
-    return (
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <button onClick={() => setWeekStart(addDays(weekStart, -7))} className="px-2 py-1 rounded hover:bg-gray-100">&lt;</button>
-          <span className="font-semibold">{format(weekStart, 'MMM d')} - {format(addDays(weekStart, 6), 'MMM d, yyyy')}</span>
-          <button onClick={() => setWeekStart(addDays(weekStart, 7))} className="px-2 py-1 rounded hover:bg-gray-100">&gt;</button>
-        </div>
-        <div className="grid grid-cols-7 gap-2 bg-gray-50 rounded p-2">
-          {days.map(day => (
-            <div key={day.toISOString()} className={`min-h-[120px] border rounded p-2 relative ${isToday(day) ? 'border-blue-600 bg-blue-50' : 'border-gray-200 bg-white'}`}> 
-              <div className="text-xs font-semibold mb-1 flex items-center justify-between">
-                <span>{format(day, 'EEE')}</span>
-                <span>{format(day, 'd')}</span>
-              </div>
-              <div className="space-y-1">
-                {eventsForDate(day).length === 0 ? (
-                  <span className="text-gray-300 text-xs">Renginių nėra</span>
-                ) : (
-                  eventsForDate(day).map(event => (
-                    <Popover key={event.id}>
-                      <PopoverTrigger asChild>
-                        <div className="bg-blue-100 border border-blue-300 rounded px-2 py-1 text-xs flex flex-col cursor-pointer hover:bg-blue-200">
-                          <span className="font-medium text-blue-900 truncate">{event.title}</span>
-                          <span className="text-blue-700">Dalyviai: {attendeeCount(event.id)}</span>
-                        </div>
-                      </PopoverTrigger>
-                      <PopoverContent align="start">
-                        <div className="space-y-1">
-                          <div className="font-bold text-lg text-blue-900">{event.title}</div>
-                          <div className="text-sm text-gray-700">{event.description}</div>
-                          <div className="text-xs text-gray-500">{event.date} {event.time}</div>
-                          <div className="text-xs text-gray-500">{event.location}</div>
-                          <div className="text-xs text-blue-700 font-semibold">Dalyviai: {attendeeCount(event.id)}</div>
-                          <a href={`/dashboard/events/${event.id}`} className="text-xs text-blue-600 underline mt-2 inline-block">Peržiūrėti renginį</a>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  ))
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )
-  }
+  // Map events to FullScreenCalendar data structure
+  const calendarData = events.reduce((acc, event) => {
+    const day = parseISO(event.date)
+    const found = acc.find(d => format(d.day, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
+    const eventObj = {
+      id: event.id,
+      name: event.title,
+      time: event.time,
+      datetime: event.date + 'T' + (event.time || '00:00:00'),
+      description: event.description,
+      location: event.location,
+    }
+    if (found) {
+      found.events.push(eventObj)
+    } else {
+      acc.push({ day, events: [eventObj] })
+    }
+    return acc
+  }, [] as { day: Date; events: any[] }[])
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Renginiai</h1>
           <p className="text-gray-600">Tvarkykite savo futbolo komandos renginius</p>
@@ -157,7 +127,7 @@ export default function EventsPage() {
         )
       ) : (
         <div className="bg-white rounded shadow p-4">
-          {renderWeeklyCalendar()}
+          <FullScreenCalendar data={calendarData} />
         </div>
       )}
       {isLoading ? (

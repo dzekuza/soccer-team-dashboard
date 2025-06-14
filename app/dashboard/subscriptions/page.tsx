@@ -66,7 +66,7 @@ export default function SubscriptionsDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-2xl font-bold">Prenumeratos</h1>
         <Button onClick={() => setCreateOpen(true)}>Sukurti prenumeratą</Button>
       </div>

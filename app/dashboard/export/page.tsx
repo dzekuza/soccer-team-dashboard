@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import type { Event, Ticket } from "@/lib/types"
 import { Download } from "lucide-react"
-import { CacheStatus } from "@/components/cache-status"
 import { supabaseService } from "@/lib/supabase-service"
 
 export default function ExportPage() {
@@ -170,8 +169,6 @@ export default function ExportPage() {
           </CardContent>
         </Card>
       </div>
-
-      <CacheStatus />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>

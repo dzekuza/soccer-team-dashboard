@@ -30,7 +30,6 @@ export function DashboardSidebar() {
     { name: "Fans", href: "/dashboard/fans", icon: User },
     { name: "QR Scanner", href: "/dashboard/scanner", icon: QrCode },
     { name: "Export", href: "/dashboard/export", icon: Upload },
-    { name: "System", href: "/dashboard/system", icon: Settings },
   ]
 
   return (
@@ -56,7 +55,6 @@ export function DashboardSidebar() {
                         item.name === 'Fans' ? 'Gerbėjai' :
                         item.name === 'QR Scanner' ? 'QR skaitytuvas' :
                         item.name === 'Export' ? 'Eksportas' :
-                        item.name === 'System' ? 'Sistema' :
                         item.name
                       }</span>
                     </Link>
@@ -103,19 +101,18 @@ export function DashboardMobileMenu() {
 
   // Main navigation for mobile bar
   const navigation = [
-    { name: "Overview", href: "/dashboard/overview", icon: BarChart3 },
-    { name: "Events", href: "/dashboard/events", icon: CalendarDays },
-    { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
-    { name: "QR Scanner", href: "/dashboard/scanner", icon: QrCode },
+    { name: "Suvestinė", href: "/dashboard/overview", icon: BarChart3 },
+    { name: "Renginiai", href: "/dashboard/events", icon: CalendarDays },
+    { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
+    { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: QrCode },
   ];
 
   // Actions for modal
   const modalActions = [
-    { name: "Subscriptions", href: "/dashboard/subscriptions", icon: CreditCard },
-    { name: "Fans", href: "/dashboard/fans", icon: User },
-    { name: "Export", href: "/dashboard/export", icon: Upload },
-    { name: "System", href: "/dashboard/system", icon: Settings },
-    { name: "Logout", action: logout, icon: LogOut },
+    { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: CreditCard },
+    { name: "Gerbėjai", href: "/dashboard/fans", icon: User },
+    { name: "Eksportas", href: "/dashboard/export", icon: Upload },
+    { name: "Atsijungti", action: logout, icon: LogOut },
   ];
 
   return (
@@ -126,8 +123,8 @@ export function DashboardMobileMenu() {
             key={item.name}
             href={item.href}
             className={clsx(
-              "flex flex-col items-center flex-1 py-2 px-1 text-xs text-gray-600 hover:text-blue-600 transition",
-              pathname === item.href && "text-blue-600 font-semibold"
+              "flex flex-col items-center flex-1 py-2 px-1 gap-0.5 text-xs text-gray-600 hover:text-blue-600 transition",
+              pathname === item.href && "text-blue-600 font-medium"
             )}
           >
             <item.icon className="h-6 w-6 mb-0.5" />
@@ -137,10 +134,10 @@ export function DashboardMobileMenu() {
         <button
           onClick={() => setModalOpen(true)}
           className="flex flex-col items-center flex-1 py-2 px-1 text-xs text-gray-600 hover:text-blue-600 transition"
-          aria-label="Profile"
+          aria-label="Profilis"
         >
           <User className="h-6 w-6 mb-0.5" />
-          <span className="leading-none text-[11px]">Profile</span>
+          <span className="leading-none text-[11px]">Profilis</span>
         </button>
       </nav>
       {/* Modal for extra actions, only on mobile */}
@@ -172,7 +169,7 @@ export function DashboardMobileMenu() {
               )}
             </div>
             <button className="mt-4 w-full py-2 text-blue-600 font-semibold" onClick={() => setModalOpen(false)}>
-              Close
+              Uždaryti
             </button>
           </div>
         </div>

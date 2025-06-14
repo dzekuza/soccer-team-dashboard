@@ -44,10 +44,10 @@ export default function LoginPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <Card className="w-full max-w-md">
+      <Card className="w-full mx-4 max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Soccer Team Dashboard</CardTitle>
-          <CardDescription>Enter your credentials to access the dashboard</CardDescription>
+          <CardTitle className="text-2xl font-bold">Futbolo komandos valdymas</CardTitle>
+          <CardDescription>Įveskite savo prisijungimo duomenis norėdami pasiekti valdymo skydelį</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -57,22 +57,22 @@ export default function LoginPage() {
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">El. paštas</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder="admin@pavyzdys.lt"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">Slaptažodis</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="password123"
+                placeholder="slaptazodis123"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -81,20 +81,20 @@ export default function LoginPage() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Logging in...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Prisijungiama...
                 </>
               ) : (
-                "Login"
+                "Prisijungti"
               )}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4 text-center text-sm text-gray-600">
-          <p className="w-full">Default credentials: admin@example.com / password123</p>
+          <p className="w-full">Numatyti duomenys: admin@pavyzdys.lt / slaptazodis123</p>
           <p>
-            Don't have an account?{" "}
+            Neturite paskyros?{" "}
             <Link href="/register" className="text-blue-600 hover:underline">
-              Register
+              Registruotis
             </Link>
           </p>
         </CardFooter>

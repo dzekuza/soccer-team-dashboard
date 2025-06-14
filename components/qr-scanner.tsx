@@ -27,8 +27,6 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
       videoRef.current,
       (result) => {
         onScan(result.data)
-        qrScanner.stop()
-        setIsScanning(false)
       },
       {
         highlightScanRegion: true,
@@ -61,7 +59,7 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
         className="absolute top-4 right-4 bg-white text-black rounded px-4 py-2 shadow-lg z-60"
         onClick={onClose}
       >
-        Close
+        Uždaryti
       </button>
       {hasCamera ? (
         <>
@@ -77,16 +75,16 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
               </div>
             )}
             <div className="absolute bottom-16 w-full flex justify-center">
-              <p className="text-white text-lg bg-black/60 px-4 py-2 rounded">Position the QR code within the frame to scan</p>
+              <p className="text-white text-lg bg-black/60 px-4 py-2 rounded">Nukreipkite QR kodą į rėmelį, kad nuskaitytumėte</p>
             </div>
           </div>
         </>
       ) : (
         <div className="text-center py-8">
           <Camera className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-600">No camera available or permission denied</p>
+          <p className="text-gray-600">Kamera nepasiekiama arba nesuteiktas leidimas</p>
           <Button className="mt-4" onClick={onClose}>
-            Close
+            Uždaryti
           </Button>
         </div>
       )}

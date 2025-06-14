@@ -8,10 +8,13 @@ import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
 import { Download, Plus } from "lucide-react"
 import { supabaseService } from "@/lib/supabase-service"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [eventNameFilter, setEventNameFilter] = useState("")
+  const [scanStatus, setScanStatus] = useState<'all' | 'scanned' | 'not_scanned'>('all')
 
   useEffect(() => {
     fetchTickets()
@@ -49,9 +52,19 @@ export default function TicketsPage() {
     }
   }
 
+  // Filter tickets by event name and scan status
+  const filteredTickets = tickets.filter(ticket => {
+    const matchesEvent = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
+    const matchesScan =
+      scanStatus === 'all' ||
+      (scanStatus === 'scanned' && ticket.isValidated) ||
+      (scanStatus === 'not_scanned' && !ticket.isValidated)
+    return matchesEvent && matchesScan
+  })
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Bilietai</h1>
           <p className="text-gray-600">Tvarkykite ir generuokite renginių bilietus</p>
@@ -62,42 +75,72 @@ export default function TicketsPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {tickets.map((ticket) => (
-          <Card key={ticket.id}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">{ticket.event.title}</CardTitle>
-                <Badge variant={ticket.isValidated ? "default" : "secondary"}>
-                  {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
-                </Badge>
-              </div>
-              <CardDescription>
-                {ticket.tier.name} - {ticket.tier.price} €
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2 text-sm">
-                <p>
-                  <span className="font-medium">Pirkėjas:</span> {ticket.purchaserName}
-                </p>
-                <p>
-                  <span className="font-medium">El. paštas:</span> {ticket.purchaserEmail}
-                </p>
-                <p>
-                  <span className="font-medium">Data:</span> {ticket.event.date}
-                </p>
-                <p>
-                  <span className="font-medium">Laikas:</span> {ticket.event.time}
-                </p>
-              </div>
-              <Button onClick={() => handleDownloadPDF(ticket)} variant="outline" size="sm" className="w-full">
-                <Download className="h-4 w-4 mr-2" />
-                Atsisiųsti PDF
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Filtruoti pagal renginio pavadinimą"
+          value={eventNameFilter}
+          onChange={e => setEventNameFilter(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2 w-full sm:w-64"
+        />
+        <select
+          value={scanStatus}
+          onChange={e => setScanStatus(e.target.value as 'all' | 'scanned' | 'not_scanned')}
+          className="border border-gray-300 rounded px-3 py-2 w-full sm:w-48"
+        >
+          <option value="all">Visi bilietai</option>
+          <option value="scanned">Tik nuskenuoti</option>
+          <option value="not_scanned">Tik nenuskenuoti</option>
+        </select>
+      </div>
+
+      <div className="bg-white rounded shadow overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Renginys</TableHead>
+              <TableHead>Pirkėjas</TableHead>
+              <TableHead>El. paštas</TableHead>
+              <TableHead>Data</TableHead>
+              <TableHead>Laikas</TableHead>
+              <TableHead>Tipas</TableHead>
+              <TableHead>Kaina</TableHead>
+              <TableHead>Statusas</TableHead>
+              <TableHead>Veiksmai</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredTickets.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="text-center py-8 text-gray-500">Nėra bilietų pagal pasirinktus filtrus</TableCell>
+              </TableRow>
+            ) : (
+              filteredTickets.map((ticket) => (
+                <TableRow key={ticket.id}>
+                  <TableCell>{ticket.event.title}</TableCell>
+                  <TableCell>{ticket.purchaserName}</TableCell>
+                  <TableCell>{ticket.purchaserEmail}</TableCell>
+                  <TableCell>{ticket.event.date}</TableCell>
+                  <TableCell>{ticket.event.time}</TableCell>
+                  <TableCell>{ticket.tier.name}</TableCell>
+                  <TableCell>{ticket.tier.price} €</TableCell>
+                  <TableCell>
+                    <Badge variant={ticket.isValidated ? "default" : "secondary"}>
+                      {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button onClick={() => handleDownloadPDF(ticket)} variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
+                      PDF
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <CreateTicketDialog

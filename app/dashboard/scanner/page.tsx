@@ -78,34 +78,28 @@ export default function ScannerPage() {
   const handleScanFeedback = (success: boolean) => {
     setOverlayColor(success ? "green" : "red")
     if (overlayTimeout.current) clearTimeout(overlayTimeout.current)
-    overlayTimeout.current = setTimeout(() => setOverlayColor(null), 400)
+    overlayTimeout.current = setTimeout(() => {
+      setOverlayColor(null)
+      setValidationResult(null)
+    }, 1200)
   }
 
   const handleQrCodeScanned = (result: string) => {
-    setShowScanner(false)
-
     // Extract ticket ID from URL if it's a URL
+    let cleanId = result
     if (result.includes("/api/validate-ticket/")) {
       const ticketId = result.split("/api/validate-ticket/")[1]
-      const cleanId = ticketId.replace(/^Ticket ID:\s*/, '').trim();
-      setTicketId(cleanId)
-      validateTicket(cleanId).then(() => {
-        // Show feedback after validation result is set
-        setTimeout(() => {
-          handleScanFeedback(validationResult?.success ?? false)
-        }, 100)
-      })
+      cleanId = ticketId.replace(/^Ticket ID:\s*/, '').trim();
     } else {
-      // Try to use the result directly as a ticket ID
-      const cleanResult = result.replace(/^Ticket ID:\s*/, '').trim();
-      setTicketId(cleanResult)
-      validateTicket(cleanResult).then(() => {
-        // Show feedback after validation result is set
-        setTimeout(() => {
-          handleScanFeedback(validationResult?.success ?? false)
-        }, 100)
-      })
+      cleanId = result.replace(/^Ticket ID:\s*/, '').trim();
     }
+    setTicketId(cleanId)
+    validateTicket(cleanId).then(() => {
+      // Show feedback after validation result is set
+      setTimeout(() => {
+        handleScanFeedback(validationResult?.success ?? false)
+      }, 100)
+    })
   }
 
   return (
@@ -125,6 +119,13 @@ export default function ScannerPage() {
                   overlayColor === "green" ? "bg-green-400/60" : "bg-red-400/60"
                 } animate-blink`}
               />
+            )}
+            {validationResult && (
+              <div className="fixed inset-0 z-70 flex items-center justify-center pointer-events-none">
+                <div className={`px-8 py-6 rounded-xl shadow-lg text-2xl font-bold ${validationResult.success ? "bg-green-600 text-white" : "bg-red-600 text-white"} opacity-90`}>
+                  {validationResult.message}
+                </div>
+              </div>
             )}
             <button
               className="absolute top-4 right-4 bg-white text-black rounded px-4 py-2 shadow-lg"
