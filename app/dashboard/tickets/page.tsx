@@ -53,12 +53,12 @@ export default function TicketsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Tickets</h1>
-          <p className="text-gray-600">Manage and generate event tickets</p>
+          <h1 className="text-3xl font-bold">Bilietai</h1>
+          <p className="text-gray-600">Tvarkykite ir generuokite renginių bilietus</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Generate Ticket
+          Generuoti bilietą
         </Button>
       </div>
 
@@ -69,31 +69,31 @@ export default function TicketsPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{ticket.event.title}</CardTitle>
                 <Badge variant={ticket.isValidated ? "default" : "secondary"}>
-                  {ticket.isValidated ? "Validated" : "Valid"}
+                  {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
                 </Badge>
               </div>
               <CardDescription>
-                {ticket.tier.name} - ${ticket.tier.price}
+                {ticket.tier.name} - {ticket.tier.price} €
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2 text-sm">
                 <p>
-                  <span className="font-medium">Purchaser:</span> {ticket.purchaserName}
+                  <span className="font-medium">Pirkėjas:</span> {ticket.purchaserName}
                 </p>
                 <p>
-                  <span className="font-medium">Email:</span> {ticket.purchaserEmail}
+                  <span className="font-medium">El. paštas:</span> {ticket.purchaserEmail}
                 </p>
                 <p>
-                  <span className="font-medium">Date:</span> {ticket.event.date}
+                  <span className="font-medium">Data:</span> {ticket.event.date}
                 </p>
                 <p>
-                  <span className="font-medium">Time:</span> {ticket.event.time}
+                  <span className="font-medium">Laikas:</span> {ticket.event.time}
                 </p>
               </div>
               <Button onClick={() => handleDownloadPDF(ticket)} variant="outline" size="sm" className="w-full">
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                Atsisiųsti PDF
               </Button>
             </CardContent>
           </Card>

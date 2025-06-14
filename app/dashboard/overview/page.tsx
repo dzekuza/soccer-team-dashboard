@@ -96,7 +96,7 @@ export default function OverviewPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading dashboard...</p>
+          <p className="mt-2 text-gray-600">Įkeliama suvestinė...</p>
         </div>
       </div>
     )
@@ -105,58 +105,55 @@ export default function OverviewPage() {
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard Overview</h1>
-        <p className="text-gray-600">Complete overview of your soccer team events and tickets</p>
+        <h1 className="text-3xl font-bold">Suvestinė</h1>
+        <p className="text-gray-600">Pilna Jūsų futbolo komandos renginių ir bilietų apžvalga</p>
       </div>
 
       {/* Key Metrics */}
       <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+            <CardTitle className="text-sm font-medium">Iš viso renginių</CardTitle>
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalEvents}</div>
-            <p className="text-xs text-muted-foreground">Active events created</p>
+            <p className="text-xs text-muted-foreground">Sukurti aktyvūs renginiai</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Tickets</CardTitle>
+            <CardTitle className="text-sm font-medium">Iš viso bilietų</CardTitle>
             <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTickets}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.validatedTickets} validated ({Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}
-              %)
-            </p>
+            <p className="text-xs text-muted-foreground">{stats.validatedTickets} patvirtinta ({Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%)</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">Iš viso pajamų</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
-            <p className="text-xs text-muted-foreground">From ticket sales</p>
+            <p className="text-xs text-muted-foreground">Iš bilietų pardavimų</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Validation Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">Patvirtinimo rodiklis</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
               {Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%
             </div>
-            <p className="text-xs text-muted-foreground">Tickets validated</p>
+            <p className="text-xs text-muted-foreground">Bilietai patvirtinti</p>
           </CardContent>
         </Card>
       </div>
@@ -165,8 +162,8 @@ export default function OverviewPage() {
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Events</CardTitle>
-            <CardDescription>Latest events created</CardDescription>
+            <CardTitle>Naujausi renginiai</CardTitle>
+            <CardDescription>Naujausi sukurti renginiai</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {recentEvents.length > 0 ? (
@@ -179,19 +176,19 @@ export default function OverviewPage() {
                     </p>
                     <p className="text-sm text-gray-500">{event.location}</p>
                   </div>
-                  <Badge variant="outline">Active</Badge>
+                  <Badge variant="outline">Aktyvus</Badge>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">No events created yet</p>
+              <p className="text-gray-500 text-center py-4">Dar nėra sukurtų renginių</p>
             )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest system activity</CardDescription>
+            <CardTitle>Naujausia veikla</CardTitle>
+            <CardDescription>Naujausia sistemos veikla</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {recentActivity.length > 0 ? (
@@ -217,7 +214,7 @@ export default function OverviewPage() {
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">No recent activity</p>
+              <p className="text-gray-500 text-center py-4">Nėra naujausios veiklos</p>
             )}
           </CardContent>
         </Card>
@@ -226,8 +223,8 @@ export default function OverviewPage() {
       {/* Recent Tickets */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Tickets</CardTitle>
-          <CardDescription>Latest tickets generated</CardDescription>
+          <CardTitle>Naujausi bilietai</CardTitle>
+          <CardDescription>Naujausi sugeneruoti bilietai</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

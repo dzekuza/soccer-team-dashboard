@@ -63,12 +63,12 @@ export async function generateTicketPDF(ticket: TicketWithDetails, team1?: Team,
 
   // === Constants ===
   const logoSize = 56
-  const nameFontSize = 13
+  const nameFontSize = 10
   const groupGap = 8
   const groupHeight = logoSize + groupGap + nameFontSize
 
-  // Move the group higher (e.g., 60% from the top)
-  const groupY = height * 0.60
+  // Place the group higher (upper third of the blue section)
+  const groupY = height - 120
 
   // === TEAM 1 ===
   if (team1?.logo) {
@@ -122,7 +122,7 @@ export async function generateTicketPDF(ticket: TicketWithDetails, team1?: Team,
 
   // === "prieš" text ===
   const vsText = 'prieš'
-  const vsFontSize = 22
+  const vsFontSize = 16
   const vsWidth = customFont.widthOfTextAtSize(vsText, vsFontSize)
   page.drawText(vsText, {
     x: (blueWidth - vsWidth) / 2,
@@ -150,10 +150,10 @@ export async function generateTicketPDF(ticket: TicketWithDetails, team1?: Team,
   })
   // Values
   page.drawText((ticket.event.location || '').toUpperCase(), {
-    x: 40, y: 28, size: 13, font: customFont, color: white,
+    x: 40, y: 20, size: 12, font: customFont, color: white,
   })
   page.drawText((ticket.tier.name || '').toUpperCase(), {
-    x: 180, y: 28, size: 13, font: customFont, color: white,
+    x: 180, y: 20, size: 12, font: customFont, color: white,
   })
 
   // QR code (centered in orange section)

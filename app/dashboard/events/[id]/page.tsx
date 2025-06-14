@@ -53,10 +53,10 @@ export default function EventDetailPage() {
     return (
       <div className="max-w-xl mx-auto mt-12 text-center">
         <AlertTriangle className="mx-auto text-yellow-600 w-10 h-10 mb-4" />
-        <h2 className="text-xl font-bold mb-2">Event Not Found</h2>
-        <p className="text-gray-600 mb-4">{error || "This event does not exist or could not be loaded."}</p>
+        <h2 className="text-xl font-bold mb-2">Renginys nerastas</h2>
+        <p className="text-gray-600 mb-4">{error || "Šis renginys neegzistuoja arba jo nepavyko įkelti."}</p>
         <Link href="/dashboard/events" className="inline-flex items-center gap-2 text-blue-700 hover:underline">
-          <ArrowLeft className="w-4 h-4" /> Back to Events
+          <ArrowLeft className="w-4 h-4" /> Atgal į renginius
         </Link>
       </div>
     )
@@ -68,7 +68,7 @@ export default function EventDetailPage() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <Link href="/dashboard/events" className="inline-flex items-center gap-2 text-blue-700 hover:underline mb-4">
-        <ArrowLeft className="w-4 h-4" /> Back to Events
+        <ArrowLeft className="w-4 h-4" /> Atgal į renginius
       </Link>
       <Card>
         <CardHeader>
@@ -81,11 +81,11 @@ export default function EventDetailPage() {
                   <AlertTriangle className="text-gray-400 w-6 h-6" />
                 </div>
               )}
-              <span className="font-semibold text-base">{team1?.team_name || "Unknown Team"}</span>
+              <span className="font-semibold text-base">{team1?.team_name || "Nežinoma komanda"}</span>
             </div>
-            <span className="text-xs text-gray-500">vs</span>
+            <span className="text-xs text-gray-500">prieš</span>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-base">{team2?.team_name || "Unknown Team"}</span>
+              <span className="font-semibold text-base">{team2?.team_name || "Nežinoma komanda"}</span>
               {team2 ? (
                 <Image src={team2.logo} alt={team2.team_name} width={36} height={36} className="rounded bg-white p-1" />
               ) : (
@@ -98,7 +98,7 @@ export default function EventDetailPage() {
           {( !team1 || !team2 ) && (
             <div className="flex items-center gap-2 text-yellow-700 text-xs mb-2">
               <AlertTriangle className="w-4 h-4" />
-              <span>Warning: One or both teams not found</span>
+              <span>Įspėjimas: viena arba abi komandos nerastos</span>
             </div>
           )}
           <CardTitle>{event.title}</CardTitle>
@@ -107,16 +107,16 @@ export default function EventDetailPage() {
         <CardContent>
           <div className="space-y-2 text-sm">
             <p>
-              <span className="font-medium">Date:</span> {event.date}
+              <span className="font-medium">Data:</span> {event.date}
             </p>
             <p>
-              <span className="font-medium">Time:</span> {event.time}
+              <span className="font-medium">Laikas:</span> {event.time}
             </p>
             <p>
-              <span className="font-medium">Location:</span> {event.location}
+              <span className="font-medium">Vieta:</span> {event.location}
             </p>
             <div className="pt-2">
-              <p className="font-medium mb-1">Pricing Tiers:</p>
+              <p className="font-medium mb-1">Kainų lygiai:</p>
               <div className="space-y-1">
                 {event.pricingTiers.map((tier) => (
                   <div key={tier.id} className="flex justify-between items-center">
@@ -124,7 +124,7 @@ export default function EventDetailPage() {
                     <div className="flex items-center space-x-2">
                       <span>{formatCurrency(tier.price)}</span>
                       <Badge variant="outline" className="text-xs">
-                        Max: {tier.maxQuantity}
+                        Maks.: {tier.maxQuantity}
                       </Badge>
                     </div>
                   </div>

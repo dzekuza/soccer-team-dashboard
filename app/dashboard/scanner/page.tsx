@@ -112,8 +112,8 @@ export default function ScannerPage() {
     <div className="relative min-h-screen bg-gray-50">
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">QR Code Scanner</h1>
-          <p className="text-gray-600">Scan or enter ticket IDs to validate tickets</p>
+          <h1 className="text-3xl font-bold">QR kodų skaitytuvas</h1>
+          <p className="text-gray-600">Skenuokite arba įveskite bilietų ID, kad patvirtintumėte bilietus</p>
         </div>
 
         {showScanner && (
@@ -130,7 +130,7 @@ export default function ScannerPage() {
               className="absolute top-4 right-4 bg-white text-black rounded px-4 py-2 shadow-lg"
               onClick={() => setShowScanner(false)}
             >
-              Close
+              Uždaryti
             </button>
           </div>
         )}
@@ -138,22 +138,22 @@ export default function ScannerPage() {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Manual Validation</CardTitle>
-              <CardDescription>Enter a ticket ID to validate</CardDescription>
+              <CardTitle>Rankinis patvirtinimas</CardTitle>
+              <CardDescription>Įveskite bilieto ID, kad patvirtintumėte</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleManualValidation} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="ticketId">Ticket ID</Label>
+                  <Label htmlFor="ticketId">Bilieto ID</Label>
                   <Input
                     id="ticketId"
                     value={ticketId}
                     onChange={(e) => setTicketId(e.target.value)}
-                    placeholder="Enter ticket ID"
+                    placeholder="Įveskite bilieto ID"
                   />
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? "Validating..." : "Validate Ticket"}
+                  {isLoading ? "Tikrinama..." : "Patvirtinti bilietą"}
                 </Button>
               </form>
             </CardContent>
@@ -161,15 +161,15 @@ export default function ScannerPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Camera Scanner</CardTitle>
-              <CardDescription>Use your camera to scan QR codes</CardDescription>
+              <CardTitle>Kameros skaitytuvas</CardTitle>
+              <CardDescription>Naudokite kamerą QR kodams skenuoti</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Button onClick={() => setShowScanner(true)} className="w-full">
                 <Camera className="h-4 w-4 mr-2" />
-                Open QR Scanner
+                Atidaryti QR skaitytuvą
               </Button>
-              <p className="text-sm text-gray-600 text-center">Click to open the camera and scan a ticket QR code</p>
+              <p className="text-sm text-gray-600 text-center">Spustelėkite, kad atidarytumėte kamerą ir nuskaitytumėte bilieto QR kodą</p>
             </CardContent>
           </Card>
         </div>
@@ -195,7 +195,7 @@ export default function ScannerPage() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Ticket Details</CardTitle>
+                <CardTitle>Bilieto informacija</CardTitle>
                 <Badge variant={ticket.isValidated ? "default" : "secondary"}>
                   {ticket.isValidated ? "Validated" : "Valid"}
                 </Badge>
@@ -204,42 +204,42 @@ export default function ScannerPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="font-medium">Event:</p>
+                  <p className="font-medium">Renginys:</p>
                   <p>{ticket.event.title}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Date:</p>
+                  <p className="font-medium">Data:</p>
                   <p>{ticket.event.date}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Time:</p>
+                  <p className="font-medium">Laikas:</p>
                   <p>{ticket.event.time}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Location:</p>
+                  <p className="font-medium">Vieta:</p>
                   <p>{ticket.event.location}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Tier:</p>
+                  <p className="font-medium">Kainų lygis:</p>
                   <p>{ticket.tier.name}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Price:</p>
+                  <p className="font-medium">Kaina:</p>
                   <p>${ticket.tier.price}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Purchaser:</p>
+                  <p className="font-medium">Pirkėjas:</p>
                   <p>{ticket.purchaserName}</p>
                 </div>
                 <div>
-                  <p className="font-medium">Email:</p>
+                  <p className="font-medium">El. paštas:</p>
                   <p>{ticket.purchaserEmail}</p>
                 </div>
               </div>
 
               {ticket.isValidated && ticket.validatedAt && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm font-medium">Validated at:</p>
+                  <p className="text-sm font-medium">Patvirtinta:</p>
                   <p className="text-sm">{formatDateTime(ticket.validatedAt)}</p>
                 </div>
               )}

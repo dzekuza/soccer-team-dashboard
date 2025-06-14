@@ -76,18 +76,18 @@ export default function FansPage() {
   return (
     <div className="max-w-5xl mx-auto py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Fans</h1>
+        <h1 className="text-2xl font-bold">Gerbėjai</h1>
         <button
           onClick={exportEmails}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold"
         >
-          Export Emails (CSV)
+          Eksportuoti el. paštus (CSV)
         </button>
       </div>
       <div className="mb-4">
         <input
           type="text"
-          placeholder="Filter by name or email..."
+          placeholder="Filtruoti pagal vardą arba el. paštą..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="w-full p-2 border rounded"
@@ -97,20 +97,20 @@ export default function FansPage() {
         <table className="min-w-full bg-white border rounded shadow">
           <thead>
             <tr>
-              <th className="px-4 py-2 border-b">Name</th>
-              <th className="px-4 py-2 border-b">Email</th>
-              <th className="px-4 py-2 border-b">Events Attended</th>
-              <th className="px-4 py-2 border-b">Money Spent (€)</th>
+              <th className="px-4 py-2 border-b">Vardas</th>
+              <th className="px-4 py-2 border-b">El. paštas</th>
+              <th className="px-4 py-2 border-b">Aplankyti renginiai</th>
+              <th className="px-4 py-2 border-b">Išleista suma (€)</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-500">Loading...</td>
+                <td colSpan={4} className="text-center py-8 text-gray-500">Įkeliama...</td>
               </tr>
             ) : filteredFans.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-8 text-gray-500">No fans found.</td>
+                <td colSpan={4} className="text-center py-8 text-gray-500">Gerbėjų nerasta.</td>
               </tr>
             ) : (
               filteredFans.map((fan) => (

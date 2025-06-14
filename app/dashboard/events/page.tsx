@@ -44,7 +44,7 @@ export default function EventsPage() {
       setEvents(eventsData)
       setTickets(ticketsData)
     } catch (error) {
-      setError("Failed to load events. Please try again.")
+      setError("Nepavyko įkelti renginių. Bandykite vėliau.")
     } finally {
       setIsLoading(false)
     }
@@ -95,14 +95,14 @@ export default function EventsPage() {
               </div>
               <div className="space-y-1">
                 {eventsForDate(day).length === 0 ? (
-                  <span className="text-gray-300 text-xs">No events</span>
+                  <span className="text-gray-300 text-xs">Renginių nėra</span>
                 ) : (
                   eventsForDate(day).map(event => (
                     <Popover key={event.id}>
                       <PopoverTrigger asChild>
                         <div className="bg-blue-100 border border-blue-300 rounded px-2 py-1 text-xs flex flex-col cursor-pointer hover:bg-blue-200">
                           <span className="font-medium text-blue-900 truncate">{event.title}</span>
-                          <span className="text-blue-700">Attendees: {attendeeCount(event.id)}</span>
+                          <span className="text-blue-700">Dalyviai: {attendeeCount(event.id)}</span>
                         </div>
                       </PopoverTrigger>
                       <PopoverContent align="start">
@@ -111,8 +111,8 @@ export default function EventsPage() {
                           <div className="text-sm text-gray-700">{event.description}</div>
                           <div className="text-xs text-gray-500">{event.date} {event.time}</div>
                           <div className="text-xs text-gray-500">{event.location}</div>
-                          <div className="text-xs text-blue-700 font-semibold">Attendees: {attendeeCount(event.id)}</div>
-                          <a href={`/dashboard/events/${event.id}`} className="text-xs text-blue-600 underline mt-2 inline-block">View Event</a>
+                          <div className="text-xs text-blue-700 font-semibold">Dalyviai: {attendeeCount(event.id)}</div>
+                          <a href={`/dashboard/events/${event.id}`} className="text-xs text-blue-600 underline mt-2 inline-block">Peržiūrėti renginį</a>
                         </div>
                       </PopoverContent>
                     </Popover>
@@ -130,18 +130,18 @@ export default function EventsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Events</h1>
-          <p className="text-gray-600">Manage your soccer team events</p>
+          <h1 className="text-3xl font-bold">Renginiai</h1>
+          <p className="text-gray-600">Tvarkykite savo futbolo komandos renginius</p>
         </div>
         <Button onClick={() => setIsCreateDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
-          Create Event
+          Sukurti renginį
         </Button>
       </div>
       <Tabs value={view} onValueChange={v => setView(v as 'grid' | 'calendar')} className="mb-4">
         <TabsList>
-          <TabsTrigger value="grid">Grid View</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+          <TabsTrigger value="grid">Tinklelio vaizdas</TabsTrigger>
+          <TabsTrigger value="calendar">Kalendoriaus vaizdas</TabsTrigger>
         </TabsList>
       </Tabs>
       {error && (
@@ -167,11 +167,11 @@ export default function EventsPage() {
       ) : events.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <h3 className="text-lg font-medium mb-2">No events found</h3>
-            <p className="text-gray-600 mb-6">Create your first event to get started</p>
+            <h3 className="text-lg font-medium mb-2">Renginių nerasta</h3>
+            <p className="text-gray-600 mb-6">Sukurkite savo pirmąjį renginį, kad pradėtumėte</p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              Create Event
+              Sukurti renginį
             </Button>
           </CardContent>
         </Card>
@@ -193,9 +193,9 @@ export default function EventsPage() {
                           <AlertTriangle className="text-gray-400 w-6 h-6" />
                         </div>
                       )}
-                      <span className="font-semibold text-xs text-center mt-1">{team1?.team_name || "Unknown Team"}</span>
+                      <span className="font-semibold text-xs text-center mt-1">{team1?.team_name || "Nežinoma komanda"}</span>
                     </div>
-                    <span className="text-xs text-gray-500 w-1/3 text-center">vs</span>
+                    <span className="text-xs text-gray-500 w-1/3 text-center">prieš</span>
                     <div className="flex flex-col items-center gap-1 w-1/3">
                       {team2 ? (
                         <Image src={team2.logo} alt={team2.team_name} width={36} height={36} className="rounded bg-white p-1" />
@@ -204,13 +204,13 @@ export default function EventsPage() {
                           <AlertTriangle className="text-gray-400 w-6 h-6" />
                         </div>
                       )}
-                      <span className="font-semibold text-xs text-center mt-1">{team2?.team_name || "Unknown Team"}</span>
+                      <span className="font-semibold text-xs text-center mt-1">{team2?.team_name || "Nežinoma komanda"}</span>
                     </div>
                   </div>
                   {missingTeam && (
                     <div className="flex items-center gap-2 text-yellow-700 text-xs mb-2">
                       <AlertTriangle className="w-4 h-4" />
-                      <span>Warning: One or both teams not found</span>
+                      <span>Įspėjimas: viena arba abi komandos nerastos</span>
                     </div>
                   )}
                   <CardTitle>
@@ -223,16 +223,16 @@ export default function EventsPage() {
                 <CardContent className="flex-1">
                   <div className="space-y-2 text-sm">
                     <p>
-                      <span className="font-medium">Date:</span> {event.date}
+                      <span className="font-medium">Data:</span> {event.date}
                     </p>
                     <p>
-                      <span className="font-medium">Time:</span> {event.time}
+                      <span className="font-medium">Laikas:</span> {event.time}
                     </p>
                     <p>
-                      <span className="font-medium">Location:</span> {event.location}
+                      <span className="font-medium">Vieta:</span> {event.location}
                     </p>
                     <div className="pt-2">
-                      <p className="font-medium mb-1">Pricing Tiers:</p>
+                      <p className="font-medium mb-1">Kainų lygiai:</p>
                       <div className="space-y-1">
                         {event.pricingTiers.map((tier) => {
                           const generatedCount = tickets.filter(t => t.tierId === tier.id).length;
@@ -243,7 +243,7 @@ export default function EventsPage() {
                               <div className="flex items-center space-x-2">
                                 <span>{formatCurrency(tier.price)}</span>
                                 <Badge variant="outline" className="text-xs">
-                                  {generatedCount}/{tier.maxQuantity} (validated: {validatedCount})
+                                  {generatedCount}/{tier.maxQuantity} (patvirtinta: {validatedCount})
                                 </Badge>
                               </div>
                             </div>
@@ -259,24 +259,24 @@ export default function EventsPage() {
                     className="w-full"
                     onClick={() => (window.location.href = `/dashboard/tickets?eventId=${event.id}`)}
                   >
-                    Generate Tickets
+                    Generuoti bilietus
                   </Button>
                   <Button
                     variant="secondary"
                     className="w-full"
                     onClick={async () => {
                       await navigator.clipboard.writeText(`${window.location.origin}/event/${event.id}`)
-                      alert('Link copied!')
+                      alert('Nuoroda nukopijuota!')
                     }}
                   >
-                    Share
+                    Dalintis
                   </Button>
                   <Button
                     variant="destructive"
                     className="w-full"
                     disabled={deletingId === event.id}
                     onClick={async () => {
-                      if (!window.confirm(`Are you sure you want to delete the event "${event.title}"? This cannot be undone.`)) return;
+                      if (!window.confirm(`Ar tikrai norite ištrinti renginį "${event.title}"? Šio veiksmo atšaukti negalėsite.`)) return;
                       setDeletingId(event.id);
                       try {
                         const res = await fetch(`/api/events/${event.id}`, { method: "DELETE" });
@@ -284,16 +284,16 @@ export default function EventsPage() {
                           setEvents(events.filter(e => e.id !== event.id));
                         } else {
                           const data = await res.json();
-                          alert(data.error || "Failed to delete event.");
+                          alert(data.error || "Nepavyko ištrinti renginio.");
                         }
                       } catch {
-                        alert("Failed to delete event. Network error.");
+                        alert("Nepavyko ištrinti renginio. Tinklo klaida.");
                       } finally {
                         setDeletingId(null);
                       }
                     }}
                   >
-                    {deletingId === event.id ? "Deleting..." : "Delete"}
+                    {deletingId === event.id ? "Trinama..." : "Ištrinti"}
                   </Button>
                 </CardFooter>
               </Card>

@@ -132,15 +132,15 @@ export default function ExportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Export Data</h1>
-        <p className="text-gray-600">Export your events and tickets for WordPress integration</p>
+        <h1 className="text-3xl font-bold">Eksportuoti duomenis</h1>
+        <p className="text-gray-600">Eksportuokite savo renginius ir bilietus WordPress integracijai</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
-            <CardTitle>Events</CardTitle>
-            <CardDescription>Total events created</CardDescription>
+            <CardTitle>Renginiai</CardTitle>
+            <CardDescription>Iš viso sukurta renginių</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.totalEvents}</div>
@@ -149,21 +149,21 @@ export default function ExportPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Tickets</CardTitle>
-            <CardDescription>Total tickets generated</CardDescription>
+            <CardTitle>Bilietai</CardTitle>
+            <CardDescription>Iš viso sugeneruota bilietų</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">{stats.totalTickets}</div>
             <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <Badge variant="outline">{stats.validatedTickets} validated</Badge>
+              <Badge variant="outline">{stats.validatedTickets} patvirtinta</Badge>
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Revenue</CardTitle>
-            <CardDescription>Estimated total revenue</CardDescription>
+            <CardTitle>Pajamos</CardTitle>
+            <CardDescription>Numatomos visos pajamos</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
@@ -176,30 +176,30 @@ export default function ExportPage() {
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>WordPress Export</CardTitle>
-            <CardDescription>Export all data in JSON format for WordPress integration</CardDescription>
+            <CardTitle>WordPress eksportas</CardTitle>
+            <CardDescription>Eksportuokite visus duomenis JSON formatu WordPress integracijai</CardDescription>
           </CardHeader>
           <CardContent>
             <Button onClick={exportToWordPress} className="w-full">
               <Download className="h-4 w-4 mr-2" />
-              Export for WordPress
+              Eksportuoti WordPress
             </Button>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>CSV Exports</CardTitle>
-            <CardDescription>Export individual data sets in CSV format</CardDescription>
+            <CardTitle>CSV eksportai</CardTitle>
+            <CardDescription>Eksportuokite atskirus duomenų rinkinius CSV formatu</CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Button onClick={exportEventsCSV} variant="outline" className="w-full">
               <Download className="h-4 w-4 mr-2" />
-              Export Events CSV
+              Eksportuoti renginių CSV
             </Button>
             <Button onClick={exportTicketsCSV} variant="outline" className="w-full">
               <Download className="h-4 w-4 mr-2" />
-              Export Tickets CSV
+              Eksportuoti bilietų CSV
             </Button>
           </CardContent>
         </Card>
