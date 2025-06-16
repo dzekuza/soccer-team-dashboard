@@ -2,15 +2,30 @@
 
 import { useEffect, useState } from "react"
 import { supabaseService } from "@/lib/supabase-service"
-import type { Subscription } from "@/lib/types"
+import type { Subscription, UserSubscription } from "@/lib/types"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+
+// Define a local type for table rows with user and subscription info
+interface UserSubscriptionTableRow {
+  id: string
+  userId: string
+  subscriptionId: string
+  purchaseDate: string
+  expiresAt?: string
+  assignedBy?: string
+  createdAt: string
+  user?: { email?: string; name?: string }
+  subscription?: { title?: string }
+}
 
 export default function SubscriptionsDashboardPage() {
   const [subs, setSubs] = useState<Subscription[]>([])
+  const [userSubs, setUserSubs] = useState<UserSubscriptionTableRow[]>([])
   const [form, setForm] = useState({ title: "", description: "", price: "", durationDays: "" })
   const [assign, setAssign] = useState({ userEmail: "", subscriptionId: "" })
   const [loading, setLoading] = useState(false)
@@ -20,6 +35,28 @@ export default function SubscriptionsDashboardPage() {
 
   useEffect(() => {
     supabaseService.getSubscriptions().then(setSubs)
+    // Fetch all user subscriptions
+    supabase
+      .from("user_subscriptions")
+      .select("*, users:user_id(email, name), subscriptions(title)")
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setUserSubs(
+            data.map((us: any) => ({
+              id: us.id,
+              userId: us.user_id,
+              subscriptionId: us.subscription_id,
+              purchaseDate: us.purchase_date,
+              expiresAt: us.expires_at,
+              assignedBy: us.assigned_by,
+              createdAt: us.created_at,
+              user: us.users,
+              subscription: us.subscriptions,
+            }))
+          )
+        }
+      })
   }, [])
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -110,6 +147,38 @@ export default function SubscriptionsDashboardPage() {
           </form>
         </DialogContent>
       </Dialog>
+      {/* Table of users who purchased subscriptions */}
+      <div className="mt-10">
+        <h2 className="text-xl font-semibold mb-4">Prenumeratorių sąrašas</h2>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Vartotojo el. paštas</TableHead>
+              <TableHead>Vardas</TableHead>
+              <TableHead>Prenumerata</TableHead>
+              <TableHead>Pirkimo data</TableHead>
+              <TableHead>Galioja iki</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {userSubs.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center">Prenumeratorių nerasta</TableCell>
+              </TableRow>
+            ) : (
+              userSubs.map(us => (
+                <TableRow key={us.id}>
+                  <TableCell>{us.user?.email || "-"}</TableCell>
+                  <TableCell>{us.user?.name || "-"}</TableCell>
+                  <TableCell>{us.subscription?.title || "-"}</TableCell>
+                  <TableCell>{us.purchaseDate ? new Date(us.purchaseDate).toLocaleDateString() : "-"}</TableCell>
+                  <TableCell>{us.expiresAt ? new Date(us.expiresAt).toLocaleDateString() : "-"}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 } 
