@@ -12,6 +12,8 @@ interface Fan {
   email: string;
   eventsAttended: number;
   moneySpent: number;
+  subscriptionStatus?: string;
+  subscriptionExpiry?: string;
 }
 
 export default function FansPage() {
@@ -23,14 +25,34 @@ export default function FansPage() {
     const fetchFans = async () => {
       try {
         // Fetch all tickets and all pricing tiers (no eventId filter)
-        const [tickets, tiers] = await Promise.all([
+        const [tickets, tiers, userSubs] = await Promise.all([
           supabaseService.getTicketsWithDetails(),
           supabase.from("pricing_tiers").select("*").then(({ data }) => data || []),
+          supabase.from("user_subscriptions").select("*, users:user_id(email), subscriptions(title, duration_days)").then(({ data }) => data || []),
         ])
         // Build price map
         const tierPriceMap = Object.fromEntries((tiers || []).map(t => [t.id, t.price]))
+        // Build subscription map by email
+        const subMap = new Map<string, { status: string, expiry: string }>()
+        for (const us of userSubs) {
+          const userEmail = us.users?.email
+          let status = "Nėra";
+          let expiry = "-";
+          if (us.expires_at) {
+            const now = new Date();
+            const exp = new Date(us.expires_at);
+            status = exp > now ? "Galioja" : "Nebegalioja";
+            expiry = exp.toLocaleDateString();
+          }
+          if (userEmail) {
+            // Only keep the latest/valid subscription
+            if (!subMap.has(userEmail) || (us.expires_at && new Date(us.expires_at) > new Date(subMap.get(userEmail)?.expiry || 0))) {
+              subMap.set(userEmail, { status, expiry })
+            }
+          }
+        }
         // Aggregate fans
-        const fanMap = new Map<string, { id: string, name: string, email: string, events: Set<string>, moneySpent: number }>()
+        const fanMap = new Map<string, { id: string, name: string, email: string, events: Set<string>, moneySpent: number, subscriptionStatus?: string, subscriptionExpiry?: string }>()
         for (const t of tickets || []) {
           if (!t.purchaserEmail) continue
           const key = t.purchaserEmail
@@ -41,6 +63,8 @@ export default function FansPage() {
               email: t.purchaserEmail,
               events: new Set(),
               moneySpent: 0,
+              subscriptionStatus: subMap.get(key)?.status || "Nėra",
+              subscriptionExpiry: subMap.get(key)?.expiry || "-",
             })
           }
           const fan = fanMap.get(key)!
@@ -53,6 +77,8 @@ export default function FansPage() {
           email: fan.email,
           eventsAttended: fan.events.size,
           moneySpent: fan.moneySpent,
+          subscriptionStatus: fan.subscriptionStatus,
+          subscriptionExpiry: fan.subscriptionExpiry,
         }))
         setFans(fans)
       } finally {
@@ -102,16 +128,18 @@ export default function FansPage() {
               <TableHead>El. paštas</TableHead>
               <TableHead>Aplankyti renginiai</TableHead>
               <TableHead>Išleista suma (€)</TableHead>
+              <TableHead>Prenumerata</TableHead>
+              <TableHead>Galioja iki</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-gray-500">Įkeliama...</TableCell>
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">Įkeliama...</TableCell>
               </TableRow>
             ) : filteredFans.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-gray-500">Gerbėjų nerasta.</TableCell>
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">Gerbėjų nerasta.</TableCell>
               </TableRow>
             ) : (
               filteredFans.map((fan) => (
@@ -120,6 +148,8 @@ export default function FansPage() {
                   <TableCell>{fan.email}</TableCell>
                   <TableCell className="text-center">{fan.eventsAttended}</TableCell>
                   <TableCell className="text-right">{fan.moneySpent.toFixed(2)}</TableCell>
+                  <TableCell>{fan.subscriptionStatus}</TableCell>
+                  <TableCell>{fan.subscriptionExpiry}</TableCell>
                 </TableRow>
               ))
             )}

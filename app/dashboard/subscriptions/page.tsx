@@ -74,6 +74,7 @@ export default function SubscriptionsDashboardPage() {
       setSubs([sub, ...subs])
       setForm({ title: "", description: "", price: "", durationDays: "" })
       setSuccess("Prenumeratas sukurtas!")
+      setCreateOpen(false)
     } catch (err: any) {
       setError(err.message)
     } finally {
