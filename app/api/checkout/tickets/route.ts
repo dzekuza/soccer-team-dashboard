@@ -201,7 +201,7 @@ export async function GET(request: NextRequest) {
 
     <p style="margin-top: 32px; color: #8B9ED1;">Bilietas pridedamas kaip PDF dokumentas.</p>
   </div>
-`
+        `
         // Send email
         await resend.emails.send({
           from: "tickets@soccer-team.app", // Change to your verified sender

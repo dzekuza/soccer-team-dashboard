@@ -94,12 +94,8 @@ export default function ScannerPage() {
       cleanId = result.replace(/^Ticket ID:\s*/, '').trim();
     }
     setTicketId(cleanId)
-    validateTicket(cleanId).then(() => {
-      // Show feedback after validation result is set
-      setTimeout(() => {
-        handleScanFeedback(validationResult?.success ?? false)
-      }, 100)
-    })
+    setShowScanner(false)
+    validateTicket(cleanId)
   }
 
   return (
@@ -113,20 +109,6 @@ export default function ScannerPage() {
         {showScanner && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black">
             <QRScanner onScan={handleQrCodeScanned} onClose={() => setShowScanner(false)} />
-            {overlayColor && (
-              <div
-                className={`fixed inset-0 z-60 pointer-events-none transition-opacity duration-300 ${
-                  overlayColor === "green" ? "bg-green-400/60" : "bg-red-400/60"
-                } animate-blink`}
-              />
-            )}
-            {validationResult && (
-              <div className="fixed inset-0 z-70 flex items-center justify-center pointer-events-none">
-                <div className={`px-8 py-6 rounded-xl shadow-lg text-2xl font-bold ${validationResult.success ? "bg-green-600 text-white" : "bg-red-600 text-white"} opacity-90`}>
-                  {validationResult.message}
-                </div>
-              </div>
-            )}
             <button
               className="absolute top-4 right-4 bg-white text-black rounded px-4 py-2 shadow-lg"
               onClick={() => setShowScanner(false)}

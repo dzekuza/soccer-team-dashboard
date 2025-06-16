@@ -139,33 +139,29 @@ export default function EventsPage() {
           />
           <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogContent className="max-w-lg">
-              {modalEvent && (
-                <>
-                  <DialogHeader>
-                    <DialogTitle className="mb-2 text-2xl font-bold">{modalEvent.name}</DialogTitle>
-                    <DialogDescription>
-                      {modalEvent.description && <div className="mb-2">{modalEvent.description}</div>}
-                      {modalEvent.cover && (
-                        <div className="mb-4 flex justify-center">
-                          <Image src={modalEvent.cover} alt="cover" width={320} height={180} className="rounded-lg object-cover" />
-                        </div>
-                      )}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-2 text-sm">
-                    {modalEvent.time && <div><span className="font-medium">Laikas:</span> {modalEvent.time}</div>}
-                    {modalEvent.location && <div><span className="font-medium">Vieta:</span> {modalEvent.location}</div>}
-                  </div>
-                  <DialogFooter className="mt-4 gap-2">
-                    <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {navigator.share ? navigator.share({ title: modalEvent.name, text: modalEvent.description || '', url: window.location.href }) : navigator.clipboard.writeText(window.location.href)}}>
-                      Dalintis
-                    </button>
-                    <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {/* TODO: implement ticket generation */}}>
-                      Generuoti bilietus
-                    </button>
-                  </DialogFooter>
-                </>
+              <DialogHeader>
+                <DialogTitle className="mb-2 text-2xl font-bold">{modalEvent.name}</DialogTitle>
+                <DialogDescription>
+                  {modalEvent.description && modalEvent.description}
+                </DialogDescription>
+              </DialogHeader>
+              {modalEvent.cover && (
+                <div className="mb-4 flex justify-center">
+                  <Image src={modalEvent.cover} alt="cover" width={320} height={180} className="rounded-lg object-cover" />
+                </div>
               )}
+              <div className="space-y-2 text-sm">
+                {modalEvent.time && <div><span className="font-medium">Laikas:</span> {modalEvent.time}</div>}
+                {modalEvent.location && <div><span className="font-medium">Vieta:</span> {modalEvent.location}</div>}
+              </div>
+              <DialogFooter className="mt-4 gap-2">
+                <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {navigator.share ? navigator.share({ title: modalEvent.name, text: modalEvent.description || '', url: window.location.href }) : navigator.clipboard.writeText(window.location.href)}}>
+                  Dalintis
+                </button>
+                <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {/* TODO: implement ticket generation */}}>
+                  Generuoti bilietus
+                </button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>

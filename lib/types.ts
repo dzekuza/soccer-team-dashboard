@@ -32,6 +32,7 @@ export interface Ticket {
   createdAt: string
   validatedAt: string | null
   qrCodeUrl: string // Added QR code URL
+  userId?: string // Added for user assignment
 }
 
 // Extended types for API responses
@@ -55,7 +56,6 @@ export interface Team {
   id: string
   team_name: string
   logo: string
-  fingerprint?: number
   created_at?: string
 }
 

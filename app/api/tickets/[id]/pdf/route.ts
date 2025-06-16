@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { dbService } from "@/lib/db-service"
 import { generateTicketPDF } from "@/lib/pdf-generator"
+import { supabase } from "@/lib/supabase"
 
 export async function GET(request: NextRequest, context: { params: { id: string } }) {
   try {
@@ -14,13 +15,22 @@ export async function GET(request: NextRequest, context: { params: { id: string 
     try {
       console.log("[PDF API] Generating PDF for ticket:", ticket)
       const pdfBytes = await generateTicketPDF(ticket)
-      return new NextResponse(Buffer.from(pdfBytes), {
-        status: 200,
-        headers: {
-          "Content-Type": "application/pdf",
-          "Content-Disposition": `attachment; filename=ticket-${ticket.id}.pdf`,
-        },
+      // Upload to Supabase Storage
+      const fileName = `ticket-${ticket.id}.pdf`
+      const { error: uploadError } = await supabase.storage.from('ticket-pdfs').upload(fileName, Buffer.from(pdfBytes), {
+        contentType: 'application/pdf',
+        upsert: true,
       })
+      if (uploadError) {
+        console.error("[PDF API] Failed to upload PDF to storage:", uploadError)
+        return NextResponse.json({ error: "Failed to upload PDF to storage" }, { status: 500 })
+      }
+      // Get public URL
+      const { data: urlData } = supabase.storage.from('ticket-pdfs').getPublicUrl(fileName)
+      if (!urlData?.publicUrl) {
+        return NextResponse.json({ error: "Failed to get public URL for PDF" }, { status: 500 })
+      }
+      return NextResponse.json({ url: urlData.publicUrl })
     } catch (pdfError) {
       if (pdfError instanceof Error) {
         console.error("[PDF API] PDF generation error:", pdfError, pdfError.stack)

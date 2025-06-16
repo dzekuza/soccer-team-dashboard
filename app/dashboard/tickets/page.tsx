@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
 import { Download, Plus } from "lucide-react"
-import { supabaseService } from "@/lib/supabase-service"
+import { supabase } from "@/lib/supabase"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
 export default function TicketsPage() {
@@ -22,8 +22,52 @@ export default function TicketsPage() {
 
   const fetchTickets = async () => {
     try {
-      const detailedTickets = await supabaseService.getTicketsWithDetails()
-      setTickets(detailedTickets)
+      const { data, error } = await supabase
+        .from("tickets")
+        .select(`
+          id, event_id, tier_id, purchaser_name, purchaser_email, is_validated, created_at,
+          event:events(*),
+          tier:pricing_tiers(*)
+        `)
+        .order("created_at", { ascending: false })
+      if (error) throw error
+      // Map data to TicketWithDetails type
+      const mapped = (data || [])
+        .map((t: any) => ({
+          id: t.id,
+          eventId: t.event_id,
+          tierId: t.tier_id,
+          purchaserName: t.purchaser_name,
+          purchaserEmail: t.purchaser_email,
+          isValidated: t.is_validated,
+          createdAt: t.created_at,
+          validatedAt: t.validated_at ?? null,
+          qrCodeUrl: t.qr_code_url ?? '',
+          userId: t.user_id ?? undefined,
+          event: t.event ? {
+            id: t.event.id,
+            title: t.event.title,
+            description: t.event.description,
+            date: t.event.date,
+            time: t.event.time,
+            location: t.event.location,
+            createdAt: t.event.created_at,
+            updatedAt: t.event.updated_at,
+            team1Id: t.event.team1_id,
+            team2Id: t.event.team2_id,
+            coverImageUrl: t.event.cover_image_url ?? undefined,
+          } : undefined,
+          tier: t.tier ? {
+            id: t.tier.id,
+            eventId: t.tier.event_id,
+            name: t.tier.name,
+            price: t.tier.price,
+            maxQuantity: t.tier.max_quantity,
+            soldQuantity: t.tier.sold_quantity,
+          } : undefined,
+        }))
+        .filter((t: any) => t.event && t.tier)
+      setTickets(mapped as TicketWithDetails[])
     } catch (error) {
       console.error("Failed to fetch tickets:", error)
     }
@@ -126,15 +170,15 @@ export default function TicketsPage() {
                   <TableCell>{ticket.tier.name}</TableCell>
                   <TableCell>{ticket.tier.price} €</TableCell>
                   <TableCell>
-                    <Badge variant={ticket.isValidated ? "default" : "secondary"}>
+                <Badge variant={ticket.isValidated ? "default" : "secondary"}>
                       {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
-                    </Badge>
+                </Badge>
                   </TableCell>
                   <TableCell>
                     <Button onClick={() => handleDownloadPDF(ticket)} variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
+                <Download className="h-4 w-4 mr-2" />
                       PDF
-                    </Button>
+              </Button>
                   </TableCell>
                 </TableRow>
               ))

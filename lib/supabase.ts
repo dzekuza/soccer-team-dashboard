@@ -1,19 +1,12 @@
 import { createClient } from "@supabase/supabase-js"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ewyzkaldsbwzdwyhepbi.supabase.co"
-const supabaseAnonKey =
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV3eXprYWxkc2J3emR3eWhlcGJpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk3NTEzNzUsImV4cCI6MjA2NTMyNzM3NX0.jz7VDe4anJaXg9HZKOKbIEzj8wvZT08gV1YngE4HIXI"
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing Supabase environment variables")
-}
+console.log("Supabase URL:", supabaseUrl)
+console.log("Supabase Anon Key:", supabaseAnonKey)
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true, // Enable session persistence
-  },
-})
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 // Test the connection
 export async function testSupabaseConnection() {

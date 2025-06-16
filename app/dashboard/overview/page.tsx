@@ -7,6 +7,11 @@ import { Button } from "@/components/ui/button"
 import { CalendarDays, Ticket, Users, DollarSign, TrendingUp, Clock } from "lucide-react"
 import type { Event, TicketWithDetails } from "@/lib/types"
 import { supabaseService } from "@/lib/supabase-service"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useAuth } from "@/lib/auth-context"
 // import { initializeDemoData } from "@/lib/init-demo-data"
 
 interface DashboardStats {
@@ -34,7 +39,7 @@ export default function OverviewPage() {
   const [recentTickets, setRecentTickets] = useState<TicketWithDetails[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isProfileDialogOpen, setIsProfileDialogOpen] = useState(false)
+  const { user } = useAuth();
 
   useEffect(() => {
     fetchDashboardData()
@@ -105,30 +110,10 @@ export default function OverviewPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Suvestinė</h1>
-          <p className="text-gray-600">Pilna Jūsų futbolo komandos renginių ir bilietų apžvalga</p>
-        </div>
-        <Button onClick={() => setIsProfileDialogOpen(true)} variant="outline">
-          Redaguoti profilį
-        </Button>
+      <div>
+        <h1 className="text-4xl font-bold mb-2">Suvestinė</h1>
+        <p className="text-gray-600">Pilna Jūsų futbolo komandos renginių ir bilietų apžvalga</p>
       </div>
-      {/* Profile Edit Dialog Placeholder */}
-      {isProfileDialogOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-lg shadow-lg p-8 max-w-lg w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Redaguoti profilį</h2>
-              <Button variant="ghost" size="icon" onClick={() => setIsProfileDialogOpen(false)}>
-                ✕
-              </Button>
-            </div>
-            <div className="text-gray-500">(Čia bus profilio redagavimo forma...)</div>
-          </div>
-        </div>
-      )}
-
       {/* Key Metrics */}
       <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
@@ -141,7 +126,6 @@ export default function OverviewPage() {
             <p className="text-xs text-muted-foreground">Sukurti aktyvūs renginiai</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Iš viso bilietų</CardTitle>
@@ -152,7 +136,6 @@ export default function OverviewPage() {
             <p className="text-xs text-muted-foreground">{stats.validatedTickets} patvirtinta ({Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%)</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Iš viso pajamų</CardTitle>
@@ -163,7 +146,6 @@ export default function OverviewPage() {
             <p className="text-xs text-muted-foreground">Iš bilietų pardavimų</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Patvirtinimo rodiklis</CardTitle>
@@ -177,7 +159,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
       </div>
-
       {/* Recent Events and Activity */}
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
         <Card>
@@ -204,7 +185,6 @@ export default function OverviewPage() {
             )}
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader>
             <CardTitle>Naujausia veikla</CardTitle>
@@ -239,46 +219,6 @@ export default function OverviewPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Recent Tickets */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Naujausi bilietai</CardTitle>
-          <CardDescription>Naujausi sugeneruoti bilietai</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {recentTickets.length > 0 ? (
-              recentTickets.map((ticket) => (
-                <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-4">
-                      <div>
-                        <h4 className="font-medium">{ticket.event.title}</h4>
-                        <p className="text-sm text-gray-600">
-                          {ticket.tier.name} - {formatCurrency(ticket.tier.price)}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{ticket.purchaserName}</p>
-                        <p className="text-sm text-gray-600">{ticket.purchaserEmail}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={ticket.isValidated ? "default" : "secondary"}>
-                      {ticket.isValidated ? "Validated" : "Valid"}
-                    </Badge>
-                    <p className="text-xs text-gray-500">{formatDate(ticket.createdAt)}</p>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-500 text-center py-4">No tickets generated yet</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

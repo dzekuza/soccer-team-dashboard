@@ -4,16 +4,8 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import { supabase } from "./supabase"
 import { useRouter } from "next/navigation"
 
-export interface User {
-  id: string
-  email: string
-  name: string
-  role: "admin" | "staff"
-  createdAt: string
-}
-
 interface AuthContextType {
-  user: User | null
+  user: any // You can type this more strictly if you want
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   isLoading: boolean
@@ -22,9 +14,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   // Restore session from Supabase Auth on initial render
@@ -32,79 +23,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const restoreSession = async () => {
       setIsLoading(true)
       const { data: { session } } = await supabase.auth.getSession()
-      console.log('[DEBUG] Supabase session:', session)
-      if (session?.user) {
-        const { data: userProfile, error: profileError } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single()
-        console.log('[DEBUG] User profile fetch (restoreSession):', { userId: session.user.id, userProfile, profileError })
-        if (userProfile) {
-          setUser({
-            id: userProfile.id,
-            email: userProfile.email,
-            name: userProfile.name,
-            role: userProfile.role,
-            createdAt: userProfile.created_at,
-          })
-        } else {
-          setUser(null)
-        }
-      } else {
-        setUser(null)
-      }
+      setUser(session?.user ?? null)
       setIsLoading(false)
     }
     restoreSession()
+    // Listen for auth state changes
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => {
+      listener?.subscription.unsubscribe()
+    }
   }, [])
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setError(null)
     setIsLoading(true)
-    try {
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      console.log('[DEBUG] Login result:', { signInData, signInError })
-      if (signInError || !signInData.user) {
-        setError(signInError?.message || "Login failed. Please check your credentials.")
-        setIsLoading(false)
-        return false
-      }
-      const { data: userProfile, error: profileError } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", signInData.user.id)
-        .single()
-      console.log('[DEBUG] User profile fetch (login):', { userId: signInData.user.id, userProfile, profileError })
-      if (profileError || !userProfile) {
-        setError("User profile not found.")
-        setIsLoading(false)
-        return false
-      }
-      const foundUser: User = {
-        id: userProfile.id,
-        email: userProfile.email,
-        name: userProfile.name,
-        role: userProfile.role,
-        createdAt: userProfile.created_at,
-      }
-      setUser(foundUser)
-      setIsLoading(false)
-      return true
-    } catch (error: any) {
-      setError(error.message || "Unexpected login error.")
-      setIsLoading(false)
-      console.error('[DEBUG] Login error:', error)
-      return false
-    }
+    const { error, data } = await supabase.auth.signInWithPassword({ email, password })
+    setUser(data?.user ?? null)
+    setIsLoading(false)
+    return !error
   }
 
   const logout = async () => {
     setUser(null)
-    setError(null)
     await supabase.auth.signOut()
     router.push("/login")
   }

@@ -54,7 +54,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   const [team1Id, setTeam1Id] = useState("")
   const [team2Id, setTeam2Id] = useState("")
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
-  const [coverImageUrl, setCoverImageUrl] = useState<string>("")
+  const [coverImageFilename, setCoverImageFilename] = useState<string>("")
   const [coverImageUploading, setCoverImageUploading] = useState(false)
   const [step, setStep] = useState(0)
   const steps = [
@@ -62,14 +62,21 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     "Data ir laikas",
     "Kainos ir nuolaidos"
   ]
+  const [coverImageUrl, setCoverImageUrl] = useState<string>("")
 
   useEffect(() => {
-    if (!open) return
-    fetch("/api/teams")
-      .then((res) => res.json())
-      .then((data) => setTeams(data))
-      .catch(() => setTeams([]))
-  }, [open])
+    if (!open) return;
+    supabase
+      .from("teams")
+      .select("id, team_name, logo, created_at")
+      .then(({ data, error }) => {
+        if (error) {
+          setTeams([]);
+        } else {
+          setTeams(Array.isArray(data) ? data : []);
+        }
+      });
+  }, [open]);
 
   const addPricingTier = () => {
     setPricingTiers([...pricingTiers, { name: "", price: 0, maxQuantity: 0 }])
@@ -99,18 +106,18 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
       newErrors.team2Id = "Teams must be different"
     }
 
-    // Validate pricing tiers
+    // Enhanced pricing tiers validation
     let hasTierError = false
     pricingTiers.forEach((tier, index) => {
-      if (!tier.name.trim()) {
-        newErrors[`tier_${index}_name`] = "Name is required"
+      if (!tier.name || !tier.name.trim()) {
+        newErrors[`tier_${index}_name`] = "Tier name is required"
         hasTierError = true
       }
-      if (tier.price <= 0) {
+      if (typeof tier.price !== "number" || isNaN(tier.price) || tier.price <= 0) {
         newErrors[`tier_${index}_price`] = "Price must be greater than 0"
         hasTierError = true
       }
-      if (tier.maxQuantity <= 0) {
+      if (typeof tier.maxQuantity !== "number" || isNaN(tier.maxQuantity) || tier.maxQuantity <= 0) {
         newErrors[`tier_${index}_maxQuantity`] = "Quantity must be greater than 0"
         hasTierError = true
       }
@@ -139,7 +146,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setTeam1Id("")
     setTeam2Id("")
     setCoverImageFile(null)
-    setCoverImageUrl("")
+    setCoverImageFilename("")
     setCoverImageUploading(false)
   }
 
@@ -150,7 +157,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setCoverImageUploading(true)
     const fileExt = file.name.split('.').pop()
     const fileName = `event-cover-${Date.now()}.${fileExt}`
-    const { data, error } = await supabase.storage.from('event-covers').upload(fileName, file, {
+    const { data, error } = await supabase.storage.from('covers').upload(fileName, file, {
       cacheControl: '3600',
       upsert: false,
     })
@@ -159,29 +166,42 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
       setCoverImageUploading(false)
       return
     }
-    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(fileName)
+    const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName)
     setCoverImageUrl(urlData.publicUrl)
     setCoverImageUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setApiError(null)
-    setApiSuccess(null)
+    setApiError("")
+    setApiSuccess("")
 
-    if (!validateForm()) {
+    console.log("[DEBUG] Submitting event form", { formData, pricingTiers, team1Id, team2Id, coverImageUrl })
+
+    const isValid = validateForm()
+    console.log("[DEBUG] Validation result:", isValid, errors)
+    if (!isValid) {
+      console.warn("[DEBUG] Validation failed", errors)
       return
     }
 
     setIsLoading(true)
 
     try {
-      console.log("Submitting event data:", { ...formData, pricingTiers, team1Id, team2Id, coverImageUrl })
+      // Get the current session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setApiError("You must be logged in to create an event.")
+        setIsLoading(false)
+        return
+      }
+      console.log("[DEBUG] Submitting event data to API:", { ...formData, pricingTiers, team1Id, team2Id, coverImageUrl })
 
       const response = await fetch("/api/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           ...formData,
@@ -193,27 +213,21 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
       })
 
       const responseData = await response.json()
+      console.log("[DEBUG] API response:", response.status, responseData)
 
       if (!response.ok) {
         throw new Error(responseData.error || "Failed to create event")
       }
 
-      console.log("Event created successfully:", responseData)
-
-      // Show success message
       setApiSuccess("Event created successfully!")
-
-      // Reset form
       resetForm()
-
-      // Wait a moment before closing the dialog and refreshing the events list
       setTimeout(() => {
         onEventCreated()
         onOpenChange(false)
       }, 1500)
     } catch (error) {
-      console.error("Failed to create event:", error)
       setApiError(error instanceof Error ? error.message : "Unknown error occurred")
+      console.error("[DEBUG] Error during event creation:", error)
     } finally {
       setIsLoading(false)
     }
@@ -252,100 +266,94 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {step === 0 && (
-            <div className="space-y-4">
-              <div>
-                <Label>Viršelio nuotrauka</Label>
-                <Input type="file" accept="image/*" onChange={handleCoverImageChange} />
-                {coverImageUploading && <div className="text-sm text-gray-500 mt-1">Įkeliama...</div>}
-                {coverImageUrl && (
-                  <div className="mt-2">
-                    <Image src={coverImageUrl} alt="Cover" width={200} height={120} className="rounded" />
-                  </div>
-                )}
-              </div>
-              <div>
-                <Label>Pavadinimas</Label>
-                <Input
-                  value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Renginio pavadinimas"
-                />
-                {errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
-              </div>
-              <div>
-                <Label>Aprašymas</Label>
-                <Textarea
-                  value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Trumpas renginio aprašymas"
-                />
-                {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <Label>Komanda 1</Label>
-                  <select
-                    value={team1Id}
-                    onChange={e => setTeam1Id(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                  >
-                    <option value="">Pasirinkite komandą</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.team_name}</option>
-                    ))}
-                  </select>
-                  {errors.team1Id && <div className="text-red-500 text-xs mt-1">{errors.team1Id}</div>}
+          <div className="space-y-4">
+            <div>
+              <Label>Viršelio nuotrauka</Label>
+              <Input type="file" accept="image/*" onChange={handleCoverImageChange} />
+              {coverImageUploading && <div className="text-sm text-gray-500 mt-1">Įkeliama...</div>}
+              {coverImageUrl && (
+                <div className="mt-2">
+                  <Image src={coverImageUrl} alt="Cover" width={200} height={120} className="rounded" />
                 </div>
-                <div className="flex-1">
-                  <Label>Komanda 2</Label>
-                  <select
-                    value={team2Id}
-                    onChange={e => setTeam2Id(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
-                  >
-                    <option value="">Pasirinkite komandą</option>
-                    {teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.team_name}</option>
-                    ))}
-                  </select>
-                  {errors.team2Id && <div className="text-red-500 text-xs mt-1">{errors.team2Id}</div>}
-                </div>
+              )}
+            </div>
+            <div>
+              <Label>Pavadinimas</Label>
+              <Input
+                value={formData.title}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Renginio pavadinimas"
+              />
+              {errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
+            </div>
+            <div>
+              <Label>Aprašymas</Label>
+              <Textarea
+                value={formData.description}
+                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Trumpas renginio aprašymas"
+              />
+              {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
+            </div>
+            <div>
+              <Label>Data</Label>
+              <Input
+                type="date"
+                value={formData.date}
+                onChange={e => setFormData({ ...formData, date: e.target.value })}
+                placeholder="Renginio data"
+              />
+              {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
+            </div>
+            <div>
+              <Label>Laikas</Label>
+              <Input
+                type="time"
+                value={formData.time}
+                onChange={e => setFormData({ ...formData, time: e.target.value })}
+                placeholder="Renginio laikas"
+              />
+              {errors.time && <div className="text-red-500 text-xs mt-1">{errors.time}</div>}
+            </div>
+            <div>
+              <Label>Vieta</Label>
+              <Input
+                value={formData.location}
+                onChange={e => setFormData({ ...formData, location: e.target.value })}
+                placeholder="Renginio vieta"
+              />
+              {errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
+            </div>
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <Label>Komanda 1</Label>
+                <select
+                  value={team1Id}
+                  onChange={e => setTeam1Id(e.target.value)}
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="">Pasirinkite komandą</option>
+                  {Array.isArray(teams) && teams.map(team => (
+                    <option key={team.id} value={team.id}>{team.team_name}</option>
+                  ))}
+                </select>
+                {errors.team1Id && <div className="text-red-500 text-xs mt-1">{errors.team1Id}</div>}
+              </div>
+              <div className="flex-1">
+                <Label>Komanda 2</Label>
+                <select
+                  value={team2Id}
+                  onChange={e => setTeam2Id(e.target.value)}
+                  className="w-full border rounded px-3 py-2"
+                >
+                  <option value="">Pasirinkite komandą</option>
+                  {Array.isArray(teams) && teams.map(team => (
+                    <option key={team.id} value={team.id}>{team.team_name}</option>
+                  ))}
+                </select>
+                {errors.team2Id && <div className="text-red-500 text-xs mt-1">{errors.team2Id}</div>}
               </div>
             </div>
-          )}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <Label>Data</Label>
-                <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={e => setFormData({ ...formData, date: e.target.value })}
-                />
-                {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
-              </div>
-              <div>
-                <Label>Laikas</Label>
-                <Input
-                  type="time"
-                  value={formData.time}
-                  onChange={e => setFormData({ ...formData, time: e.target.value })}
-                />
-                {errors.time && <div className="text-red-500 text-xs mt-1">{errors.time}</div>}
-              </div>
-              <div>
-                <Label>Vieta</Label>
-                <Input
-                  value={formData.location}
-                  onChange={e => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="Renginio vieta"
-                />
-                {errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
-              </div>
-            </div>
-          )}
-          {step === 2 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between mb-2">
                 <Label>Kainų kategorijos</Label>
@@ -393,25 +401,11 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                 </div>
               ))}
             </div>
-          )}
+          </div>
           <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mt-6">
-            <div className="flex gap-2">
-              {step > 0 && (
-                <Button type="button" variant="outline" onClick={() => setStep(step - 1)}>
-                  Atgal
-                </Button>
-              )}
-              {step < steps.length - 1 && (
-                <Button type="button" onClick={() => setStep(step + 1)}>
-                  Toliau
-                </Button>
-              )}
-            </div>
-            {step === steps.length - 1 && (
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Kuriama..." : "Sukurti renginį"}
-              </Button>
-            )}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Kuriama..." : "Sukurti renginį"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

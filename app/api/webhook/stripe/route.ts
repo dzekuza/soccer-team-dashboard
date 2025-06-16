@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseService } from "@/lib/supabase-service";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@supabase/supabase-js";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+// Initialize Supabase with the service role key
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
@@ -34,6 +40,23 @@ export async function POST(req: NextRequest) {
         console.log(`Assigned subscription ${session.metadata.subscriptionId} to user ${user.id}`);
       } catch (err) {
         console.error("Failed to assign subscription after Stripe payment:", err);
+      }
+    }
+    // Example: create a ticket after payment
+    if (session.customer_email && session.metadata?.eventId && session.metadata?.tierId) {
+      try {
+        await supabaseService.createTicket(
+          {
+            eventId: session.metadata.eventId,
+            tierId: session.metadata.tierId,
+            purchaserName: session.customer_details?.name || "Unknown",
+            purchaserEmail: session.customer_email,
+          },
+          supabase // Use service role client
+        );
+        console.log(`Ticket created for ${session.customer_email}`);
+      } catch (err) {
+        console.error("Failed to create ticket after Stripe payment:", err);
       }
     }
   }

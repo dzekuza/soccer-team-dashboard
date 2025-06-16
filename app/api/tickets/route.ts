@@ -2,11 +2,34 @@ import { type NextRequest, NextResponse } from "next/server"
 import { dbService } from "@/lib/db-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
+import { createClient } from '@supabase/supabase-js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// Service role client for privileged actions
+const serviceSupabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
 export async function POST(request: NextRequest) {
   try {
+    // Extract JWT from Authorization header
+    const authHeader = request.headers.get('authorization')
+    const jwt = authHeader?.split(' ')[1]
+    console.log('[DEBUG] JWT received:', jwt)
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${jwt}`,
+          },
+        },
+      }
+    )
+
     const body = await request.json()
     const { eventId, tierId, purchaserName, purchaserEmail } = body
 
@@ -25,12 +48,41 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No tickets available for this tier" }, { status: 400 })
     }
 
+    // 1. Check if user exists, or create
+    let userId: string | undefined = undefined;
+    const { data: user, error: userError } = await serviceSupabase
+      .from("users")
+      .select("id")
+      .eq("email", purchaserEmail)
+      .single();
+    if (!user || userError) {
+      const { data: newUser, error: createUserError } = await serviceSupabase
+        .from("users")
+        .insert({ email: purchaserEmail, name: purchaserName })
+        .select("id")
+        .single();
+      if (createUserError) {
+        return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+      }
+      userId = newUser.id;
+    } else {
+      userId = user.id;
+    }
+
+    // 2. Create ticket, assign to user
     const ticket = await dbService.createTicket({
       eventId,
       tierId,
       purchaserName,
       purchaserEmail,
-    })
+      userId,
+    }, supabase)
+
+    // 3. Increment sold_quantity in pricing_tiers
+    await supabase
+      .from("pricing_tiers")
+      .update({ sold_quantity: tier.soldQuantity + 1 })
+      .eq("id", tierId)
 
     // Send email with PDF ticket
     if (ticket && purchaserEmail) {

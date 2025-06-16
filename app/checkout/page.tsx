@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useSearchParams } from "next/navigation";
+import { formatCurrency } from "@/lib/utils";
 
 interface Event {
   id: string;

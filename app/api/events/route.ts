@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { dbService } from "@/lib/db-service"
 import { Resend } from "resend"
 import { supabaseService } from "@/lib/supabase-service"
+import { supabase } from "@/lib/supabase"
+import { createClient } from "@supabase/supabase-js"
 
 export async function GET() {
   try {
@@ -14,6 +16,21 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Extract JWT from Authorization header
+  const authHeader = request.headers.get("authorization")
+  const token = authHeader?.split(" ")[1]
+  // Create a Supabase client with the user's JWT
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  )
+  // Check user
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return NextResponse.json({ error: "You must be logged in to create an event." }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { title, description, date, time, location, pricingTiers, team1Id, team2Id } = body
@@ -46,7 +63,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Create event with pricing tiers and teams
-      const event = await dbService.createEvent({ title, description, date, time, location, team1Id, team2Id }, pricingTiers)
+      const event = await dbService.createEvent({ title, description, date, time, location, team1Id, team2Id }, pricingTiers, supabase)
       console.log("API: Event created successfully:", event)
 
       // === NEW: Notify all subscribers ===
@@ -89,7 +106,7 @@ export async function POST(request: NextRequest) {
         <span style="color: #ffffff;">${team2Name}</span>
       </div>
     </div>
-    <h3 style="color: #F15601; margin-top: 0;">RUNGtynių PRADŽIA: ${event.time || 'XX:XX'}</h3>
+    <h3 style="color: #F15601; margin-top: 0;">Rungtynių pradžia: ${event.time || 'XX:XX'}</h3>
     <p style="color: #8B9ED1;">${event.date || ''}</p>
     <table style="width: 100%; margin-top: 16px; color: #ffffff;">
       <tr>

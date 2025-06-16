@@ -43,23 +43,25 @@ export function DashboardSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {navigation.map((item) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton asChild isActive={pathname === item.href}>
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{
-                        item.name === 'Overview' ? 'Suvestinė' :
-                        item.name === 'Events' ? 'Renginiai' :
-                        item.name === 'Tickets' ? 'Bilietai' :
-                        item.name === 'Subscriptions' ? 'Prenumeratos' :
-                        item.name === 'Fans' ? 'Gerbėjai' :
-                        item.name === 'QR Scanner' ? 'QR skaitytuvas' :
-                        item.name === 'Export' ? 'Eksportas' :
-                        item.name
-                      }</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                item.name === 'Managers' ? null : (
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton asChild isActive={pathname === item.href}>
+                      <Link href={item.href}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{
+                          item.name === 'Overview' ? 'Suvestinė' :
+                          item.name === 'Events' ? 'Renginiai' :
+                          item.name === 'Tickets' ? 'Bilietai' :
+                          item.name === 'Subscriptions' ? 'Prenumeratos' :
+                          item.name === 'Fans' ? 'Gerbėjai' :
+                          item.name === 'QR Scanner' ? 'QR skaitytuvas' :
+                          item.name === 'Export' ? 'Eksportas' :
+                          item.name
+                        }</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
               ))}
 
               {/* Add User link for admins */}

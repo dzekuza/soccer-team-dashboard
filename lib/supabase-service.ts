@@ -3,6 +3,19 @@ import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Sub
 import { generateUniqueId } from "./utils"
 import { v4 as uuidv4 } from "uuid"
 
+/*
+Database Table Overview (Multi-team/Whitelabel Soccer Dashboard)
+
+- events: All events created by different teams. Each event is assigned to a project_teams ID, so only that team will see their events.
+- pricing_tiers: All pricing tiers created by different teams for events. Each pricing tier is assigned to a project_teams ID, so only that team will see their pricing.
+- project_teams: All companies/teams/projects registered as a business, with admins and assigned managers.
+- subscriptions: All subscriptions created by different projects. Each subscription is assigned to a project_teams ID, so only that team will see their subscriptions.
+- teams: List of teams uploaded so they can be selected as team 1 or team 2 when creating an event.
+- tickets: All tickets created by different projects. Each ticket is assigned to a project_teams ID, so only that team will see their tickets.
+- user_subscriptions: All subscriptions purchased by customers for a team. Each subscriber is assigned to a project_teams ID, so only that team will see their subscribers.
+- users: All registered users (admins, managers, staff, etc.).
+*/
+
 // Initialize and test connection
 let connectionTested = false
 
@@ -21,13 +34,14 @@ export const supabaseService = {
   createEvent: async (
     eventData: Omit<Event, "id" | "createdAt" | "updatedAt">,
     pricingTiersData: Omit<PricingTier, "id" | "eventId" | "soldQuantity">[],
+    client: any
   ): Promise<EventWithTiers> => {
     await ensureConnection()
     console.log("Supabase Service: Creating event with data:", eventData, pricingTiersData)
 
     try {
-      // Insert event
-      const { data: event, error: eventError } = await supabase
+      // Insert event using the provided client (with user JWT)
+      const { data: event, error: eventError } = await client
         .from("events")
         .insert({
           title: eventData.title,
@@ -47,16 +61,20 @@ export const supabaseService = {
         throw new Error(`Failed to create event: ${eventError.message}`)
       }
 
-      // Insert pricing tiers
-      const pricingTiersToInsert = pricingTiersData.map((tier) => ({
+      // Insert pricing tiers using service role client
+      const { createClient } = require('@supabase/supabase-js');
+      const serviceSupabase = createClient(
+        process.env.SUPABASE_URL,
+        process.env.SUPABASE_SERVICE_ROLE_KEY
+      );
+      const pricingTiersToInsert = pricingTiersData.map((tier: any) => ({
         event_id: event.id,
         name: tier.name,
         price: tier.price,
         max_quantity: tier.maxQuantity,
         sold_quantity: 0,
       }))
-
-      const { data: pricingTiers, error: tiersError } = await supabase
+      const { data: pricingTiers, error: tiersError } = await serviceSupabase
         .from("pricing_tiers")
         .insert(pricingTiersToInsert)
         .select()
@@ -81,7 +99,7 @@ export const supabaseService = {
         coverImageUrl: event.cover_image_url || undefined,
       }
 
-      const convertedTiers: PricingTier[] = (pricingTiers || []).map((tier) => ({
+      const convertedTiers: PricingTier[] = (pricingTiers || []).map((tier: any) => ({
         id: tier.id,
         eventId: tier.event_id,
         name: tier.name,
@@ -114,7 +132,7 @@ export const supabaseService = {
         }
       }
       if (ticketsToInsert.length > 0) {
-        const { error: ticketsError } = await supabase
+        const { error: ticketsError } = await client
           .from("tickets")
           .insert(ticketsToInsert);
         if (ticketsError) {
@@ -350,14 +368,16 @@ export const supabaseService = {
   // Tickets
   createTicket: async (
     ticketData: Omit<Ticket, "id" | "createdAt" | "isValidated" | "validatedAt" | "qrCodeUrl">,
+    customSupabase?: any
   ): Promise<Ticket> => {
     await ensureConnection()
+    const client = customSupabase || supabase
 
     try {
       const ticketId = uuidv4();
       const qrCodeUrl = `/api/validate-ticket/${ticketId}`
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from("tickets")
         .insert({
           id: ticketId,
@@ -366,6 +386,7 @@ export const supabaseService = {
           purchaser_name: ticketData.purchaserName,
           purchaser_email: ticketData.purchaserEmail,
           qr_code_url: qrCodeUrl,
+          user_id: ticketData.userId,
         })
         .select()
         .single()
@@ -376,10 +397,10 @@ export const supabaseService = {
       }
 
       // Update sold quantity
-      const { error: updateError } = await supabase.rpc("increment_sold_quantity", {
+      const { data: updateData, error: updateError } = await client.rpc("increment_sold_quantity", {
         tier_id: ticketData.tierId,
       })
-
+      console.log('[DEBUG] Update sold quantity RPC:', { updateData, updateError })
       if (updateError) {
         console.warn("Warning: Could not update sold quantity:", updateError)
         // Don't throw error here, ticket was created successfully
@@ -395,6 +416,7 @@ export const supabaseService = {
         createdAt: data.created_at,
         validatedAt: data.validated_at,
         qrCodeUrl: data.qr_code_url,
+        userId: data.user_id,
       }
     } catch (error) {
       console.error("Supabase Service: Error in createTicket:", error)
@@ -675,7 +697,7 @@ export const supabaseService = {
     await ensureConnection();
     const { data, error } = await supabase
       .from("teams")
-      .select("id, team_name, logo, fingerprint, created_at");
+      .select("id, team_name, logo, created_at");
     if (error) throw new Error(error.message);
     return data || [];
   },
@@ -684,7 +706,7 @@ export const supabaseService = {
     await ensureConnection();
     const { data, error } = await supabase
       .from("teams")
-      .select("id, team_name, logo, fingerprint, created_at")
+      .select("id, team_name, logo, created_at")
       .eq("id", id)
       .single();
     if (error) return null;
@@ -784,16 +806,41 @@ export const supabaseService = {
     await ensureConnection();
     const { data, error } = await supabase
       .from('user_subscriptions')
-      .select('user_id, users(email, name)')
+      .select('user_id, users:user_id(email, name)')
     if (error) throw new Error(error.message)
     // Deduplicate by email
     const emails = new Map<string, { email: string, name?: string }>()
     for (const row of data || []) {
-      const email = row.users?.email
+      // users can be an object or undefined/null
+      const userObj = row.users && !Array.isArray(row.users) ? row.users : Array.isArray(row.users) ? row.users[0] : undefined;
+      const email = userObj?.email;
       if (email && !emails.has(email)) {
-        emails.set(email, { email, name: row.users?.name })
+        emails.set(email, { email, name: userObj?.name });
       }
     }
     return Array.from(emails.values())
+  },
+
+  getProjectTeamById: async (id: string) => {
+    await ensureConnection();
+    const { data, error } = await supabase
+      .from("project_teams")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) return null;
+    return data;
+  },
+
+  updateProjectTeam: async (id: string, updates: Record<string, any>) => {
+    await ensureConnection();
+    const { data, error } = await supabase
+      .from("project_teams")
+      .update({ ...updates, updated_at: new Date().toISOString() })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw new Error(error.message);
+    return data;
   },
 }
