@@ -4,6 +4,7 @@ import { dbService } from "@/lib/db-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
 import { supabaseService } from "@/lib/supabase-service"
+import { createClient } from "@supabase/supabase-js"
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -74,13 +75,18 @@ export async function GET(request: NextRequest) {
     }
     if (tickets.length < quantity) {
       // If still not enough, create new tickets and assign
+      // Use service role client for privileged insert
+      const serviceSupabase = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      )
       for (let i = 0; i < quantity - tickets.length; i++) {
         await dbService.createTicket({
           eventId,
           tierId,
           purchaserName: session.metadata?.purchaserName || "",
           purchaserEmail,
-        })
+        }, serviceSupabase)
       }
       // Re-fetch tickets after creation
       allTickets = await dbService.getTicketsWithDetails()
