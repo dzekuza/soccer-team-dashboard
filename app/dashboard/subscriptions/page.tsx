@@ -26,7 +26,7 @@ interface UserSubscriptionTableRow {
 export default function SubscriptionsDashboardPage() {
   const [subs, setSubs] = useState<Subscription[]>([])
   const [userSubs, setUserSubs] = useState<UserSubscriptionTableRow[]>([])
-  const [form, setForm] = useState({ title: "", description: "", price: "", durationDays: "" })
+  const [form, setForm] = useState({ title: "", description: "", price: "", durationDays: "", customerName: "", customerEmail: "" })
   const [assign, setAssign] = useState({ userEmail: "", subscriptionId: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -65,6 +65,7 @@ export default function SubscriptionsDashboardPage() {
     setError("")
     setSuccess("")
     try {
+      // 1. Create the subscription
       const sub = await supabaseService.createSubscription({
         title: form.title,
         description: form.description,
@@ -72,8 +73,27 @@ export default function SubscriptionsDashboardPage() {
         durationDays: Number(form.durationDays),
       })
       setSubs([sub, ...subs])
-      setForm({ title: "", description: "", price: "", durationDays: "" })
-      setSuccess("Prenumeratas sukurtas!")
+      // 2. Find or create the user by email
+      let userId: string | null = null
+      const { data: user, error: userError } = await supabase
+        .from("users").select("id").eq("email", form.customerEmail).single()
+      if (user && user.id) {
+        userId = user.id
+      } else {
+        // Create user if not found
+        const { data: newUser, error: createUserError } = await supabase
+          .from("users")
+          .insert({ email: form.customerEmail, name: form.customerName, password: Math.random().toString(36).slice(-8), role: "staff" })
+          .select("id")
+          .single()
+        if (createUserError || !newUser) throw new Error("Nepavyko sukurti vartotojo")
+        userId = newUser.id
+      }
+      // 3. Assign the subscription to the user
+      if (!userId) throw new Error("Nepavyko nustatyti vartotojo ID")
+      await supabaseService.assignSubscriptionToUser(userId as string, sub.id)
+      setForm({ title: "", description: "", price: "", durationDays: "", customerName: "", customerEmail: "" })
+      setSuccess("Prenumerata sukurta ir priskirta klientui!")
       setCreateOpen(false)
     } catch (err: any) {
       setError(err.message)
@@ -142,8 +162,16 @@ export default function SubscriptionsDashboardPage() {
               <Label>Trukmė (dienomis)</Label>
               <Input type="number" value={form.durationDays} onChange={e => setForm(f => ({ ...f, durationDays: e.target.value }))} required />
             </div>
+            <div>
+              <Label>Kliento vardas</Label>
+              <Input value={form.customerName} onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))} required />
+            </div>
+            <div>
+              <Label>Kliento el. paštas</Label>
+              <Input type="email" value={form.customerEmail} onChange={e => setForm(f => ({ ...f, customerEmail: e.target.value }))} required />
+            </div>
             <DialogFooter>
-              <Button type="submit" disabled={loading}>Sukurti</Button>
+              <Button type="submit" disabled={loading}>Sukurti ir priskirti</Button>
             </DialogFooter>
           </form>
         </DialogContent>
