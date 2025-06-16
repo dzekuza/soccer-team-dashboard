@@ -80,24 +80,26 @@ export default function EventsPage() {
   const attendeeCount = (eventId: string) => tickets.filter(t => t.eventId === eventId).length
 
   // Map events to FullScreenCalendar data structure
-  const calendarData = events.reduce((acc, event) => {
-    const day = parseISO(event.date)
-    const found = acc.find(d => format(d.day, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
-    const eventObj = {
-      id: event.id,
-      name: event.title,
-      time: event.time,
-      datetime: event.date + 'T' + (event.time || '00:00:00'),
-      description: event.description,
-      location: event.location,
-    }
-    if (found) {
-      found.events.push(eventObj)
-    } else {
-      acc.push({ day, events: [eventObj] })
-    }
-    return acc
-  }, [] as { day: Date; events: any[] }[])
+  const calendarData = events
+    .filter(event => event && event.title)
+    .reduce((acc, event) => {
+      const day = parseISO(event.date)
+      const found = acc.find(d => format(d.day, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
+      const eventObj = {
+        id: event.id,
+        name: event.title,
+        time: event.time,
+        datetime: event.date + 'T' + (event.time || '00:00:00'),
+        description: event.description,
+        location: event.location,
+      }
+      if (found) {
+        found.events.push(eventObj)
+      } else {
+        acc.push({ day, events: [eventObj] })
+      }
+      return acc
+    }, [] as { day: Date; events: any[] }[])
 
   return (
     <div className="space-y-6">
@@ -139,29 +141,35 @@ export default function EventsPage() {
           />
           <Dialog open={modalOpen} onOpenChange={setModalOpen}>
             <DialogContent className="max-w-lg">
-              <DialogHeader>
-                <DialogTitle className="mb-2 text-2xl font-bold">{modalEvent.name}</DialogTitle>
-                <DialogDescription>
-                  {modalEvent.description && modalEvent.description}
-                </DialogDescription>
-              </DialogHeader>
-              {modalEvent.cover && (
-                <div className="mb-4 flex justify-center">
-                  <Image src={modalEvent.cover} alt="cover" width={320} height={180} className="rounded-lg object-cover" />
-                </div>
+              {modalEvent ? (
+                <>
+                  <DialogHeader>
+                    <DialogTitle className="mb-2 text-2xl font-bold">{modalEvent.name}</DialogTitle>
+                    <DialogDescription>
+                      {modalEvent.description && modalEvent.description}
+                    </DialogDescription>
+                  </DialogHeader>
+                  {modalEvent.cover && (
+                    <div className="mb-4 flex justify-center">
+                      <Image src={modalEvent.cover} alt="cover" width={320} height={180} className="rounded-lg object-cover" />
+                    </div>
+                  )}
+                  <div className="space-y-2 text-sm">
+                    {modalEvent.time && <div><span className="font-medium">Laikas:</span> {modalEvent.time}</div>}
+                    {modalEvent.location && <div><span className="font-medium">Vieta:</span> {modalEvent.location}</div>}
+                  </div>
+                  <DialogFooter className="mt-4 gap-2">
+                    <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {navigator.share ? navigator.share({ title: modalEvent.name, text: modalEvent.description || '', url: window.location.href }) : navigator.clipboard.writeText(window.location.href)}}>
+                      Dalintis
+                    </button>
+                    <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {/* TODO: implement ticket generation */}}>
+                      Generuoti bilietus
+                    </button>
+                  </DialogFooter>
+                </>
+              ) : (
+                <div>Įkeliama...</div>
               )}
-              <div className="space-y-2 text-sm">
-                {modalEvent.time && <div><span className="font-medium">Laikas:</span> {modalEvent.time}</div>}
-                {modalEvent.location && <div><span className="font-medium">Vieta:</span> {modalEvent.location}</div>}
-              </div>
-              <DialogFooter className="mt-4 gap-2">
-                <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {navigator.share ? navigator.share({ title: modalEvent.name, text: modalEvent.description || '', url: window.location.href }) : navigator.clipboard.writeText(window.location.href)}}>
-                  Dalintis
-                </button>
-                <button className="btn-main px-4 py-2 rounded text-white" onClick={() => {/* TODO: implement ticket generation */}}>
-                  Generuoti bilietus
-                </button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
         </div>

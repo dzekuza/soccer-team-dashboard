@@ -266,146 +266,174 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <Label>Viršelio nuotrauka</Label>
-              <Input type="file" accept="image/*" onChange={handleCoverImageChange} />
-              {coverImageUploading && <div className="text-sm text-gray-500 mt-1">Įkeliama...</div>}
-              {coverImageUrl && (
-                <div className="mt-2">
-                  <Image src={coverImageUrl} alt="Cover" width={200} height={120} className="rounded" />
-                </div>
-              )}
-            </div>
-            <div>
-              <Label>Pavadinimas</Label>
-              <Input
-                value={formData.title}
-                onChange={e => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Renginio pavadinimas"
-              />
-              {errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
-            </div>
-            <div>
-              <Label>Aprašymas</Label>
-              <Textarea
-                value={formData.description}
-                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Trumpas renginio aprašymas"
-              />
-              {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
-            </div>
-            <div>
-              <Label>Data</Label>
-              <Input
-                type="date"
-                value={formData.date}
-                onChange={e => setFormData({ ...formData, date: e.target.value })}
-                placeholder="Renginio data"
-              />
-              {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
-            </div>
-            <div>
-              <Label>Laikas</Label>
-              <Input
-                type="time"
-                value={formData.time}
-                onChange={e => setFormData({ ...formData, time: e.target.value })}
-                placeholder="Renginio laikas"
-              />
-              {errors.time && <div className="text-red-500 text-xs mt-1">{errors.time}</div>}
-            </div>
-            <div>
-              <Label>Vieta</Label>
-              <Input
-                value={formData.location}
-                onChange={e => setFormData({ ...formData, location: e.target.value })}
-                placeholder="Renginio vieta"
-              />
-              {errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
-            </div>
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <Label>Komanda 1</Label>
-                <select
-                  value={team1Id}
-                  onChange={e => setTeam1Id(e.target.value)}
-                  className="w-full border rounded px-3 py-2"
-                >
-                  <option value="">Pasirinkite komandą</option>
-                  {Array.isArray(teams) && teams.map(team => (
-                    <option key={team.id} value={team.id}>{team.team_name}</option>
-                  ))}
-                </select>
-                {errors.team1Id && <div className="text-red-500 text-xs mt-1">{errors.team1Id}</div>}
-              </div>
-              <div className="flex-1">
-                <Label>Komanda 2</Label>
-                <select
-                  value={team2Id}
-                  onChange={e => setTeam2Id(e.target.value)}
-                  className="w-full border rounded px-3 py-2"
-                >
-                  <option value="">Pasirinkite komandą</option>
-                  {Array.isArray(teams) && teams.map(team => (
-                    <option key={team.id} value={team.id}>{team.team_name}</option>
-                  ))}
-                </select>
-                {errors.team2Id && <div className="text-red-500 text-xs mt-1">{errors.team2Id}</div>}
-              </div>
-            </div>
+          {/* Step 1: Cover image, name, description */}
+          {step === 0 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between mb-2">
-                <Label>Kainų kategorijos</Label>
-                <Button type="button" variant="outline" size="sm" onClick={addPricingTier}>
-                  <Plus className="h-4 w-4 mr-1" /> Pridėti kategoriją
-                </Button>
+              <div>
+                <Label>Viršelio nuotrauka</Label>
+                <Input type="file" accept="image/*" onChange={handleCoverImageChange} />
+                {coverImageUploading && <div className="text-sm text-gray-500 mt-1">Įkeliama...</div>}
+                {coverImageUrl && (
+                  <div className="mt-2">
+                    <Image src={coverImageUrl} alt="Cover" width={200} height={120} className="rounded" />
+                  </div>
+                )}
               </div>
-              {errors.pricingTiers && <div className="text-red-500 text-xs mb-2">{errors.pricingTiers}</div>}
-              {pricingTiers.map((tier, idx) => (
-                <div key={idx} className="flex gap-2 items-end mb-2">
-                  <div className="flex-1">
-                    <Label>Pavadinimas</Label>
-                    <Input
-                      value={tier.name}
-                      onChange={e => updatePricingTier(idx, "name", e.target.value)}
-                      placeholder="Kategorijos pavadinimas"
-                    />
-                    {errors[`tier_${idx}_name`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_name`]}</div>}
-                  </div>
-                  <div className="w-32">
-                    <Label>Kaina (€)</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={tier.price}
-                      onChange={e => updatePricingTier(idx, "price", Number(e.target.value))}
-                      placeholder="Kaina"
-                    />
-                    {errors[`tier_${idx}_price`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_price`]}</div>}
-                  </div>
-                  <div className="w-32">
-                    <Label>Kiekis</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={tier.maxQuantity}
-                      onChange={e => updatePricingTier(idx, "maxQuantity", Number(e.target.value))}
-                      placeholder="Kiekis"
-                    />
-                    {errors[`tier_${idx}_maxQuantity`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_maxQuantity`]}</div>}
-                  </div>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => removePricingTier(idx)}>
-                    <Trash2 className="h-4 w-4" />
+              <div>
+                <Label>Pavadinimas</Label>
+                <Input
+                  value={formData.title}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="Renginio pavadinimas"
+                />
+                {errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
+              </div>
+              <div>
+                <Label>Aprašymas</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Trumpas renginio aprašymas"
+                />
+                {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
+              </div>
+            </div>
+          )}
+
+          {/* Step 2: Date and location */}
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <Label>Data</Label>
+                <Input
+                  type="date"
+                  value={formData.date}
+                  onChange={e => setFormData({ ...formData, date: e.target.value })}
+                  placeholder="Renginio data"
+                />
+                {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
+              </div>
+              <div>
+                <Label>Laikas</Label>
+                <Input
+                  type="time"
+                  value={formData.time}
+                  onChange={e => setFormData({ ...formData, time: e.target.value })}
+                  placeholder="Renginio laikas"
+                />
+                {errors.time && <div className="text-red-500 text-xs mt-1">{errors.time}</div>}
+              </div>
+              <div>
+                <Label>Vieta</Label>
+                <Input
+                  value={formData.location}
+                  onChange={e => setFormData({ ...formData, location: e.target.value })}
+                  placeholder="Renginio vieta"
+                />
+                {errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Teams selection and pricing tiers */}
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <Label>Komanda 1</Label>
+                  <select
+                    value={team1Id}
+                    onChange={e => setTeam1Id(e.target.value)}
+                    className="w-full border rounded px-3 py-2"
+                  >
+                    <option value="">Pasirinkite komandą</option>
+                    {Array.isArray(teams) && teams.map(team => (
+                      <option key={team.id} value={team.id}>{team.team_name}</option>
+                    ))}
+                  </select>
+                  {errors.team1Id && <div className="text-red-500 text-xs mt-1">{errors.team1Id}</div>}
+                </div>
+                <div className="flex-1">
+                  <Label>Komanda 2</Label>
+                  <select
+                    value={team2Id}
+                    onChange={e => setTeam2Id(e.target.value)}
+                    className="w-full border rounded px-3 py-2"
+                  >
+                    <option value="">Pasirinkite komandą</option>
+                    {Array.isArray(teams) && teams.map(team => (
+                      <option key={team.id} value={team.id}>{team.team_name}</option>
+                    ))}
+                  </select>
+                  {errors.team2Id && <div className="text-red-500 text-xs mt-1">{errors.team2Id}</div>}
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Kainų kategorijos</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addPricingTier}>
+                    <Plus className="h-4 w-4 mr-1" /> Pridėti kategoriją
                   </Button>
                 </div>
-              ))}
+                {errors.pricingTiers && <div className="text-red-500 text-xs mb-2">{errors.pricingTiers}</div>}
+                {pricingTiers.map((tier, idx) => (
+                  <div key={idx} className="flex gap-2 items-end mb-2">
+                    <div className="flex-1">
+                      <Label>Pavadinimas</Label>
+                      <Input
+                        value={tier.name}
+                        onChange={e => updatePricingTier(idx, "name", e.target.value)}
+                        placeholder="Kategorijos pavadinimas"
+                      />
+                      {errors[`tier_${idx}_name`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_name`]}</div>}
+                    </div>
+                    <div className="w-32">
+                      <Label>Kaina (€)</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={tier.price}
+                        onChange={e => updatePricingTier(idx, "price", Number(e.target.value))}
+                        placeholder="Kaina"
+                      />
+                      {errors[`tier_${idx}_price`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_price`]}</div>}
+                    </div>
+                    <div className="w-32">
+                      <Label>Kiekis</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={tier.maxQuantity}
+                        onChange={e => updatePricingTier(idx, "maxQuantity", Number(e.target.value))}
+                        placeholder="Kiekis"
+                      />
+                      {errors[`tier_${idx}_maxQuantity`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_maxQuantity`]}</div>}
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => removePricingTier(idx)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
           <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center mt-6">
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Kuriama..." : "Sukurti renginį"}
-            </Button>
+            {step > 0 && (
+              <Button type="button" variant="outline" onClick={() => setStep(step - 1)}>
+                Atgal
+              </Button>
+            )}
+            {step < 2 && (
+              <Button type="button" onClick={() => setStep(step + 1)}>
+                Toliau
+              </Button>
+            )}
+            {step === 2 && (
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Kuriama..." : "Sukurti renginį"}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

@@ -16,6 +16,8 @@ export default function TicketsPage() {
   const [eventNameFilter, setEventNameFilter] = useState("")
   const [scanStatus, setScanStatus] = useState<'all' | 'scanned' | 'not_scanned'>('all')
 
+  const SUPABASE_PUBLIC_URL = "https://ebdfqztiximsqdnvwkqu.supabase.co/storage/v1/object/public/ticket-pdfs";
+
   useEffect(() => {
     fetchTickets()
   }, [])
@@ -78,23 +80,10 @@ export default function TicketsPage() {
     setIsCreateDialogOpen(false)
   }
 
-  const handleDownloadPDF = async (ticket: TicketWithDetails) => {
-    try {
-      const res = await fetch(`/api/tickets/${ticket.id}/pdf`)
-      if (!res.ok) throw new Error("Failed to generate PDF")
-      const pdfBlob = await res.blob()
-      const url = URL.createObjectURL(pdfBlob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `ticket-${ticket.id}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    } catch (error) {
-      console.error("Failed to generate PDF:", error)
-    }
-  }
+  const handleDownloadPDF = (ticket: TicketWithDetails) => {
+    const pdfUrl = `${SUPABASE_PUBLIC_URL}/ticket-${ticket.id}.pdf`;
+    window.open(pdfUrl, "_blank");
+  };
 
   // Filter tickets by event name and scan status
   const filteredTickets = tickets.filter(ticket => {

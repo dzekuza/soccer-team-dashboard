@@ -3,6 +3,7 @@ import { dbService } from "@/lib/db-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
 import { createClient } from '@supabase/supabase-js'
+import type { Team } from "@/lib/types"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -88,35 +89,37 @@ export async function POST(request: NextRequest) {
     if (ticket && purchaserEmail) {
       try {
         const event = await dbService.getEventWithTiers(eventId)
-        const tier = await dbService.getPricingTier(tierId)
         if (!event || !tier) {
           console.warn("Cannot send ticket email: event or tier not found.")
         } else {
+          // Fetch real team data
+          let team1: Team | undefined = undefined;
+          let team2: Team | undefined = undefined;
+          if (event.team1Id) {
+            const t1 = await dbService.getTeamById(event.team1Id);
+            if (t1) team1 = t1;
+          }
+          if (event.team2Id) {
+            const t2 = await dbService.getTeamById(event.team2Id);
+            if (t2) team2 = t2;
+          }
           const pdfBytes = await generateTicketPDF({
             ...ticket,
             event,
             tier,
-          })
+          }, team1, team2)
           // Prepare dynamic team and event info
-          let team1 = null;
-          let team2 = null;
           let team1Name = 'Komanda 1';
           let team2Name = 'Komanda 2';
           let team1Logo = 'https://yourdomain.com/team1.png';
           let team2Logo = 'https://yourdomain.com/team2.png';
-          if (event.team1Id) {
-            team1 = await dbService.getTeamById(event.team1Id);
-            if (team1) {
-              team1Name = team1.team_name;
-              team1Logo = team1.logo || team1Logo;
-            }
+          if (team1) {
+            team1Name = team1.team_name;
+            team1Logo = team1.logo || team1Logo;
           }
-          if (event.team2Id) {
-            team2 = await dbService.getTeamById(event.team2Id);
-            if (team2) {
-              team2Name = team2.team_name;
-              team2Logo = team2.logo || team2Logo;
-            }
+          if (team2) {
+            team2Name = team2.team_name;
+            team2Logo = team2.logo || team2Logo;
           }
           function formatCurrency(amount: number) {
             return new Intl.NumberFormat('lt-LT', { style: 'currency', currency: 'EUR' }).format(amount);

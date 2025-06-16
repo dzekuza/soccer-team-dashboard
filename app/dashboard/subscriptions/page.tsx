@@ -26,12 +26,13 @@ interface UserSubscriptionTableRow {
 export default function SubscriptionsDashboardPage() {
   const [subs, setSubs] = useState<Subscription[]>([])
   const [userSubs, setUserSubs] = useState<UserSubscriptionTableRow[]>([])
-  const [form, setForm] = useState({ title: "", description: "", price: "", durationDays: "", customerName: "", customerEmail: "" })
-  const [assign, setAssign] = useState({ userEmail: "", subscriptionId: "" })
+  const [form, setForm] = useState({ title: "", description: "", price: "", validFrom: "", validUntil: "" })
+  const [assign, setAssign] = useState({ userName: "", userEmail: "", subscriptionId: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [createOpen, setCreateOpen] = useState(false)
+  const [assignOpen, setAssignOpen] = useState(false)
 
   useEffect(() => {
     supabaseService.getSubscriptions().then(setSubs)
@@ -65,35 +66,17 @@ export default function SubscriptionsDashboardPage() {
     setError("")
     setSuccess("")
     try {
-      // 1. Create the subscription
+      // Only create the subscription
       const sub = await supabaseService.createSubscription({
         title: form.title,
         description: form.description,
         price: Number(form.price),
-        durationDays: Number(form.durationDays),
+        validFrom: form.validFrom,
+        validUntil: form.validUntil,
       })
       setSubs([sub, ...subs])
-      // 2. Find or create the user by email
-      let userId: string | null = null
-      const { data: user, error: userError } = await supabase
-        .from("users").select("id").eq("email", form.customerEmail).single()
-      if (user && user.id) {
-        userId = user.id
-      } else {
-        // Create user if not found
-        const { data: newUser, error: createUserError } = await supabase
-          .from("users")
-          .insert({ email: form.customerEmail, name: form.customerName, password: Math.random().toString(36).slice(-8), role: "staff" })
-          .select("id")
-          .single()
-        if (createUserError || !newUser) throw new Error("Nepavyko sukurti vartotojo")
-        userId = newUser.id
-      }
-      // 3. Assign the subscription to the user
-      if (!userId) throw new Error("Nepavyko nustatyti vartotojo ID")
-      await supabaseService.assignSubscriptionToUser(userId as string, sub.id)
-      setForm({ title: "", description: "", price: "", durationDays: "", customerName: "", customerEmail: "" })
-      setSuccess("Prenumerata sukurta ir priskirta klientui!")
+      setForm({ title: "", description: "", price: "", validFrom: "", validUntil: "" })
+      setSuccess("Prenumerata sukurta!")
       setCreateOpen(false)
     } catch (err: any) {
       setError(err.message)
@@ -108,13 +91,27 @@ export default function SubscriptionsDashboardPage() {
     setError("")
     setSuccess("")
     try {
-      // Find user by email
+      // Find or create user by email
+      let userId: string | null = null
       const { data: user, error: userError } = await supabase
         .from("users").select("id").eq("email", assign.userEmail).single()
-      if (userError || !user) throw new Error("User not found")
-      await supabaseService.assignSubscriptionToUser(user.id, assign.subscriptionId)
-      setSuccess("Prenumeratas priskirtas!")
-      setAssign({ userEmail: "", subscriptionId: "" })
+      if (user && user.id) {
+        userId = user.id
+      } else {
+        // Create user if not found
+        const { data: newUser, error: createUserError } = await supabase
+          .from("users")
+          .insert({ email: assign.userEmail, name: assign.userName, password: Math.random().toString(36).slice(-8), role: "staff" })
+          .select("id")
+          .single()
+        if (createUserError || !newUser) throw new Error("Nepavyko sukurti vartotojo")
+        userId = newUser.id
+      }
+      if (!userId) throw new Error("Nepavyko nustatyti vartotojo ID")
+      await supabaseService.assignSubscriptionToUser(userId as string, assign.subscriptionId)
+      setAssign({ userName: "", userEmail: "", subscriptionId: "" })
+      setSuccess("Prenumerata priskirta klientui!")
+      setAssignOpen(false)
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -136,7 +133,18 @@ export default function SubscriptionsDashboardPage() {
             <div className="text-lg font-semibold">{s.title}</div>
             <div className="text-gray-600 flex-1">{s.description}</div>
             <div className="text-sm">Kaina: <span className="font-bold">{s.price} €</span></div>
-            <div className="text-sm">Trukmė: <span className="font-bold">{s.durationDays} dienos(-ų)</span></div>
+            <div className="text-sm">Galioja nuo: <span className="font-bold">{s.validFrom ? new Date(s.validFrom).toLocaleDateString() : "-"}</span></div>
+            <div className="text-sm">Galioja iki: <span className="font-bold">{s.validUntil ? new Date(s.validUntil).toLocaleDateString() : "-"}</span></div>
+            <Button
+              variant="outline"
+              className="mt-2 w-fit"
+              onClick={() => {
+                setAssign({ userName: "", userEmail: "", subscriptionId: s.id })
+                setAssignOpen(true)
+              }}
+            >
+              Priskirti klientui
+            </Button>
           </div>
         ))}
       </div>
@@ -159,19 +167,36 @@ export default function SubscriptionsDashboardPage() {
               <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} required />
             </div>
             <div>
-              <Label>Trukmė (dienomis)</Label>
-              <Input type="number" value={form.durationDays} onChange={e => setForm(f => ({ ...f, durationDays: e.target.value }))} required />
+              <Label>Galioja nuo</Label>
+              <Input type="date" value={form.validFrom} onChange={e => setForm(f => ({ ...f, validFrom: e.target.value }))} required />
             </div>
             <div>
+              <Label>Galioja iki</Label>
+              <Input type="date" value={form.validUntil} onChange={e => setForm(f => ({ ...f, validUntil: e.target.value }))} required />
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={loading}>Sukurti</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+      {/* Assign subscription to user modal */}
+      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Priskirti prenumeratą klientui</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleAssign} className="space-y-2">
+            <div>
               <Label>Kliento vardas</Label>
-              <Input value={form.customerName} onChange={e => setForm(f => ({ ...f, customerName: e.target.value }))} required />
+              <Input value={assign.userName} onChange={e => setAssign(a => ({ ...a, userName: e.target.value }))} required />
             </div>
             <div>
               <Label>Kliento el. paštas</Label>
-              <Input type="email" value={form.customerEmail} onChange={e => setForm(f => ({ ...f, customerEmail: e.target.value }))} required />
+              <Input type="email" value={assign.userEmail} onChange={e => setAssign(a => ({ ...a, userEmail: e.target.value }))} required />
             </div>
             <DialogFooter>
-              <Button type="submit" disabled={loading}>Sukurti ir priskirti</Button>
+              <Button type="submit" disabled={loading}>Priskirti</Button>
             </DialogFooter>
           </form>
         </DialogContent>
