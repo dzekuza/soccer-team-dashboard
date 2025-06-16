@@ -34,6 +34,15 @@ export interface Ticket {
   qrCodeUrl: string // Added QR code URL
   userId?: string // Added for user assignment
   eventCoverImageUrl?: string // Added for event cover image from covers bucket
+  eventDate?: string // Added for event date assigned to ticket
+  eventTitle?: string // Added for event title
+  eventDescription?: string // Added for event description
+  eventLocation?: string // Added for event location
+  eventTime?: string // Added for event time
+  team1Id?: string // Added for team1
+  team2Id?: string // Added for team2
+  teamId?: string // Added for legacy team_id column
+  pdfUrl?: string // Added for ticket PDF public URL
 }
 
 // Extended types for API responses

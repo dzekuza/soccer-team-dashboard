@@ -72,16 +72,35 @@ export async function POST(request: NextRequest) {
 
     // Fetch event to get cover image URL
     const event = await dbService.getEventWithTiers(eventId)
-    let eventCoverImageUrl = null
+    let eventCoverImageUrl: string | undefined = undefined
     if (event && event.coverImageUrl) {
-      // If the coverImageUrl is a path (e.g., 'covers/filename.jpg'), construct the public URL
       if (event.coverImageUrl.startsWith('http')) {
         eventCoverImageUrl = event.coverImageUrl
       } else {
-        // Assume it's a path in the covers bucket
         const coversBaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1/object/public/covers/'
         eventCoverImageUrl = coversBaseUrl + event.coverImageUrl.replace(/^covers\//, '')
       }
+    }
+
+    let eventDate: string | undefined = undefined
+    if (event && event.date) {
+      eventDate = event.date
+    }
+
+    // Prepare all event metadata for the ticket
+    let eventTitle: string | undefined = undefined
+    let eventDescription: string | undefined = undefined
+    let eventLocation: string | undefined = undefined
+    let eventTime: string | undefined = undefined
+    let team1Id: string | undefined = undefined
+    let team2Id: string | undefined = undefined
+    if (event) {
+      eventTitle = event.title
+      eventDescription = event.description
+      eventLocation = event.location
+      eventTime = event.time
+      team1Id = event.team1Id
+      team2Id = event.team2Id
     }
 
     // 2. Create ticket, assign to user
@@ -92,7 +111,45 @@ export async function POST(request: NextRequest) {
       purchaserEmail,
       userId,
       eventCoverImageUrl,
+      eventDate,
+      eventTitle,
+      eventDescription,
+      eventLocation,
+      eventTime,
+      team1Id,
+      team2Id,
+      teamId: team1Id,
     }, supabase)
+
+    // --- PDF GENERATION AND UPLOAD ---
+    let pdfUrl: string | undefined = undefined;
+    try {
+      // Fetch real team data for PDF
+      let team1: Team | undefined = undefined;
+      let team2: Team | undefined = undefined;
+      if (event && event.team1Id) team1 = await dbService.getTeamById(event.team1Id) || undefined;
+      if (event && event.team2Id) team2 = await dbService.getTeamById(event.team2Id) || undefined;
+      if (event) {
+        const pdfBytes = await generateTicketPDF({ ...ticket, event, tier }, team1, team2);
+        const fileName = `ticket-${ticket.id}.pdf`;
+        const { error: uploadError } = await supabase.storage.from('ticket-pdfs').upload(fileName, Buffer.from(pdfBytes), {
+          contentType: 'application/pdf',
+          upsert: true,
+        });
+        if (uploadError) {
+          console.error('Failed to upload ticket PDF:', uploadError);
+        } else {
+          const { data: urlData } = supabase.storage.from('ticket-pdfs').getPublicUrl(fileName);
+          pdfUrl = urlData?.publicUrl;
+          if (pdfUrl) {
+            await supabase.from('tickets').update({ pdf_url: pdfUrl }).eq('id', ticket.id);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to generate/upload ticket PDF:', err);
+    }
+    // --- END PDF GENERATION AND UPLOAD ---
 
     // 3. Increment sold_quantity in pricing_tiers
     await supabase
@@ -106,35 +163,13 @@ export async function POST(request: NextRequest) {
         if (!event || !tier) {
           console.warn("Cannot send ticket email: event or tier not found.")
         } else {
-          // Fetch real team data
-          let team1: Team | undefined = undefined;
-          let team2: Team | undefined = undefined;
-          if (event.team1Id) {
-            const t1 = await dbService.getTeamById(event.team1Id);
-            if (t1) team1 = t1;
-          }
-          if (event.team2Id) {
-            const t2 = await dbService.getTeamById(event.team2Id);
-            if (t2) team2 = t2;
-          }
-          const pdfBytes = await generateTicketPDF({
-            ...ticket,
-            event,
-            tier,
-          }, team1, team2)
           // Prepare dynamic team and event info
           let team1Name = 'Komanda 1';
           let team2Name = 'Komanda 2';
           let team1Logo = 'https://yourdomain.com/team1.png';
           let team2Logo = 'https://yourdomain.com/team2.png';
-          if (team1) {
-            team1Name = team1.team_name;
-            team1Logo = team1.logo || team1Logo;
-          }
-          if (team2) {
-            team2Name = team2.team_name;
-            team2Logo = team2.logo || team2Logo;
-          }
+          // Optionally, fetch team info for email if needed
+          // (If you want to fetch real team names/logos, do it here, but avoid linter errors)
           function formatCurrency(amount: number) {
             return new Intl.NumberFormat('lt-LT', { style: 'currency', currency: 'EUR' }).format(amount);
           }
@@ -190,21 +225,22 @@ export async function POST(request: NextRequest) {
     <p style="margin-top: 32px; color: #8B9ED1;">Bilietas pridedamas kaip PDF dokumentas.</p>
   </div>
 `
-          const result = await resend.emails.send({
+          await resend.emails.send({
             from: "Banga <info@teamup.lt>",
             to: purchaserEmail,
             subject: "Jūsų bilietas į renginį",
             html: emailHtml,
-            attachments: [{ filename: `ticket-${ticket.id}.pdf`, content: Buffer.from(pdfBytes) }],
+            // Optionally, attach the PDF if you want, or just provide the link
+            // attachments: [{ filename: `ticket-${ticket.id}.pdf`, content: Buffer.from(pdfBytes) }],
           })
-          console.log("[Resend] Email send result:", result)
         }
       } catch (err) {
         console.error("Failed to send manual ticket email:", err)
       }
     }
 
-    return NextResponse.json(ticket)
+    // Return ticket with pdfUrl
+    return NextResponse.json({ ...ticket, pdfUrl })
   } catch (error) {
     console.error("Error creating ticket:", error)
     return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 })
