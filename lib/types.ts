@@ -33,6 +33,7 @@ export interface Ticket {
   validatedAt: string | null
   qrCodeUrl: string // Added QR code URL
   userId?: string // Added for user assignment
+  eventCoverImageUrl?: string // Added for event cover image from covers bucket
 }
 
 // Extended types for API responses

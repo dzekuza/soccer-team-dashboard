@@ -70,6 +70,20 @@ export async function POST(request: NextRequest) {
       userId = user.id;
     }
 
+    // Fetch event to get cover image URL
+    const event = await dbService.getEventWithTiers(eventId)
+    let eventCoverImageUrl = null
+    if (event && event.coverImageUrl) {
+      // If the coverImageUrl is a path (e.g., 'covers/filename.jpg'), construct the public URL
+      if (event.coverImageUrl.startsWith('http')) {
+        eventCoverImageUrl = event.coverImageUrl
+      } else {
+        // Assume it's a path in the covers bucket
+        const coversBaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL + '/storage/v1/object/public/covers/'
+        eventCoverImageUrl = coversBaseUrl + event.coverImageUrl.replace(/^covers\//, '')
+      }
+    }
+
     // 2. Create ticket, assign to user
     const ticket = await dbService.createTicket({
       eventId,
@@ -77,6 +91,7 @@ export async function POST(request: NextRequest) {
       purchaserName,
       purchaserEmail,
       userId,
+      eventCoverImageUrl,
     }, supabase)
 
     // 3. Increment sold_quantity in pricing_tiers
@@ -88,7 +103,6 @@ export async function POST(request: NextRequest) {
     // Send email with PDF ticket
     if (ticket && purchaserEmail) {
       try {
-        const event = await dbService.getEventWithTiers(eventId)
         if (!event || !tier) {
           console.warn("Cannot send ticket email: event or tier not found.")
         } else {
