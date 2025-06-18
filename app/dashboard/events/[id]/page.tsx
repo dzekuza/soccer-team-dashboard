@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
 import type { EventWithTiers, Team } from "@/lib/types"
+import { supabaseService } from "@/lib/supabase-service"
 
 export default function EventDetailPage() {
   const params = useParams()
@@ -24,8 +25,8 @@ export default function EventDetailPage() {
     if (!id) return
     setLoading(true)
     Promise.all([
-      fetch(`/api/events/${id}`).then(res => res.ok ? res.json() : Promise.reject("Event not found")),
-      fetch("/api/teams").then(res => res.ok ? res.json() : Promise.reject("Teams not found")),
+      supabaseService.getEventWithTiers(id),
+      supabaseService.getTeams(),
     ])
       .then(([eventData, teamsData]) => {
         setEvent(eventData)

@@ -4,6 +4,7 @@ import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
 import { createClient } from '@supabase/supabase-js'
 import type { Team } from "@/lib/types"
+import { v4 as uuidv4 } from 'uuid'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -49,29 +50,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No tickets available for this tier" }, { status: 400 })
     }
 
-    // 1. Check if user exists, or create
+    // 1. Always try to insert user with purchaserEmail and purchaserName, including a generated UUID for id
     let userId: string | undefined = undefined;
-    const { data: user, error: userError } = await serviceSupabase
-      .from("users")
-      .select("id")
-      .eq("email", purchaserEmail)
-      .single();
-    if (!user || userError) {
-      const { data: newUser, error: createUserError } = await serviceSupabase
+    let newUserInsertError = null;
+    let newUser = null;
+    const generatedUserId = uuidv4();
+    try {
+      const { data: insertedUser, error: insertError } = await serviceSupabase
         .from("users")
-        .insert({ email: purchaserEmail, name: purchaserName })
+        .insert({ id: generatedUserId, email: purchaserEmail, name: purchaserName })
         .select("id")
         .single();
-      if (createUserError) {
-        return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
+      if (insertError) {
+        newUserInsertError = insertError;
+      } else {
+        newUser = insertedUser;
       }
+    } catch (err) {
+      newUserInsertError = err;
+    }
+    if (newUser && newUser.id) {
       userId = newUser.id;
+    } else if ((newUserInsertError as any)?.code === '23505') { // Unique violation
+      // Fetch existing user by email
+      const { data: existingUser, error: fetchError } = await serviceSupabase
+        .from("users")
+        .select("id")
+        .eq("email", purchaserEmail)
+        .single();
+      if (existingUser && existingUser.id) {
+        userId = existingUser.id;
+      } else {
+        return NextResponse.json({ error: "Failed to fetch existing user after unique violation", details: (fetchError as any)?.message }, { status: 500 })
+      }
     } else {
-      userId = user.id;
+      return NextResponse.json({ error: "Failed to create or fetch user", details: (newUserInsertError as any)?.message }, { status: 500 })
     }
 
     // Fetch event to get cover image URL
     const event = await dbService.getEventWithTiers(eventId)
+    console.log('[DEBUG] Event fetched for ticket:', JSON.stringify(event, null, 2))
     let eventCoverImageUrl: string | undefined = undefined
     if (event && event.coverImageUrl) {
       if (event.coverImageUrl.startsWith('http')) {
@@ -103,6 +121,17 @@ export async function POST(request: NextRequest) {
       team2Id = event.team2Id
     }
 
+    // Log pricing tier and all pricing tiers for the event
+    console.log('[DEBUG] Selected pricing tier:', JSON.stringify(tier, null, 2))
+    if (event && event.pricingTiers) {
+      console.log('[DEBUG] All event pricing tiers:', JSON.stringify(event.pricingTiers, null, 2))
+    }
+
+    // Validate team1Id (teamId)
+    if (!team1Id) {
+      return NextResponse.json({ error: "Event is missing team1Id (team_id is required for ticket creation)" }, { status: 400 })
+    }
+
     // 2. Create ticket, assign to user
     const ticket = await dbService.createTicket({
       eventId,
@@ -120,6 +149,7 @@ export async function POST(request: NextRequest) {
       team2Id,
       teamId: team1Id,
     }, supabase)
+    console.log('[DEBUG] Ticket object before PDF generation:', JSON.stringify(ticket, null, 2))
 
     // --- PDF GENERATION AND UPLOAD ---
     let pdfUrl: string | undefined = undefined;
@@ -132,7 +162,7 @@ export async function POST(request: NextRequest) {
       if (event) {
         const pdfBytes = await generateTicketPDF({ ...ticket, event, tier }, team1, team2);
         const fileName = `ticket-${ticket.id}.pdf`;
-        const { error: uploadError } = await supabase.storage.from('ticket-pdfs').upload(fileName, Buffer.from(pdfBytes), {
+        const { error: uploadError } = await supabase.storage.from('ticket-pdfs').upload(fileName, pdfBytes, {
           contentType: 'application/pdf',
           upsert: true,
         });

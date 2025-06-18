@@ -72,52 +72,52 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
     setIsLoading(true)
 
     try {
-      const ticketId = uuidv4();
-      const qrCodeUrl = `/api/validate-ticket/${ticketId}`;
+      const ticketId = uuidv4()
+      const qrCodeUrl = `/api/validate-ticket/${ticketId}`
+
+      // Fetch event data to get team1_id, team2_id, etc.
       const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select("team1_id, team2_id, title, description, date, time, location, cover_image_url")
         .eq("id", selectedEventId)
-        .single();
-      if (eventError || !eventData) throw eventError || new Error("Event not found");
-      const { team1_id, team2_id, title, description, date: eventDate, time, location, cover_image_url } = eventData;
+        .single()
+      if (eventError || !eventData) throw eventError || new Error("Event not found")
+
+      const { team1_id, team2_id, title, description, date: eventDate, time, location, cover_image_url } = eventData
+
+      // Insert ticket directly into Supabase
       const { data, error } = await supabase
         .from("tickets")
-        .insert([
-          {
-            id: ticketId,
-            event_id: selectedEventId,
-            tier_id: selectedTierId,
-            purchaser_name: purchaserName,
-            purchaser_email: purchaserEmail,
-            is_validated: false,
-            qr_code_url: qrCodeUrl,
-            team1_id,
-            team2_id,
-            event_title: title,
-            event_description: description,
-            event_date: eventDate,
-            event_time: time,
-            event_location: location,
-            event_cover_image_url: cover_image_url,
-          },
-        ])
+        .insert([{
+          id: ticketId,
+          event_id: selectedEventId,
+          tier_id: selectedTierId,
+          purchaser_name: purchaserName,
+          purchaser_email: purchaserEmail,
+          is_validated: false,
+          qr_code_url: qrCodeUrl,
+          team_id: team1_id, // required!
+          team1_id,
+          team2_id,
+          event_title: title,
+          event_description: description,
+          event_date: eventDate,
+          event_time: time,
+          event_location: location,
+          event_cover_image_url: cover_image_url,
+        }])
+
       if (error) {
-        console.error("Supabase error:", error);
-        alert("Supabase error: " + (error.message || JSON.stringify(error)));
-        throw error;
+        alert("Supabase error: " + (error.message || JSON.stringify(error)))
+        throw error
       }
-      console.log("Supabase insert data:", data);
       onTicketCreated()
       setSelectedEventId("")
       setSelectedTierId("")
       setPurchaserName("")
       setPurchaserEmail("")
     } catch (error) {
-      console.error("Failed to create ticket:", error);
-      if (error && typeof error === "object") {
-        alert("Failed to create ticket: " + JSON.stringify(error));
-      }
+      alert("Failed to create ticket: " + JSON.stringify(error))
     } finally {
       setIsLoading(false)
     }

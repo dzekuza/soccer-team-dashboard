@@ -12,6 +12,7 @@ import { QRScanner } from "@/components/qr-scanner"
 import type { TicketWithDetails } from "@/lib/types"
 import { CheckCircle, XCircle, Camera } from "lucide-react"
 import { formatDateTime } from "@/lib/utils"
+import { supabaseService } from "@/lib/supabase-service"
 
 export default function ScannerPage() {
   const [ticketId, setTicketId] = useState("")
@@ -34,25 +35,15 @@ export default function ScannerPage() {
 
     try {
       // First, get ticket details
-      const ticketResponse = await fetch(`/api/tickets/${cleanId}`)
-      if (!ticketResponse.ok) {
+      const ticketData = await supabaseService.getTicketWithDetails(cleanId)
+      if (!ticketData) {
         setValidationResult({ success: false, message: "Ticket not found" })
         return
       }
-
-      const ticketData = await ticketResponse.json()
       setTicket(ticketData)
 
       // Then validate the ticket
-      const validateResponse = await fetch("/api/tickets/validate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ticketId: cleanId }),
-      })
-
-      const result = await validateResponse.json()
+      const result = await supabaseService.validateTicket(cleanId)
 
       if (result.success) {
         setValidationResult({ success: true, message: "Ticket validated successfully!" })

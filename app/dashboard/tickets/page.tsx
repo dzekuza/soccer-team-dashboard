@@ -9,6 +9,7 @@ import type { TicketWithDetails } from "@/lib/types"
 import { Download, Plus } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { generateTicketPDF, uint8ArrayToPdfBlob } from "@/lib/pdf-generator"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
@@ -80,9 +81,39 @@ export default function TicketsPage() {
     setIsCreateDialogOpen(false)
   }
 
-  const handleDownloadPDF = (ticket: TicketWithDetails) => {
-    const pdfUrl = `${SUPABASE_PUBLIC_URL}/ticket-${ticket.id}.pdf`;
-    window.open(pdfUrl, "_blank");
+  const handleDownloadPDF = async (ticket: TicketWithDetails) => {
+    // Defensive check for qrCodeUrl
+    if (!ticket.qrCodeUrl || typeof ticket.qrCodeUrl !== 'string' || ticket.qrCodeUrl.trim() === '') {
+      alert('Šio bilieto QR kodas nerastas. Negalima sugeneruoti PDF.');
+      return;
+    }
+    // Fetch team1 and team2 info if available
+    let team1 = undefined;
+    let team2 = undefined;
+    try {
+      if (ticket.event.team1Id) {
+        const { data } = await supabase.from("teams").select("id, team_name, logo").eq("id", ticket.event.team1Id).single();
+        if (data) team1 = data;
+      }
+      if (ticket.event.team2Id) {
+        const { data } = await supabase.from("teams").select("id, team_name, logo").eq("id", ticket.event.team2Id).single();
+        if (data) team2 = data;
+      }
+    } catch (e) {
+      // fallback: ignore team info if fetch fails
+    }
+    const pdfBytes = await generateTicketPDF(ticket, team1, team2);
+    const blob = uint8ArrayToPdfBlob(pdfBytes);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ticket-${ticket.id}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 
   // Filter tickets by event name and scan status

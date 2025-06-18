@@ -377,23 +377,35 @@ export const supabaseService = {
       const ticketId = uuidv4();
       const qrCodeUrl = `/api/validate-ticket/${ticketId}`
 
-      const { data, error } = await client
-        .from("tickets")
-        .insert({
-          id: ticketId,
-          event_id: ticketData.eventId,
-          tier_id: ticketData.tierId,
-          purchaser_name: ticketData.purchaserName,
-          purchaser_email: ticketData.purchaserEmail,
-          qr_code_url: qrCodeUrl,
-          user_id: ticketData.userId,
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error("Error creating ticket:", error)
-        throw new Error(`Failed to create ticket: ${error.message}`)
+      console.log('[DEBUG] Ticket insert payload:', {
+        id: ticketId,
+        event_id: ticketData.eventId,
+        tier_id: ticketData.tierId,
+        purchaser_name: ticketData.purchaserName,
+        purchaser_email: ticketData.purchaserEmail,
+        qr_code_url: qrCodeUrl,
+        user_id: ticketData.userId,
+        team_id: ticketData.teamId,
+      });
+      let data, error;
+      try {
+        ({ data, error } = await client
+          .from("tickets")
+          .insert({
+            id: ticketId,
+            event_id: ticketData.eventId,
+            tier_id: ticketData.tierId,
+            purchaser_name: ticketData.purchaserName,
+            purchaser_email: ticketData.purchaserEmail,
+            qr_code_url: qrCodeUrl,
+            user_id: ticketData.userId,
+            team_id: ticketData.teamId,
+          })
+          .select()
+          .single());
+      } catch (insertErr) {
+        console.error('[ERROR] Exception during ticket insert:', insertErr);
+        throw insertErr;
       }
 
       // Update sold quantity
