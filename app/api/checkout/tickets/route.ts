@@ -9,6 +9,21 @@ import { createClient } from "@supabase/supabase-js"
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+// CORS headers helper
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,POST,PUT,OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
+
+// Handle preflight OPTIONS requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -33,12 +48,12 @@ export async function GET(request: NextRequest) {
     // Find tickets matching event, tier, purchaserEmail, and not already validated
     let matching = allTickets
       .filter(t =>
-        t.eventId === eventId &&
-        t.tierId === tierId &&
-        t.purchaserEmail === purchaserEmail &&
-        !t.isValidated
+        t.event_id === eventId &&
+        t.tier_id === tierId &&
+        t.purchaser_email === purchaserEmail &&
+        !t.is_validated
       )
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, quantity)
 
     // If not found, fallback: return tickets by event/tier with empty purchaserEmail (unassigned)
@@ -47,30 +62,30 @@ export async function GET(request: NextRequest) {
       // Try to assign unassigned tickets first
       const unassigned = allTickets
         .filter(t =>
-          t.eventId === eventId &&
-          t.tierId === tierId &&
-          (!t.purchaserEmail || t.purchaserEmail === "") &&
-          !t.isValidated
+          t.event_id === eventId &&
+          t.tier_id === tierId &&
+          (!t.purchaser_email || t.purchaser_email === "") &&
+          !t.is_validated
         )
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, quantity - tickets.length)
       // Assign these tickets to the purchaser
       for (const ticket of unassigned) {
         await dbService.updateTicket(ticket.id, {
-          purchaserName: session.metadata?.purchaserName || "",
-          purchaserEmail,
+          purchaser_name: session.metadata?.purchaserName || "",
+          purchaser_email: purchaserEmail,
         })
       }
       // Re-fetch tickets after assignment
       allTickets = await dbService.getTicketsWithDetails()
       tickets = allTickets
         .filter(t =>
-          t.eventId === eventId &&
-          t.tierId === tierId &&
-          t.purchaserEmail === purchaserEmail &&
-          !t.isValidated
+          t.event_id === eventId &&
+          t.tier_id === tierId &&
+          t.purchaser_email === purchaserEmail &&
+          !t.is_validated
         )
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, quantity)
     }
     if (tickets.length < quantity) {
@@ -82,147 +97,88 @@ export async function GET(request: NextRequest) {
       )
       for (let i = 0; i < quantity - tickets.length; i++) {
         await dbService.createTicket({
-          eventId,
-          tierId,
-          purchaserName: session.metadata?.purchaserName || "",
-          purchaserEmail,
+          event_id: eventId,
+          tier_id: tierId,
+          purchaser_name: session.metadata?.purchaserName || "",
+          purchaser_email: purchaserEmail,
         }, serviceSupabase)
       }
       // Re-fetch tickets after creation
       allTickets = await dbService.getTicketsWithDetails()
       tickets = allTickets
         .filter(t =>
-          t.eventId === eventId &&
-          t.tierId === tierId &&
-          t.purchaserEmail === purchaserEmail &&
-          !t.isValidated
+          t.event_id === eventId &&
+          t.tier_id === tierId &&
+          t.purchaser_email === purchaserEmail &&
+          !t.is_validated
         )
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, quantity)
     }
     // Return only id and qrCodeUrl
-    const ticketObjs = tickets.map(t => ({ id: t.id, qrCodeUrl: t.qrCodeUrl }))
+    const ticketObjs = tickets.map(t => ({ id: t.id, qrCodeUrl: t.qr_code_url }))
 
     // Send email with PDF(s) if tickets and purchaserEmail exist
     if (tickets.length > 0 && purchaserEmail) {
       try {
-        // Generate PDFs
+        // For each ticket, ensure PDF is uploaded to storage and get the PDF buffer
+        const serviceSupabase = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
         const pdfBuffers = await Promise.all(
           tickets.map(async (t) => {
-            // Always fetch the latest ticket details from the DB
-            const ticketWithDetails = await dbService.getTicketWithDetails(t.id)
+            const ticketWithDetails = await dbService.getTicketWithDetails(t.id);
             if (!ticketWithDetails || !ticketWithDetails.event || !ticketWithDetails.tier) {
-              console.warn("Cannot send ticket email: ticket, event, or tier not found.")
-              return null
+              console.warn("Cannot send ticket email: ticket, event, or tier not found.");
+              return null;
             }
-            const pdfBytes = await generateTicketPDF(ticketWithDetails)
+            // Fetch teams for PDF
+            let team1 = undefined;
+            let team2 = undefined;
+            if (ticketWithDetails.event.team1Id) team1 = await supabaseService.getTeamById(ticketWithDetails.event.team1Id) || undefined;
+            if (ticketWithDetails.event.team2Id) team2 = await supabaseService.getTeamById(ticketWithDetails.event.team2Id) || undefined;
+            // Ensure PDF exists in storage
+            const fileName = `ticket-${t.id}.pdf`;
+            let pdfBytes = undefined;
+            // Try to download from storage
+            const { data, error } = await serviceSupabase.storage.from('ticket-pdfs').download(fileName);
+            if (error || !data) {
+              pdfBytes = await generateTicketPDF(ticketWithDetails, team1, team2);
+              await serviceSupabase.storage.from('ticket-pdfs').upload(fileName, pdfBytes, {
+                contentType: 'application/pdf',
+                upsert: true,
+              });
+            } else {
+              pdfBytes = Buffer.from(await data.arrayBuffer());
+            }
+            if (pdfBytes && !(pdfBytes instanceof Buffer)) {
+              pdfBytes = Buffer.from(pdfBytes);
+            }
             return {
-              filename: `ticket-${t.id}.pdf`,
-              content: Buffer.from(pdfBytes),
-            }
+              filename: fileName,
+              content: pdfBytes,
+            };
           })
-        )
+        );
         // Filter out any nulls
         const attachments: { filename: string; content: Buffer }[] = pdfBuffers.filter(a => a !== null) as { filename: string; content: Buffer }[];
-        // Prepare email body with match info
-        let team1 = null;
-        let team2 = null;
-        let team1Name = 'Komanda 1';
-        let team2Name = 'Komanda 2';
-        let team1Logo = 'https://yourdomain.com/team1.png';
-        let team2Logo = 'https://yourdomain.com/team2.png';
-        let ticketDetails = null;
-        if (tickets.length > 0) {
-          ticketDetails = await dbService.getTicketWithDetails(tickets[0].id);
-          if (ticketDetails && ticketDetails.event) {
-            if (ticketDetails.event.team1Id) {
-              team1 = await supabaseService.getTeamById(ticketDetails.event.team1Id);
-              if (team1) {
-                team1Name = team1.team_name;
-                team1Logo = team1.logo || team1Logo;
-              }
-            }
-            if (ticketDetails.event.team2Id) {
-              team2 = await supabaseService.getTeamById(ticketDetails.event.team2Id);
-              if (team2) {
-                team2Name = team2.team_name;
-                team2Logo = team2.logo || team2Logo;
-              }
-            }
-          }
-        }
-        function formatCurrency(amount: number) {
-          return new Intl.NumberFormat('lt-LT', { style: 'currency', currency: 'EUR' }).format(amount);
-        }
-        const bangaLogoUrl = 'https://ebdfqztiximsqdnvwkqu.supabase.co/storage/v1/object/public/logo//%20Banga.png';
-        const emailHtml = `
-  <div style="font-family: Inter, sans-serif; color: #ffffff; background-color: #0A165B; padding: 24px;">
-    <img src="${bangaLogoUrl}" alt="FK Banga Logo" width="120" style="margin-bottom: 24px;" />
-    
-    <h2 style="font-size: 20px; font-weight: 500;">Jūsų bilietas į renginį</h2>
-    <hr style="border: 0; border-top: 1px solid #2D3B80; margin: 16px 0;" />
-
-    <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 16px;">
-      <div style="text-align: center;">
-        <img src="${team1Logo}" alt="Team 1" width="48" /><br />
-        <span style="color: #ffffff;">${team1Name}</span>
-      </div>
-      <strong style="color: #ffffff;">prieš</strong>
-      <div style="text-align: center;">
-        <img src="${team2Logo}" alt="Team 2" width="48" /><br />
-        <span style="color: #ffffff;">${team2Name}</span>
-      </div>
-    </div>
-
-    <h3 style="color: #F15601; margin-top: 0;">RUNGtynių PRADŽIA: ${ticketDetails?.event.time || 'XX:XX'}</h3>
-    <p style="color: #8B9ED1;">${ticketDetails?.event.date || 'Sekmadienis, Rug. 24, 2025'}</p>
-
-    <table style="width: 100%; margin-top: 16px; color: #ffffff;">
-      <tr>
-        <th style="text-align: left; font-size: 10px; color: #8B9ED1;">LOKACIJA</th>
-        <th style="text-align: left; font-size: 10px; color: #8B9ED1;">BILIETO TIPAS</th>
-        <th style="text-align: left; font-size: 10px; color: #8B9ED1;">KAINA</th>
-      </tr>
-      <tr>
-        <td style="font-size: 14px;">${ticketDetails?.event.location || 'Svencele Stadium'}</td>
-        <td style="font-size: 14px;">${ticketDetails?.tier.name || 'VIP'}</td>
-        <td style="font-size: 14px;">${formatCurrency(ticketDetails?.tier.price || 0)}</td>
-      </tr>
-    </table>
-
-    <div style="background: #0F1B47; padding: 16px; margin-top: 24px;">
-      <table style="width: 100%; color: #ffffff;">
-        <tr>
-          <th style="text-align: left; font-size: 10px; color: #8B9ED1;">PIRKĖJO VARDAS</th>
-          <th style="text-align: left; font-size: 10px; color: #8B9ED1;">PAVARDĖ</th>
-          <th style="text-align: left; font-size: 10px; color: #8B9ED1;">EL. PAŠTAS</th>
-        </tr>
-        <tr>
-          <td style="font-size: 14px;">${session.metadata?.purchaserName || 'Vardas'}</td>
-          <td style="font-size: 14px;">${session.metadata?.purchaserSurname || 'Pavardė'}</td>
-          <td style="font-size: 14px;">${purchaserEmail}</td>
-        </tr>
-      </table>
-    </div>
-
-    <p style="margin-top: 32px; color: #8B9ED1;">Bilietas pridedamas kaip PDF dokumentas.</p>
-  </div>
-        `
-        // Send email
+        // Prepare email body (can be improved as needed)
+        const emailHtml = `<div style=\"font-family: Inter, sans-serif; color: #ffffff; background-color: #0A165B; padding: 24px;\">Jūsų bilietas į renginį yra prisegtas kaip PDF dokumentas.</div>`;
         await resend.emails.send({
-          from: "tickets@soccer-team.app", // Change to your verified sender
+          from: "tickets@soccer-team.app",
           to: purchaserEmail,
           subject: "Jūsų bilietas į renginį",
           html: emailHtml,
           attachments,
-        })
+        });
       } catch (err) {
-        console.error("Failed to send ticket email:", err)
+        console.error("Failed to send ticket email:", err);
       }
     }
-    return NextResponse.json({ tickets: ticketObjs })
+    return NextResponse.json({ tickets: ticketObjs }, { headers: CORS_HEADERS });
   } catch (error) {
     console.error("Error fetching tickets for session:", error)
-    return NextResponse.json({ error: "Failed to fetch tickets" }, { status: 500 })
+    return NextResponse.json({ error: "Failed to fetch tickets" }, { status: 500, headers: CORS_HEADERS })
   }
 } 
