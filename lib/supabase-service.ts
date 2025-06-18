@@ -408,6 +408,20 @@ export const supabaseService = {
         throw insertErr;
       }
 
+      if (error || !data) {
+        console.error('[ERROR] Supabase insert error or null data:', { error, data, payload: {
+          id: ticketId,
+          event_id: ticketData.eventId,
+          tier_id: ticketData.tierId,
+          purchaser_name: ticketData.purchaserName,
+          purchaser_email: ticketData.purchaserEmail,
+          qr_code_url: qrCodeUrl,
+          user_id: ticketData.userId,
+          team_id: ticketData.teamId,
+        }});
+        throw new Error('Failed to create ticket: ' + (error?.message || 'No data returned'));
+      }
+
       // Update sold quantity
       const { data: updateData, error: updateError } = await client.rpc("increment_sold_quantity", {
         tier_id: ticketData.tierId,
