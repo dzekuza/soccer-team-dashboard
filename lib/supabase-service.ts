@@ -379,13 +379,11 @@ export const supabaseService = {
 
       console.log('[DEBUG] Ticket insert payload:', {
         id: ticketId,
-        event_id: ticketData.eventId,
-        tier_id: ticketData.tierId,
-        purchaser_name: ticketData.purchaserName,
-        purchaser_email: ticketData.purchaserEmail,
+        event_id: ticketData.event_id,
+        tier_id: ticketData.tier_id,
+        purchaser_name: ticketData.purchaser_name,
+        purchaser_email: ticketData.purchaser_email,
         qr_code_url: qrCodeUrl,
-        user_id: ticketData.userId,
-        team_id: ticketData.teamId,
       });
       let data, error;
       try {
@@ -393,13 +391,11 @@ export const supabaseService = {
           .from("tickets")
           .insert({
             id: ticketId,
-            event_id: ticketData.eventId,
-            tier_id: ticketData.tierId,
-            purchaser_name: ticketData.purchaserName,
-            purchaser_email: ticketData.purchaserEmail,
+            event_id: ticketData.event_id,
+            tier_id: ticketData.tier_id,
+            purchaser_name: ticketData.purchaser_name,
+            purchaser_email: ticketData.purchaser_email,
             qr_code_url: qrCodeUrl,
-            user_id: ticketData.userId,
-            team_id: ticketData.teamId,
           })
           .select()
           .single());
@@ -411,20 +407,18 @@ export const supabaseService = {
       if (error || !data) {
         console.error('[ERROR] Supabase insert error or null data:', { error, data, payload: {
           id: ticketId,
-          event_id: ticketData.eventId,
-          tier_id: ticketData.tierId,
-          purchaser_name: ticketData.purchaserName,
-          purchaser_email: ticketData.purchaserEmail,
+          event_id: ticketData.event_id,
+          tier_id: ticketData.tier_id,
+          purchaser_name: ticketData.purchaser_name,
+          purchaser_email: ticketData.purchaser_email,
           qr_code_url: qrCodeUrl,
-          user_id: ticketData.userId,
-          team_id: ticketData.teamId,
         }});
         throw new Error('Failed to create ticket: ' + (error?.message || 'No data returned'));
       }
 
       // Update sold quantity
       const { data: updateData, error: updateError } = await client.rpc("increment_sold_quantity", {
-        tier_id: ticketData.tierId,
+        tier_id: ticketData.tier_id,
       })
       console.log('[DEBUG] Update sold quantity RPC:', { updateData, updateError })
       if (updateError) {
@@ -434,15 +428,14 @@ export const supabaseService = {
 
       return {
         id: data.id,
-        eventId: data.event_id,
-        tierId: data.tier_id,
-        purchaserName: data.purchaser_name,
-        purchaserEmail: data.purchaser_email,
-        isValidated: data.is_validated,
-        createdAt: data.created_at,
-        validatedAt: data.validated_at,
-        qrCodeUrl: data.qr_code_url,
-        userId: data.user_id,
+        event_id: data.event_id,
+        tier_id: data.tier_id,
+        purchaser_name: data.purchaser_name,
+        purchaser_email: data.purchaser_email,
+        is_validated: data.is_validated,
+        created_at: data.created_at,
+        validated_at: data.validated_at,
+        qr_code_url: data.qr_code_url,
       }
     } catch (error) {
       console.error("Supabase Service: Error in createTicket:", error)
@@ -463,14 +456,14 @@ export const supabaseService = {
 
       return (data || []).map((ticket) => ({
         id: ticket.id,
-        eventId: ticket.event_id,
-        tierId: ticket.tier_id,
-        purchaserName: ticket.purchaser_name,
-        purchaserEmail: ticket.purchaser_email,
-        isValidated: ticket.is_validated,
-        createdAt: ticket.created_at,
-        validatedAt: ticket.validated_at,
-        qrCodeUrl: ticket.qr_code_url,
+        event_id: ticket.event_id,
+        tier_id: ticket.tier_id,
+        purchaser_name: ticket.purchaser_name,
+        purchaser_email: ticket.purchaser_email,
+        is_validated: ticket.is_validated,
+        created_at: ticket.created_at,
+        validated_at: ticket.validated_at,
+        qr_code_url: ticket.qr_code_url,
       }))
     } catch (error) {
       console.error("Supabase Service: Error in getTickets:", error)
@@ -498,14 +491,14 @@ export const supabaseService = {
 
       return (data || []).map((ticket) => ({
         id: ticket.id,
-        eventId: ticket.event_id,
-        tierId: ticket.tier_id,
-        purchaserName: ticket.purchaser_name,
-        purchaserEmail: ticket.purchaser_email,
-        isValidated: ticket.is_validated,
-        createdAt: ticket.created_at,
-        validatedAt: ticket.validated_at,
-        qrCodeUrl: ticket.qr_code_url,
+        event_id: ticket.event_id,
+        tier_id: ticket.tier_id,
+        purchaser_name: ticket.purchaser_name,
+        purchaser_email: ticket.purchaser_email,
+        is_validated: ticket.is_validated,
+        created_at: ticket.created_at,
+        validated_at: ticket.validated_at,
+        qr_code_url: ticket.qr_code_url,
         event: {
           id: ticket.events.id,
           title: ticket.events.title,
@@ -548,14 +541,14 @@ export const supabaseService = {
 
       return {
         id: data.id,
-        eventId: data.event_id,
-        tierId: data.tier_id,
-        purchaserName: data.purchaser_name,
-        purchaserEmail: data.purchaser_email,
-        isValidated: data.is_validated,
-        createdAt: data.created_at,
-        validatedAt: data.validated_at,
-        qrCodeUrl: data.qr_code_url,
+        event_id: data.event_id,
+        tier_id: data.tier_id,
+        purchaser_name: data.purchaser_name,
+        purchaser_email: data.purchaser_email,
+        is_validated: data.is_validated,
+        created_at: data.created_at,
+        validated_at: data.validated_at,
+        qr_code_url: data.qr_code_url,
       }
     } catch (error) {
       console.error("Supabase Service: Error in getTicket:", error)
@@ -585,36 +578,51 @@ export const supabaseService = {
 
       if (!data) return null
 
+      if (!data.event || !data.tier) {
+        console.error('Ticket event or tier missing for ticket ID:', id);
+        return null;
+      }
       return {
         id: data.id,
-        eventId: data.event_id,
-        tierId: data.tier_id,
-        purchaserName: data.purchaser_name,
-        purchaserEmail: data.purchaser_email,
-        isValidated: data.is_validated,
-        createdAt: data.created_at,
-        validatedAt: data.validated_at,
-        qrCodeUrl: data.qr_code_url,
+        event_id: data.event_id,
+        tier_id: data.tier_id,
+        purchaser_name: data.purchaser_name,
+        purchaser_email: data.purchaser_email,
+        is_validated: data.is_validated,
+        created_at: data.created_at,
+        validated_at: data.validated_at ?? null,
+        qr_code_url: data.qr_code_url ?? '',
+        event_cover_image_url: data.event_cover_image_url ?? undefined,
+        event_date: data.event_date ?? undefined,
+        event_title: data.event_title ?? undefined,
+        event_description: data.event_description ?? undefined,
+        event_location: data.event_location ?? undefined,
+        event_time: data.event_time ?? undefined,
+        team1_id: data.team1_id ?? undefined,
+        team2_id: data.team2_id ?? undefined,
+        pdf_url: data.pdf_url ?? undefined,
         event: {
-          id: data.events.id,
-          title: data.events.title,
-          description: data.events.description,
-          date: data.events.date,
-          time: data.events.time,
-          location: data.events.location,
-          createdAt: data.events.created_at,
-          updatedAt: data.events.updated_at,
-          coverImageUrl: data.events.cover_image_url || undefined,
+          id: data.event.id,
+          title: data.event.title,
+          description: data.event.description,
+          date: data.event.date,
+          time: data.event.time,
+          location: data.event.location,
+          createdAt: data.event.created_at,
+          updatedAt: data.event.updated_at,
+          team1Id: data.event.team1_id,
+          team2Id: data.event.team2_id,
+          coverImageUrl: data.event.cover_image_url || undefined,
         },
         tier: {
-          id: data.pricing_tiers.id,
-          eventId: data.pricing_tiers.event_id,
-          name: data.pricing_tiers.name,
-          price: data.pricing_tiers.price,
-          maxQuantity: data.pricing_tiers.max_quantity,
-          soldQuantity: data.pricing_tiers.sold_quantity,
+          id: data.tier.id,
+          eventId: data.tier.event_id,
+          name: data.tier.name,
+          price: data.tier.price,
+          maxQuantity: data.tier.max_quantity,
+          soldQuantity: data.tier.sold_quantity,
         },
-      }
+      };
     } catch (error) {
       console.error("Supabase Service: Error in getTicketWithDetails:", error)
       throw error
@@ -631,7 +639,7 @@ export const supabaseService = {
         return { success: false }
       }
 
-      if (ticket.isValidated) {
+      if (ticket.is_validated) {
         return { success: false, ticket }
       }
 
@@ -703,14 +711,14 @@ export const supabaseService = {
 
   updateTicket: async (
     id: string,
-    updates: { purchaserName?: string; purchaserEmail?: string }
+    updates: { purchaser_name?: string; purchaser_email?: string }
   ): Promise<void> => {
     await ensureConnection();
     const { error } = await supabase
       .from("tickets")
       .update({
-        purchaser_name: updates.purchaserName,
-        purchaser_email: updates.purchaserEmail,
+        purchaser_name: updates.purchaser_name,
+        purchaser_email: updates.purchaser_email,
       })
       .eq("id", id);
     if (error) {
@@ -868,5 +876,70 @@ export const supabaseService = {
       .single();
     if (error) throw new Error(error.message);
     return data;
+  },
+
+  /**
+   * Fetch a ticket by its ID, including event and team IDs
+   */
+  getTicketById: async (ticketId: string): Promise<TicketWithDetails | null> => {
+    await ensureConnection();
+    const { data, error } = await supabase
+      .from('tickets')
+      .select(`
+        *,
+        event:events(*),
+        tier:pricing_tiers(*)
+      `)
+      .eq('id', ticketId)
+      .single();
+    if (error) {
+      console.error('Error fetching ticket by ID:', error);
+      return null;
+    }
+    if (!data.event || !data.tier) {
+      console.error('Ticket event or tier missing for ticket ID:', ticketId);
+      return null;
+    }
+    return {
+      id: data.id,
+      event_id: data.event_id,
+      tier_id: data.tier_id,
+      purchaser_name: data.purchaser_name,
+      purchaser_email: data.purchaser_email,
+      is_validated: data.is_validated,
+      created_at: data.created_at,
+      validated_at: data.validated_at ?? null,
+      qr_code_url: data.qr_code_url ?? '',
+      event_cover_image_url: data.event_cover_image_url ?? undefined,
+      event_date: data.event_date ?? undefined,
+      event_title: data.event_title ?? undefined,
+      event_description: data.event_description ?? undefined,
+      event_location: data.event_location ?? undefined,
+      event_time: data.event_time ?? undefined,
+      team1_id: data.team1_id ?? undefined,
+      team2_id: data.team2_id ?? undefined,
+      pdf_url: data.pdf_url ?? undefined,
+      event: {
+        id: data.event.id,
+        title: data.event.title,
+        description: data.event.description,
+        date: data.event.date,
+        time: data.event.time,
+        location: data.event.location,
+        createdAt: data.event.created_at,
+        updatedAt: data.event.updated_at,
+        team1Id: data.event.team1_id,
+        team2Id: data.event.team2_id,
+        coverImageUrl: data.event.cover_image_url || undefined,
+      },
+      tier: {
+        id: data.tier.id,
+        eventId: data.tier.event_id,
+        name: data.tier.name,
+        price: data.tier.price,
+        maxQuantity: data.tier.max_quantity,
+        soldQuantity: data.tier.sold_quantity,
+      },
+    };
   },
 }

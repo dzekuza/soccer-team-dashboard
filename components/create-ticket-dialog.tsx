@@ -75,15 +75,15 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
       const ticketId = uuidv4()
       const qrCodeUrl = `/api/validate-ticket/${ticketId}`
 
-      // Fetch event data to get team1_id, team2_id, etc.
+      // Fetch event data to get team1_id, team2_id
       const { data: eventData, error: eventError } = await supabase
         .from("events")
-        .select("team1_id, team2_id, title, description, date, time, location, cover_image_url")
+        .select("team1_id, team2_id")
         .eq("id", selectedEventId)
         .single()
       if (eventError || !eventData) throw eventError || new Error("Event not found")
 
-      const { team1_id, team2_id, title, description, date: eventDate, time, location, cover_image_url } = eventData
+      const { team1_id, team2_id } = eventData
 
       // Insert ticket directly into Supabase
       const { data, error } = await supabase
@@ -96,15 +96,8 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
           purchaser_email: purchaserEmail,
           is_validated: false,
           qr_code_url: qrCodeUrl,
-          team_id: team1_id, // required!
           team1_id,
           team2_id,
-          event_title: title,
-          event_description: description,
-          event_date: eventDate,
-          event_time: time,
-          event_location: location,
-          event_cover_image_url: cover_image_url,
         }])
 
       if (error) {

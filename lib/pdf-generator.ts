@@ -35,11 +35,17 @@ function replaceUnsupportedChars(str: string): string {
     .replace(/Ą/g, 'A')
 }
 
+const SUPABASE_TEAM_LOGO_BASE_URL = 'https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/team-logo//';
+
 export async function generateTicketPDF(
   ticket: TicketWithDetails,
   team1?: Team,
   team2?: Team
 ): Promise<Uint8Array> {
+  console.log('Ticket passed to PDF generator:', ticket);
+  console.log('team1_id:', ticket.team1_id, 'team2_id:', ticket.team2_id);
+  console.log('Fetched team1:', team1);
+  console.log('Fetched team2:', team2);
   const pdfDoc = await PDFDocument.create()
   const width = 595, height = 283 // ~A5 landscape
   const page = pdfDoc.addPage([width, height])
@@ -95,7 +101,10 @@ export async function generateTicketPDF(
   const groupY = height - 120
 
   // === TEAM 1 ===
-  let team1LogoUrl = team1?.logo ? team1.logo.replace(/ /g, '%20') : undefined;
+  // Only use real logo; if missing, do not display any logo
+  let team1LogoUrl = team1?.logo
+    ? (team1.logo.startsWith('http') ? team1.logo : SUPABASE_TEAM_LOGO_BASE_URL + team1.logo.replace(/^\/+/, ''))
+    : undefined;
   if (team1LogoUrl) {
     const logoBytes = await fetchImage(team1LogoUrl)
     if (logoBytes) {
@@ -103,24 +112,38 @@ export async function generateTicketPDF(
         const logoImage = await pdfDoc.embedPng(logoBytes)
         page.drawImage(logoImage, {
           x: 50,
-          y: groupY + nameFontSize + groupGap,
+          y: groupY + nameFontSize + groupGap + 10,
           width: logoSize,
           height: logoSize,
         })
       } catch {}
     }
   }
-  page.drawText(replaceUnsupportedChars(team1?.team_name || 'Team 1'), {
-    x: 50,
-    y: groupY,
-    size: nameFontSize,
+  // Draw team1 name in bold, larger font, with white shadow for contrast
+  const team1Name = replaceUnsupportedChars(team1?.team_name || '')
+  const teamNameFontSize = 18
+  // Shadow
+  page.drawText(team1Name, {
+    x: 50 + 1,
+    y: groupY - 8 - 1,
+    size: teamNameFontSize,
     font: customFont,
-    color: white,
-    maxWidth: 100,
+    color: rgb(1,1,1),
+  })
+  // Main text
+  page.drawText(team1Name, {
+    x: 50,
+    y: groupY - 8,
+    size: teamNameFontSize,
+    font: customFont,
+    color: mainBg,
   })
 
   // === TEAM 2 ===
-  let team2LogoUrl = team2?.logo ? team2.logo.replace(/ /g, '%20') : undefined;
+  // Only use real logo; if missing, do not display any logo
+  let team2LogoUrl = team2?.logo
+    ? (team2.logo.startsWith('http') ? team2.logo : SUPABASE_TEAM_LOGO_BASE_URL + team2.logo.replace(/^\/+/, ''))
+    : undefined;
   if (team2LogoUrl) {
     const logoBytes = await fetchImage(team2LogoUrl)
     if (logoBytes) {
@@ -128,20 +151,30 @@ export async function generateTicketPDF(
         const logoImage = await pdfDoc.embedPng(logoBytes)
         page.drawImage(logoImage, {
           x: blueWidth - logoSize - 50,
-          y: groupY + nameFontSize + groupGap,
+          y: groupY + nameFontSize + groupGap + 10,
           width: logoSize,
           height: logoSize,
         })
       } catch {}
     }
   }
-  page.drawText(replaceUnsupportedChars(team2?.team_name || 'Team 2'), {
-    x: blueWidth - 120,
-    y: groupY,
-    size: nameFontSize,
+  // Draw team2 name in bold, larger font, with white shadow for contrast
+  const team2Name = replaceUnsupportedChars(team2?.team_name || '')
+  // Shadow
+  page.drawText(team2Name, {
+    x: blueWidth - 120 + 1,
+    y: groupY - 8 - 1,
+    size: teamNameFontSize,
     font: customFont,
-    color: white,
-    maxWidth: 100,
+    color: rgb(1,1,1),
+  })
+  // Main text
+  page.drawText(team2Name, {
+    x: blueWidth - 120,
+    y: groupY - 8,
+    size: teamNameFontSize,
+    font: customFont,
+    color: mainBg,
   })
 
   // === "prieš" text ===
@@ -181,10 +214,10 @@ export async function generateTicketPDF(
   })
 
   // QR code (centered in orange section)
-  if (!ticket.qrCodeUrl || typeof ticket.qrCodeUrl !== 'string' || ticket.qrCodeUrl.trim() === '') {
-    throw new Error(`Ticket ${ticket.id}: Missing or empty qrCodeUrl for QR code generation.`)
+  if (!ticket.qr_code_url || typeof ticket.qr_code_url !== 'string' || ticket.qr_code_url.trim() === '') {
+    throw new Error(`Ticket ${ticket.id}: Missing or empty qr_code_url for QR code generation.`)
   }
-  const qrCodeDataUrl = await QRCode.toDataURL(ticket.qrCodeUrl, { width: 180, margin: 1 })
+  const qrCodeDataUrl = await QRCode.toDataURL(ticket.qr_code_url, { width: 180, margin: 1 })
   const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
   const qrImage = await pdfDoc.embedPng(qrImageBytes)
   page.drawImage(qrImage, {

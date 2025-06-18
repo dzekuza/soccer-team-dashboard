@@ -6,18 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
-import { Download, Plus } from "lucide-react"
+import { Download, Plus, RefreshCw } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { generateTicketPDF, uint8ArrayToPdfBlob } from "@/lib/pdf-generator"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [eventNameFilter, setEventNameFilter] = useState("")
   const [scanStatus, setScanStatus] = useState<'all' | 'scanned' | 'not_scanned'>('all')
+  const [resendingId, setResendingId] = useState<string | null>(null)
+  const { toast } = useToast()
 
-  const SUPABASE_PUBLIC_URL = "https://ebdfqztiximsqdnvwkqu.supabase.co/storage/v1/object/public/ticket-pdfs";
+  const SUPABASE_PUBLIC_URL = "https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/ticket-pdfs";
+  const SUPABASE_PDF_BASE_URL = "https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/ticket-pdfs//";
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
 
   useEffect(() => {
     fetchTickets()
@@ -38,15 +43,23 @@ export default function TicketsPage() {
       const mapped = (data || [])
         .map((t: any) => ({
           id: t.id,
-          eventId: t.event_id,
-          tierId: t.tier_id,
-          purchaserName: t.purchaser_name,
-          purchaserEmail: t.purchaser_email,
-          isValidated: t.is_validated,
-          createdAt: t.created_at,
-          validatedAt: t.validated_at ?? null,
-          qrCodeUrl: t.qr_code_url ?? '',
-          userId: t.user_id ?? undefined,
+          event_id: t.event_id,
+          tier_id: t.tier_id,
+          purchaser_name: t.purchaser_name,
+          purchaser_email: t.purchaser_email,
+          is_validated: t.is_validated,
+          created_at: t.created_at,
+          validated_at: t.validated_at ?? null,
+          qr_code_url: t.qr_code_url ?? '',
+          event_cover_image_url: t.event_cover_image_url ?? undefined,
+          event_date: t.event_date ?? undefined,
+          event_title: t.event_title ?? undefined,
+          event_description: t.event_description ?? undefined,
+          event_location: t.event_location ?? undefined,
+          event_time: t.event_time ?? undefined,
+          team1_id: t.team1_id ?? undefined,
+          team2_id: t.team2_id ?? undefined,
+          pdf_url: t.pdf_url ?? undefined,
           event: t.event ? {
             id: t.event.id,
             title: t.event.title,
@@ -81,48 +94,123 @@ export default function TicketsPage() {
     setIsCreateDialogOpen(false)
   }
 
-  const handleDownloadPDF = async (ticket: TicketWithDetails) => {
-    // Defensive check for qrCodeUrl
-    if (!ticket.qrCodeUrl || typeof ticket.qrCodeUrl !== 'string' || ticket.qrCodeUrl.trim() === '') {
-      alert('Šio bilieto QR kodas nerastas. Negalima sugeneruoti PDF.');
+  const uploadPdfToSupabase = async (ticketId: string, pdfBlob: Blob): Promise<string | null> => {
+    const fileName = `ticket-${ticketId}.pdf`;
+    const { data, error } = await supabase.storage.from('ticket-pdfs').upload(fileName, pdfBlob, {
+      cacheControl: '3600',
+      upsert: true,
+      contentType: 'application/pdf',
+    });
+    if (error) {
+      console.error('Failed to upload PDF:', error);
+      return null;
+    }
+    return data?.path || null;
+  };
+
+  const updateTicketPdfUrl = async (ticketId: string, pdfUrl: string) => {
+    const { error } = await supabase.from('tickets').update({ pdf_url: pdfUrl }).eq('id', ticketId);
+    if (error) {
+      console.error('Failed to update ticket pdf_url:', error);
+    }
+  };
+
+  const handleDownloadPDF = async (ticketId: string) => {
+    // Always fetch the latest ticket details from Supabase
+    const { supabaseService } = await import("@/lib/supabase-service");
+    const ticket = await supabaseService.getTicketById(ticketId);
+    if (!ticket) {
+      alert('Nepavyko rasti bilieto duomenų.');
       return;
     }
-    // Fetch team1 and team2 info if available
+    let pdfUrl = ticket.pdf_url;
     let team1 = undefined;
     let team2 = undefined;
-    try {
-      if (ticket.event.team1Id) {
-        const { data } = await supabase.from("teams").select("id, team_name, logo").eq("id", ticket.event.team1Id).single();
-        if (data) team1 = data;
+    if (ticket.team1_id) {
+      const t1 = await supabaseService.getTeamById(ticket.team1_id);
+      if (!t1) {
+        console.warn(`Team 1 not found for id: ${ticket.team1_id}`);
+        alert('Įspėjimas: Nerasta komanda 1. Patikrinkite duomenų bazę.');
+        team1 = undefined;
+      } else {
+        team1 = t1;
       }
-      if (ticket.event.team2Id) {
-        const { data } = await supabase.from("teams").select("id, team_name, logo").eq("id", ticket.event.team2Id).single();
-        if (data) team2 = data;
-      }
-    } catch (e) {
-      // fallback: ignore team info if fetch fails
     }
-    const pdfBytes = await generateTicketPDF(ticket, team1, team2);
-    const blob = uint8ArrayToPdfBlob(pdfBytes);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ticket-${ticket.id}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
+    if (ticket.team2_id) {
+      const t2 = await supabaseService.getTeamById(ticket.team2_id);
+      if (!t2) {
+        console.warn(`Team 2 not found for id: ${ticket.team2_id}`);
+        alert('Įspėjimas: Nerasta komanda 2. Patikrinkite duomenų bazę.');
+        team2 = undefined;
+      } else {
+        team2 = t2;
+      }
+    }
+    // Ensure qr_code_url is set
+    const qrCodeUrl = ticket.qr_code_url && ticket.qr_code_url.trim() !== '' ? ticket.qr_code_url : `/api/validate-ticket/${ticket.id}`;
+    const ticketForPdf = { ...ticket, qr_code_url: qrCodeUrl };
+    if (!pdfUrl || typeof pdfUrl !== 'string' || pdfUrl.trim() === '') {
+      // 1. Generate PDF
+      const pdfBytes = await generateTicketPDF(ticketForPdf, team1, team2);
+      const pdfBlob = uint8ArrayToPdfBlob(pdfBytes);
+      // 2. Upload to Supabase
+      const uploadedPath = await uploadPdfToSupabase(ticket.id, pdfBlob);
+      if (!uploadedPath) {
+        alert('Nepavyko įkelti PDF į serverį.');
+        return;
+      }
+      // 3. Update ticket record
+      await updateTicketPdfUrl(ticket.id, uploadedPath);
+      pdfUrl = SUPABASE_PDF_BASE_URL + uploadedPath;
+    }
+    // 4. Download PDF
+    try {
+      const res = await fetch(pdfUrl);
+      if (!res.ok) throw new Error('PDF not found');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ticket-${ticket.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+    } catch (e) {
+      alert('Nepavyko atsisiųsti PDF.');
+    }
   };
+
+  const handleResend = async (ticketId: string) => {
+    setResendingId(ticketId)
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/tickets`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticket_id: ticketId }),
+      })
+      if (res.ok) {
+        toast({ title: "Bilietas išsiųstas pakartotinai", description: "El. laiškas su PDF bilietu išsiųstas pirkėjui." })
+      } else {
+        const data = await res.json()
+        toast({ title: "Klaida siunčiant bilietą", description: data.error || "Nepavyko išsiųsti bilieto el. paštu.", variant: "destructive" })
+      }
+    } catch (err) {
+      toast({ title: "Klaida siunčiant bilietą", description: "Nepavyko išsiųsti bilieto el. paštu.", variant: "destructive" })
+    } finally {
+      setResendingId(null)
+    }
+  }
 
   // Filter tickets by event name and scan status
   const filteredTickets = tickets.filter(ticket => {
     const matchesEvent = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
     const matchesScan =
       scanStatus === 'all' ||
-      (scanStatus === 'scanned' && ticket.isValidated) ||
-      (scanStatus === 'not_scanned' && !ticket.isValidated)
+      (scanStatus === 'scanned' && ticket.is_validated) ||
+      (scanStatus === 'not_scanned' && !ticket.is_validated)
     return matchesEvent && matchesScan
   })
 
@@ -163,13 +251,9 @@ export default function TicketsPage() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>ID</TableHead>
               <TableHead>Renginys</TableHead>
               <TableHead>Pirkėjas</TableHead>
-              <TableHead>El. paštas</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Laikas</TableHead>
-              <TableHead>Tipas</TableHead>
-              <TableHead>Kaina</TableHead>
               <TableHead>Statusas</TableHead>
               <TableHead>Veiksmai</TableHead>
             </TableRow>
@@ -177,28 +261,28 @@ export default function TicketsPage() {
           <TableBody>
             {filteredTickets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-gray-500">Nėra bilietų pagal pasirinktus filtrus</TableCell>
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">Nėra bilietų pagal pasirinktus filtrus</TableCell>
               </TableRow>
             ) : (
               filteredTickets.map((ticket) => (
                 <TableRow key={ticket.id}>
+                  <TableCell>{ticket.id}</TableCell>
                   <TableCell>{ticket.event.title}</TableCell>
-                  <TableCell>{ticket.purchaserName}</TableCell>
-                  <TableCell>{ticket.purchaserEmail}</TableCell>
-                  <TableCell>{ticket.event.date}</TableCell>
-                  <TableCell>{ticket.event.time}</TableCell>
-                  <TableCell>{ticket.tier.name}</TableCell>
-                  <TableCell>{ticket.tier.price} €</TableCell>
+                  <TableCell>{ticket.purchaser_name}</TableCell>
                   <TableCell>
-                <Badge variant={ticket.isValidated ? "default" : "secondary"}>
-                      {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
-                </Badge>
+                    <Badge variant={ticket.is_validated ? "default" : "secondary"}>
+                      {ticket.is_validated ? "Patvirtintas" : "Galiojantis"}
+                    </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleDownloadPDF(ticket)} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
+                    <Button onClick={() => handleDownloadPDF(ticket.id)} variant="outline" size="sm">
+                      <Download className="h-4 w-4 mr-2" />
                       PDF
-              </Button>
+                    </Button>
+                    <Button onClick={() => handleResend(ticket.id)} variant="outline" size="sm" className="ml-2" disabled={resendingId === ticket.id}>
+                      <RefreshCw className={"h-4 w-4 mr-2 animate-spin" + (resendingId === ticket.id ? "" : " hidden")} />
+                      {resendingId === ticket.id ? "Siunčiama..." : "Persiųsti"}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))

@@ -24,25 +24,23 @@ export interface PricingTier {
 
 export interface Ticket {
   id: string
-  eventId: string
-  tierId: string
-  purchaserName: string
-  purchaserEmail: string
-  isValidated: boolean
-  createdAt: string
-  validatedAt: string | null
-  qrCodeUrl: string // Added QR code URL
-  userId?: string // Added for user assignment
-  eventCoverImageUrl?: string // Added for event cover image from covers bucket
-  eventDate?: string // Added for event date assigned to ticket
-  eventTitle?: string // Added for event title
-  eventDescription?: string // Added for event description
-  eventLocation?: string // Added for event location
-  eventTime?: string // Added for event time
-  team1Id?: string // Added for team1
-  team2Id?: string // Added for team2
-  teamId?: string // Added for legacy team_id column
-  pdfUrl?: string // Added for ticket PDF public URL
+  event_id: string
+  tier_id: string
+  purchaser_name: string
+  purchaser_email: string
+  is_validated: boolean
+  created_at: string
+  validated_at: string | null
+  qr_code_url: string
+  event_cover_image_url?: string
+  event_date?: string
+  event_title?: string
+  event_description?: string
+  event_location?: string
+  event_time?: string
+  team1_id?: string
+  team2_id?: string
+  pdf_url?: string
 }
 
 // Extended types for API responses
