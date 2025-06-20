@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { saveAs } from "file-saver";
-import { supabaseService } from "@/lib/supabase-service"
+import { dbService } from "@/lib/db-service"
 import { supabase } from "@/lib/supabase"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 
@@ -25,42 +25,54 @@ export default function FansPage() {
     const fetchFans = async () => {
       try {
         // Fetch all tickets and all pricing tiers (no eventId filter)
-        const [tickets, tiers, userSubs] = await Promise.all([
-          supabaseService.getTicketsWithDetails(),
-          supabase.from("pricing_tiers").select("*").then(({ data }) => data || []),
-          supabase.from("user_subscriptions").select("*, users:user_id(email), subscriptions(title, duration_days)").then(({ data }) => data || []),
+        const [tickets, userSubs] = await Promise.all([
+          dbService.getTicketsWithDetails(),
+          supabase.from("user_subscriptions").select(`
+            *,
+            user:user_id (email),
+            subscription:subscription_id (name, duration_months)
+          `).then(({ data }) => data || []),
         ])
-        // Build price map
-        const tierPriceMap = Object.fromEntries((tiers || []).map(t => [t.id, t.price]))
+
         // Build subscription map by email
         const subMap = new Map<string, { status: string, expiry: string }>()
         for (const us of userSubs) {
-          const userEmail = us.users?.email
+          const userEmail = us.user?.email
           let status = "Nėra";
           let expiry = "-";
-          if (us.expires_at) {
+          if (us.end_date) {
             const now = new Date();
-            const exp = new Date(us.expires_at);
+            const exp = new Date(us.end_date);
             status = exp > now ? "Galioja" : "Nebegalioja";
             expiry = exp.toLocaleDateString();
           }
           if (userEmail) {
             // Only keep the latest/valid subscription
-            if (!subMap.has(userEmail) || (us.expires_at && new Date(us.expires_at) > new Date(subMap.get(userEmail)?.expiry || 0))) {
+            if (!subMap.has(userEmail) || (us.end_date && new Date(us.end_date) > new Date(subMap.get(userEmail)?.expiry || 0))) {
               subMap.set(userEmail, { status, expiry })
             }
           }
         }
+
         // Aggregate fans
-        const fanMap = new Map<string, { id: string, name: string, email: string, events: Set<string>, moneySpent: number, subscriptionStatus?: string, subscriptionExpiry?: string }>()
+        const fanMap = new Map<string, { 
+          id: string, 
+          name: string, 
+          email: string, 
+          events: Set<string>, 
+          moneySpent: number, 
+          subscriptionStatus?: string, 
+          subscriptionExpiry?: string 
+        }>()
+
         for (const t of tickets || []) {
-          if (!t.purchaserEmail) continue
-          const key = t.purchaserEmail
+          if (!t.user?.email) continue
+          const key = t.user.email
           if (!fanMap.has(key)) {
             fanMap.set(key, {
               id: key,
-              name: t.purchaserName || "",
-              email: t.purchaserEmail,
+              name: t.user.name || "",
+              email: t.user.email,
               events: new Set(),
               moneySpent: 0,
               subscriptionStatus: subMap.get(key)?.status || "Nėra",
@@ -68,9 +80,10 @@ export default function FansPage() {
             })
           }
           const fan = fanMap.get(key)!
-          fan.events.add(t.eventId)
-          fan.moneySpent += Number(t.tier?.price || tierPriceMap[t.tierId] || 0)
+          fan.events.add(t.event_id)
+          fan.moneySpent += Number(t.pricing_tier?.price || 0)
         }
+
         const fans = Array.from(fanMap.values()).map(fan => ({
           id: fan.id,
           name: fan.name,

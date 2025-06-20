@@ -32,6 +32,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
   const [selectedTierId, setSelectedTierId] = useState("")
   const [purchaserName, setPurchaserName] = useState("")
   const [purchaserEmail, setPurchaserEmail] = useState("")
+  const [purchaserSurname, setPurchaserSurname] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
@@ -42,25 +43,49 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
   useEffect(() => {
     if (selectedEventId) {
+      // Reset tier selection when event changes
+      setSelectedTierId('');
+      setPricingTiers([]);
       fetchPricingTiers(selectedEventId)
     }
   }, [selectedEventId])
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/events")
-      const data = await response.json()
-      setEvents(data)
+      const { data, error } = await supabase
+        .from("events")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      if (Array.isArray(data)) {
+        setEvents(data)
+      } else {
+        console.error("Fetched events data is not an array:", data);
+        setEvents([]);
+      }
     } catch (error) {
       console.error("Failed to fetch events:", error)
+      setEvents([]);
     }
   }
 
   const fetchPricingTiers = async (eventId: string) => {
+    if (!eventId) return;
     try {
-      const response = await fetch(`/api/events/${eventId}/pricing-tiers`)
-      const data = await response.json()
-      setPricingTiers(data)
+      const { data, error } = await supabase
+        .from('pricing_tiers')
+        .select('*')
+        .eq('event_id', eventId);
+
+      if (error) {
+        throw error;
+      }
+      
+      setPricingTiers(data || []);
     } catch (error) {
       console.error("Failed to fetch pricing tiers:", error)
       setPricingTiers([])
@@ -86,19 +111,20 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
       const { team1_id, team2_id } = eventData
 
       // Insert ticket directly into Supabase
-      const { data, error } = await supabase
+      const { data: ticket, error } = await supabase
         .from("tickets")
-        .insert([{
-          id: ticketId,
-          event_id: selectedEventId,
-          tier_id: selectedTierId,
-          purchaser_name: purchaserName,
-          purchaser_email: purchaserEmail,
-          is_validated: false,
-          qr_code_url: qrCodeUrl,
-          team1_id,
-          team2_id,
-        }])
+        .insert([
+          {
+            event_id: selectedEventId,
+            tier_id: selectedTierId,
+            purchaser_name: purchaserName,
+            purchaser_email: purchaserEmail,
+            purchaser_surname: purchaserSurname,
+            status: 'valid',
+          },
+        ])
+        .select()
+        .single()
 
       if (error) {
         alert("Supabase error: " + (error.message || JSON.stringify(error)))
@@ -109,6 +135,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
       setSelectedTierId("")
       setPurchaserName("")
       setPurchaserEmail("")
+      setPurchaserSurname("")
     } catch (error) {
       alert("Failed to create ticket: " + JSON.stringify(error))
     } finally {
@@ -173,6 +200,11 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
               onChange={(e) => setPurchaserEmail(e.target.value)}
               required
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="surname">Pirkėjo pavardė</Label>
+            <Input id="surname" value={purchaserSurname} onChange={(e) => setPurchaserSurname(e.target.value)} required />
           </div>
 
           <div className="flex justify-end gap-2">

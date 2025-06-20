@@ -2,10 +2,10 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { useAuth } from "@/lib/auth-context"
+import { useSupabaseClient } from '@supabase/auth-helpers-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,30 +13,47 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = useSupabaseClient()
+
+  useEffect(() => {
+    if (searchParams?.get('registered') === 'true') {
+      setSuccess('Registracija sėkminga! Galite prisijungti.')
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+    setSuccess("")
     setIsLoading(true)
 
     try {
-      const success = await login(email, password)
+      console.log(`Bandoma prijungti vartotoją: ${email}`);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-      if (success) {
-        router.push("/dashboard/overview")
+      if (error) {
+        console.error("Supabase prisijungimo klaida:", error.message);
+        setError("Neteisingas el. paštas arba slaptažodis")
       } else {
-        setError("Invalid email or password")
+        console.log("Vartotojas sėkmingai prijungtas. Atnaujinama sesija ir nukreipiama...");
+        await router.refresh()
+        router.replace("/dashboard/overview")
+        console.log("Nukreipimas į /dashboard/overview įvykdytas.");
       }
     } catch (err) {
-      setError("An error occurred during login")
-      console.error(err)
+      console.error("Klaida prisijungimo bloke:", err);
+      setError("Įvyko klaida bandant prisijungti")
     } finally {
       setIsLoading(false)
     }
@@ -53,6 +70,11 @@ export default function LoginPage() {
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          {success && (
+            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
+              <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -100,5 +122,17 @@ export default function LoginPage() {
         </CardFooter>
       </Card>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }

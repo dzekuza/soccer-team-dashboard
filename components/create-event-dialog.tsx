@@ -22,6 +22,9 @@ import Image from "next/image"
 import type { Team } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 import { Stepper } from "@/components/ui/stepper"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { Calendar } from "./ui/calendar"
+import { format } from "date-fns"
 
 interface PricingTier {
   name: string
@@ -153,81 +156,96 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    setApiError(null)
     setCoverImageFile(file)
     setCoverImageUploading(true)
-    const fileExt = file.name.split('.').pop()
-    const fileName = `event-cover-${Date.now()}.${fileExt}`
-    const { data, error } = await supabase.storage.from('covers').upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false,
-    })
-    if (error) {
-      setApiError('Failed to upload cover image')
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `event-cover-${Date.now()}.${fileExt}`
+
+      const { data, error } = await supabase.storage
+        .from('covers')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (error) {
+        throw error
+      }
+
+      const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName)
+      setCoverImageUrl(urlData.publicUrl)
+    } catch (error) {
+      console.error("Cover upload error:", error)
+      setApiError(error instanceof Error ? error.message : "Failed to upload cover image")
+    } finally {
       setCoverImageUploading(false)
-      return
     }
-    const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName)
-    setCoverImageUrl(urlData.publicUrl)
-    setCoverImageUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setApiError("")
     setApiSuccess("")
+    setIsLoading(true)
 
-    console.log("[DEBUG] Submitting event form", { formData, pricingTiers, team1Id, team2Id, coverImageUrl })
-
-    const isValid = validateForm()
-    console.log("[DEBUG] Validation result:", isValid, errors)
-    if (!isValid) {
-      console.warn("[DEBUG] Validation failed", errors)
+    if (!validateForm()) {
+      setIsLoading(false)
       return
     }
 
-    setIsLoading(true)
-
     try {
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setApiError("You must be logged in to create an event.")
-        setIsLoading(false)
-        return
+      // The event object to insert
+      const eventToInsert = {
+        title: formData.title,
+        description: formData.description,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        team1_id: team1Id || null,
+        team2_id: team2Id || null,
+        cover_image_url: coverImageUrl || null,
+      };
+
+      // 1. Insert the event
+      const { data: eventData, error: eventError } = await supabase
+        .from('events')
+        .insert(eventToInsert)
+        .select()
+        .single();
+
+      if (eventError) {
+        throw eventError;
       }
-      console.log("[DEBUG] Submitting event data to API:", { ...formData, pricingTiers, team1Id, team2Id, coverImageUrl })
 
-      const response = await fetch("/api/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          ...formData,
-          pricingTiers,
-          team1Id,
-          team2Id,
-          coverImageUrl: coverImageUrl || undefined,
-        }),
-      })
+      // 2. Insert the pricing tiers
+      const tiersToInsert = pricingTiers.map(tier => ({
+        event_id: eventData.id,
+        name: tier.name,
+        price: tier.price,
+        quantity: tier.maxQuantity
+      }));
 
-      const responseData = await response.json()
-      console.log("[DEBUG] API response:", response.status, responseData)
+      const { error: tiersError } = await supabase
+        .from('pricing_tiers')
+        .insert(tiersToInsert);
 
-      if (!response.ok) {
-        throw new Error(responseData.error || "Failed to create event")
+      if (tiersError) {
+        // Attempt to roll back the event creation if tiers fail
+        await supabase.from('events').delete().eq('id', eventData.id);
+        throw tiersError;
       }
 
       setApiSuccess("Event created successfully!")
       resetForm()
-      setTimeout(() => {
-        onEventCreated()
-        onOpenChange(false)
-      }, 1500)
+      onEventCreated()
+      onOpenChange(false)
     } catch (error) {
-      setApiError(error instanceof Error ? error.message : "Unknown error occurred")
-      console.error("[DEBUG] Error during event creation:", error)
+      console.error('Error creating event:', error)
+      setApiError(error instanceof Error ? error.message : 'Failed to create event')
     } finally {
       setIsLoading(false)
     }

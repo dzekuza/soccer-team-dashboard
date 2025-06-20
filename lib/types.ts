@@ -1,56 +1,101 @@
 // Base types
+export interface Corporation {
+  id: string
+  name: string
+  created_at: string
+  owner_id?: string
+}
+
+export interface User {
+  id: string
+  email: string
+  name?: string
+  surname?: string
+  phone?: string
+  role: 'user' | 'admin'
+  created_at: string
+}
+
+export interface Team {
+  id: string
+  team_name: string
+  logo?: string
+  created_at: string
+}
+
 export interface Event {
   id: string
   title: string
-  description: string
-  date: string
-  time: string
-  location: string
-  createdAt: string
-  updatedAt: string
-  team1Id?: string
-  team2Id?: string
-  coverImageUrl?: string
+  description?: string
+  date?: string
+  time?: string
+  location?: string
+  team1_id?: string
+  team2_id?: string
+  cover_image_url?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface PricingTier {
   id: string
-  eventId: string
+  event_id: string
   name: string
   price: number
-  maxQuantity: number
-  soldQuantity: number
+  quantity: number
+  created_at: string
+  updated_at: string
+}
+
+export interface Subscription {
+  id: string
+  title: string
+  description?: string
+  price: number
+  duration_days: number
+  created_at: string
+  corporation_id?: string
 }
 
 export interface Ticket {
   id: string
   event_id: string
   tier_id: string
-  purchaser_name: string
-  purchaser_email: string
-  is_validated: boolean
+  purchaser_name?: string
+  purchaser_surname?: string
+  purchaser_email?: string
+  status: 'pending' | 'valid' | 'validated' | 'cancelled'
+  qr_code_url?: string
   created_at: string
-  validated_at: string | null
-  qr_code_url: string
-  event_cover_image_url?: string
-  event_date?: string
-  event_title?: string
-  event_description?: string
-  event_location?: string
-  event_time?: string
-  team1_id?: string
-  team2_id?: string
-  pdf_url?: string
+  updated_at: string
+}
+
+export interface UserSubscription {
+  id: string
+  user_id: string
+  subscription_id: string
+  purchase_date: string
+  expires_at?: string
+  assigned_by?: string
+  created_at: string
+  corporation_id?: string
 }
 
 // Extended types for API responses
 export interface EventWithTiers extends Event {
-  pricingTiers: PricingTier[]
+  pricing_tiers: PricingTier[]
 }
 
 export interface TicketWithDetails extends Ticket {
   event: Event
-  tier: PricingTier
+  pricing_tier: PricingTier
+}
+
+export interface RecentActivity {
+  type: 'event_created' | 'ticket_generated' | 'ticket_validated';
+  title: string;
+  timestamp: string;
+  details: string;
 }
 
 export interface EventStats {
@@ -60,30 +105,47 @@ export interface EventStats {
   totalRevenue: number
 }
 
-export interface Team {
-  id: string
-  team_name: string
-  logo: string
-  created_at?: string
-}
-
-export interface Subscription {
-  id: string
+export interface CreateEventInput {
   title: string
   description?: string
-  price: number
-  durationDays: number
-  createdAt: string
+  date?: string
+  time?: string
+  location?: string
+  team1_id?: string
+  team2_id?: string
+  cover_image_url?: string
+  pricing_tiers: {
+    name: string
+    price: number
+    quantity: number
+  }[]
 }
 
-export interface UserSubscription {
-  id: string
-  userId: string
-  subscriptionId: string
-  purchaseDate: string
-  expiresAt?: string
-  assignedBy?: string
-  createdAt: string
-  // Optionally, include joined subscription info
-  subscription?: Subscription
+export interface CreateTicketInput {
+  event_id: string
+  tier_id: string
+  purchaser_name?: string
+  user_id?: string
+}
+
+export type Database = {
+  public: {
+    Tables: {
+      events: {
+        Row: Event
+      },
+      pricing_tiers: {
+        Row: PricingTier
+      },
+      tickets: {
+        Row: Ticket
+      },
+      users: {
+        Row: User
+      },
+      teams: {
+        Row: Team
+      }
+    }
+  }
 }

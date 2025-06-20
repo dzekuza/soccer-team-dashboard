@@ -4,18 +4,21 @@ import type { TicketWithDetails, Team } from './types'
 import { formatCurrency } from './utils'
 
 // Helper to fetch image as Uint8Array
-async function fetchImage(url: string): Promise<Uint8Array | null> {
+async function fetchImage(url: string | undefined): Promise<Uint8Array | null> {
+  if (!url) return null;
   try {
-    const res = await fetch(url)
-    if (!res.ok) return null
-    return new Uint8Array(await res.arrayBuffer())
-  } catch {
+    const response = await fetch(url)
+    const arrayBuffer = await response.arrayBuffer()
+    return new Uint8Array(arrayBuffer)
+  } catch (error) {
+    console.error('Error fetching image:', error)
     return null
   }
 }
 
 // Helper to replace unsupported Lithuanian characters with ASCII equivalents
-function replaceUnsupportedChars(str: string): string {
+function replaceUnsupportedChars(str: string | undefined): string {
+  if (!str) return '';
   return str
     .replace(/ų/g, 'u')
     .replace(/ū/g, 'u')
@@ -43,9 +46,8 @@ export async function generateTicketPDF(
   team2?: Team
 ): Promise<Uint8Array> {
   console.log('Ticket passed to PDF generator:', ticket);
-  console.log('team1_id:', ticket.team1_id, 'team2_id:', ticket.team2_id);
-  console.log('Fetched team1:', team1);
-  console.log('Fetched team2:', team2);
+  console.log('Team 1:', team1);
+  console.log('Team 2:', team2);
   const pdfDoc = await PDFDocument.create()
   const width = 595, height = 283 // ~A5 landscape
   const page = pdfDoc.addPage([width, height])
@@ -120,7 +122,7 @@ export async function generateTicketPDF(
     }
   }
   // Draw team1 name in bold, larger font, with white shadow for contrast
-  const team1Name = replaceUnsupportedChars(team1?.team_name || '')
+  const team1Name = replaceUnsupportedChars(team1?.team_name ?? '')
   const teamNameFontSize = 18
   // Shadow
   page.drawText(team1Name, {
@@ -159,7 +161,7 @@ export async function generateTicketPDF(
     }
   }
   // Draw team2 name in bold, larger font, with white shadow for contrast
-  const team2Name = replaceUnsupportedChars(team2?.team_name || '')
+  const team2Name = replaceUnsupportedChars(team2?.team_name ?? '')
   // Shadow
   page.drawText(team2Name, {
     x: blueWidth - 120 + 1,
@@ -190,11 +192,11 @@ export async function generateTicketPDF(
   })
 
   // Event start (large orange)
-  page.drawText(`RUNGtyniu PRADzIA: ${ticket.event.time}`, {
+  page.drawText(`RUNGtyniu PRADzIA: ${ticket.event.time || ''}`, {
     x: 40, y: height/2 - 40, size: 22, font: customFont, color: orange,
   })
   // Date (gray)
-  page.drawText(ticket.event.date, {
+  page.drawText(ticket.event.date || '', {
     x: 40, y: height/2 - 65, size: 13, font: customFont, color: gray,
   })
 
@@ -209,20 +211,22 @@ export async function generateTicketPDF(
   page.drawText((ticket.event.location || '').toUpperCase(), {
     x: 40, y: 20, size: 12, font: customFont, color: white,
   })
-  page.drawText((ticket.tier.name || '').toUpperCase(), {
+  page.drawText((ticket.pricing_tier.name || '').toUpperCase(), {
     x: 180, y: 20, size: 12, font: customFont, color: white,
   })
 
   // QR code (centered in orange section)
-  if (!ticket.qr_code_url || typeof ticket.qr_code_url !== 'string' || ticket.qr_code_url.trim() === '') {
-    throw new Error(`Ticket ${ticket.id}: Missing or empty qr_code_url for QR code generation.`)
+  const qrCodeUrl = `/api/validate-ticket/${ticket.id}`;  // Always use validation URL for consistency
+  try {
+    const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUrl, { width: 180, margin: 1 })
+    const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
+    const qrImage = await pdfDoc.embedPng(qrImageBytes)
+    page.drawImage(qrImage, {
+      x: blueWidth + (orangeWidth-160)/2, y: (height-160)/2, width: 160, height: 160,
+    })
+  } catch (error) {
+    console.error(`Error generating QR code for ticket ${ticket.id}:`, error)
   }
-  const qrCodeDataUrl = await QRCode.toDataURL(ticket.qr_code_url, { width: 180, margin: 1 })
-  const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
-  const qrImage = await pdfDoc.embedPng(qrImageBytes)
-  page.drawImage(qrImage, {
-    x: blueWidth + (orangeWidth-160)/2, y: (height-160)/2, width: 160, height: 160,
-  })
 
   const pdfBytes = await pdfDoc.save()
   return pdfBytes

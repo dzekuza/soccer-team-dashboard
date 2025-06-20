@@ -1,15 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { useSearchParams } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
+import { supabase } from "@/lib/supabase";
 
 interface Event {
   id: string;
   title: string;
   pricingTiers: PricingTier[];
+  maxQuantity: number;
 }
 
 interface PricingTier {
@@ -19,7 +21,7 @@ interface PricingTier {
   maxQuantity: number;
 }
 
-export default function CheckoutPage() {
+function CheckoutForm() {
   const searchParams = useSearchParams();
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEventId, setSelectedEventId] = useState("");
@@ -31,9 +33,17 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("/api/events")
-      .then((res) => res.json())
-      .then((data) => setEvents(data));
+    const fetchEvents = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const headers: HeadersInit = {};
+      if (session) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+      fetch("/api/events", { headers })
+        .then((res) => res.json())
+        .then((data) => setEvents(data));
+    }
+    fetchEvents();
   }, []);
 
   useEffect(() => {
@@ -198,12 +208,20 @@ export default function CheckoutPage() {
                 quantity < 1
               }
             >
-              {loading ? "Redirecting to Stripe..." : `Pay ${formatCurrency(totalPrice)}`}
+              {loading ? "Processing..." : "Continue to Payment"}
             </button>
-            {error && <div className="text-red-600 mt-2">{error}</div>}
+            {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
           </form>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutForm />
+    </Suspense>
   );
 } 

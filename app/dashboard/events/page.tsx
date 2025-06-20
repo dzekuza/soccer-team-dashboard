@@ -8,7 +8,7 @@ import { CreateEventDialog } from "@/components/create-event-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import type { EventWithTiers, TicketWithDetails, Team } from "@/lib/types"
-import { formatCurrency } from "@/lib/utils"
+import { formatCurrency, cn } from "@/lib/utils"
 import Image from "next/image"
 import Link from "next/link"
 import { FullScreenCalendar } from '@/components/ui/fullscreen-calendar'
@@ -18,6 +18,7 @@ import { isSameDay } from 'date-fns'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { supabaseService } from "@/lib/supabase-service"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { supabase } from "@/lib/supabase"
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventWithTiers[]>([])
@@ -72,18 +73,19 @@ export default function EventsPage() {
   // Helper: get events for a given date
   const eventsForDate = (date: Date) => {
     return events.filter(event => {
+      if (!event.date) return false
       const eventDate = typeof event.date === 'string' ? parseISO(event.date) : event.date
       return isSameDay(eventDate, date)
     })
   }
   // Helper: get attendee count for event
-  const attendeeCount = (eventId: string) => tickets.filter(t => t.eventId === eventId).length
+  const attendeeCount = (eventId: string) => tickets.filter(t => t.event.id === eventId).length
 
   // Map events to FullScreenCalendar data structure
   const calendarData = events
-    .filter(event => event && event.title)
+    .filter(event => event && event.title && event.date)
     .reduce((acc, event) => {
-      const day = parseISO(event.date)
+      const day = parseISO(event.date!)
       const found = acc.find(d => format(d.day, 'yyyy-MM-dd') === format(day, 'yyyy-MM-dd'))
       const eventObj = {
         id: event.id,
@@ -192,8 +194,8 @@ export default function EventsPage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
           {events.map((event) => {
-            const team1 = getTeam(event.team1Id)
-            const team2 = getTeam(event.team2Id)
+            const team1 = getTeam(event.team1_id)
+            const team2 = getTeam(event.team2_id)
             const missingTeam = !team1 || !team2;
             return (
               <Card key={event.id} className="flex flex-col">
@@ -201,7 +203,7 @@ export default function EventsPage() {
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex flex-col items-center gap-1 w-1/3">
                       {team1 ? (
-                        <Image src={team1.logo} alt={team1.team_name} width={36} height={36} className="rounded bg-white p-1" />
+                        <Image src={team1.logo || ''} alt={team1.team_name} width={36} height={36} className="rounded bg-white p-1" />
                       ) : (
                         <div className="w-9 h-9 flex items-center justify-center bg-gray-200 rounded">
                           <AlertTriangle className="text-gray-400 w-6 h-6" />
@@ -212,7 +214,7 @@ export default function EventsPage() {
                     <span className="text-xs text-gray-500 w-1/3 text-center">prieš</span>
                     <div className="flex flex-col items-center gap-1 w-1/3">
                       {team2 ? (
-                        <Image src={team2.logo} alt={team2.team_name} width={36} height={36} className="rounded bg-white p-1" />
+                        <Image src={team2.logo || ''} alt={team2.team_name} width={36} height={36} className="rounded bg-white p-1" />
                       ) : (
                         <div className="w-9 h-9 flex items-center justify-center bg-gray-200 rounded">
                           <AlertTriangle className="text-gray-400 w-6 h-6" />
@@ -248,20 +250,20 @@ export default function EventsPage() {
                     <div className="pt-2">
                       <p className="font-medium mb-1">Kainų lygiai:</p>
                       <div className="space-y-1">
-                        {event.pricingTiers.map((tier) => {
-                          const generatedCount = tickets.filter(t => t.tierId === tier.id).length;
-                          const validatedCount = tickets.filter(t => t.tierId === tier.id && t.isValidated).length;
+                        {event.pricing_tiers?.map((tier) => {
+                          const generatedCount = tickets.filter(t => t.pricing_tier.name === tier.name).length;
+                          const validatedCount = tickets.filter(t => t.pricing_tier.name === tier.name && t.status === 'validated').length;
                           return (
-                            <div key={tier.id} className="flex justify-between items-center">
-                              <span>{tier.name}</span>
-                              <div className="flex items-center space-x-2">
-                                <span>{formatCurrency(tier.price)}</span>
-                                <Badge variant="outline" className="text-xs">
-                                  {generatedCount}/{tier.maxQuantity} (patvirtinta: {validatedCount})
-                                </Badge>
+                            <div key={tier.id} className="flex justify-between items-center text-xs">
+                              <div className="flex items-center">
+                                <span className="font-medium">{tier.name}</span>
+                                <span className="text-gray-500 ml-2">({formatCurrency(tier.price)})</span>
                               </div>
+                              <Badge variant="secondary" className="font-mono">
+                                {validatedCount} / {generatedCount} / {tier.quantity}
+                              </Badge>
                             </div>
-                          );
+                          )
                         })}
                       </div>
                     </div>
@@ -293,15 +295,21 @@ export default function EventsPage() {
                       if (!window.confirm(`Ar tikrai norite ištrinti renginį "${event.title}"? Šio veiksmo atšaukti negalėsite.`)) return;
                       setDeletingId(event.id);
                       try {
-                        const res = await fetch(`/api/events/${event.id}`, { method: "DELETE" });
-                        if (res.status === 204) {
-                          setEvents(events.filter(e => e.id !== event.id));
-                        } else {
-                          const data = await res.json();
-                          alert(data.error || "Nepavyko ištrinti renginio.");
+                        const { error } = await supabase
+                          .from('events')
+                          .delete()
+                          .eq('id', event.id)
+
+                        if (error) {
+                          throw error;
                         }
-                      } catch {
-                        alert("Nepavyko ištrinti renginio. Tinklo klaida.");
+                        
+                        setEvents(events.filter(e => e.id !== event.id));
+                        alert('Renginys sėkmingai ištrintas.');
+
+                      } catch (err) {
+                        const errorMessage = err instanceof Error ? err.message : "Nepavyko ištrinti renginio.";
+                        alert(errorMessage);
                       } finally {
                         setDeletingId(null);
                       }

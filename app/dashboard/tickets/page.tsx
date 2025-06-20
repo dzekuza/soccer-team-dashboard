@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { generateTicketPDF, uint8ArrayToPdfBlob } from "@/lib/pdf-generator"
 import { useToast } from "@/components/ui/use-toast"
+import { dbService } from "@/lib/db-service"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
@@ -19,6 +20,8 @@ export default function TicketsPage() {
   const [scanStatus, setScanStatus] = useState<'all' | 'scanned' | 'not_scanned'>('all')
   const [resendingId, setResendingId] = useState<string | null>(null)
   const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const SUPABASE_PUBLIC_URL = "https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/ticket-pdfs";
   const SUPABASE_PDF_BASE_URL = "https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/ticket-pdfs//";
@@ -29,63 +32,25 @@ export default function TicketsPage() {
   }, [])
 
   const fetchTickets = async () => {
+    setIsLoading(true)
+    setError(null)
     try {
-      const { data, error } = await supabase
-        .from("tickets")
+      const { data: tickets, error } = await supabase
+        .from('tickets')
         .select(`
-          id, event_id, tier_id, purchaser_name, purchaser_email, is_validated, created_at,
-          event:events(*),
-          tier:pricing_tiers(*)
+          *,
+          event:events (*),
+          pricing_tier:pricing_tiers (*)
         `)
-        .order("created_at", { ascending: false })
-      if (error) throw error
-      // Map data to TicketWithDetails type
-      const mapped = (data || [])
-        .map((t: any) => ({
-          id: t.id,
-          event_id: t.event_id,
-          tier_id: t.tier_id,
-          purchaser_name: t.purchaser_name,
-          purchaser_email: t.purchaser_email,
-          is_validated: t.is_validated,
-          created_at: t.created_at,
-          validated_at: t.validated_at ?? null,
-          qr_code_url: t.qr_code_url ?? '',
-          event_cover_image_url: t.event_cover_image_url ?? undefined,
-          event_date: t.event_date ?? undefined,
-          event_title: t.event_title ?? undefined,
-          event_description: t.event_description ?? undefined,
-          event_location: t.event_location ?? undefined,
-          event_time: t.event_time ?? undefined,
-          team1_id: t.team1_id ?? undefined,
-          team2_id: t.team2_id ?? undefined,
-          pdf_url: t.pdf_url ?? undefined,
-          event: t.event ? {
-            id: t.event.id,
-            title: t.event.title,
-            description: t.event.description,
-            date: t.event.date,
-            time: t.event.time,
-            location: t.event.location,
-            createdAt: t.event.created_at,
-            updatedAt: t.event.updated_at,
-            team1Id: t.event.team1_id,
-            team2Id: t.event.team2_id,
-            coverImageUrl: t.event.cover_image_url ?? undefined,
-          } : undefined,
-          tier: t.tier ? {
-            id: t.tier.id,
-            eventId: t.tier.event_id,
-            name: t.tier.name,
-            price: t.tier.price,
-            maxQuantity: t.tier.max_quantity,
-            soldQuantity: t.tier.sold_quantity,
-          } : undefined,
-        }))
-        .filter((t: any) => t.event && t.tier)
-      setTickets(mapped as TicketWithDetails[])
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setTickets(tickets as TicketWithDetails[]);
     } catch (error) {
       console.error("Failed to fetch tickets:", error)
+      setError("Nepavyko įkelti bilietų. Bandykite dar kartą vėliau.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -116,55 +81,58 @@ export default function TicketsPage() {
   };
 
   const handleDownloadPDF = async (ticketId: string) => {
-    // Always fetch the latest ticket details from Supabase
-    const { supabaseService } = await import("@/lib/supabase-service");
-    const ticket = await supabaseService.getTicketById(ticketId);
-    if (!ticket) {
+    // Always fetch the latest ticket details
+    const { data: ticket, error } = await supabase
+      .from('tickets')
+      .select(`
+        *,
+        event:events (*),
+        pricing_tier:pricing_tiers (*)
+      `)
+      .eq('id', ticketId)
+      .single();
+
+    if (error || !ticket) {
       alert('Nepavyko rasti bilieto duomenų.');
+      console.error(error)
       return;
     }
-    let pdfUrl = ticket.pdf_url;
+
     let team1 = undefined;
     let team2 = undefined;
-    if (ticket.team1_id) {
-      const t1 = await supabaseService.getTeamById(ticket.team1_id);
-      if (!t1) {
-        console.warn(`Team 1 not found for id: ${ticket.team1_id}`);
+    if (ticket.event.team1_id) {
+      const t1 = await dbService.getTeamById(ticket.event.team1_id);
+      team1 = t1 || undefined;
+      if (!team1) {
+        console.warn(`Team 1 not found for id: ${ticket.event.team1_id}`);
         alert('Įspėjimas: Nerasta komanda 1. Patikrinkite duomenų bazę.');
-        team1 = undefined;
-      } else {
-        team1 = t1;
       }
     }
-    if (ticket.team2_id) {
-      const t2 = await supabaseService.getTeamById(ticket.team2_id);
-      if (!t2) {
-        console.warn(`Team 2 not found for id: ${ticket.team2_id}`);
+    if (ticket.event.team2_id) {
+      const t2 = await dbService.getTeamById(ticket.event.team2_id);
+      team2 = t2 || undefined;
+      if (!team2) {
+        console.warn(`Team 2 not found for id: ${ticket.event.team2_id}`);
         alert('Įspėjimas: Nerasta komanda 2. Patikrinkite duomenų bazę.');
-        team2 = undefined;
-      } else {
-        team2 = t2;
       }
     }
+
     // Ensure qr_code_url is set
     const qrCodeUrl = ticket.qr_code_url && ticket.qr_code_url.trim() !== '' ? ticket.qr_code_url : `/api/validate-ticket/${ticket.id}`;
     const ticketForPdf = { ...ticket, qr_code_url: qrCodeUrl };
-    if (!pdfUrl || typeof pdfUrl !== 'string' || pdfUrl.trim() === '') {
-      // 1. Generate PDF
-      const pdfBytes = await generateTicketPDF(ticketForPdf, team1, team2);
-      const pdfBlob = uint8ArrayToPdfBlob(pdfBytes);
-      // 2. Upload to Supabase
-      const uploadedPath = await uploadPdfToSupabase(ticket.id, pdfBlob);
-      if (!uploadedPath) {
-        alert('Nepavyko įkelti PDF į serverį.');
-        return;
-      }
-      // 3. Update ticket record
-      await updateTicketPdfUrl(ticket.id, uploadedPath);
-      pdfUrl = SUPABASE_PDF_BASE_URL + uploadedPath;
+
+    // Generate and upload PDF
+    const pdfBytes = await generateTicketPDF(ticketForPdf, team1, team2);
+    const pdfBlob = uint8ArrayToPdfBlob(pdfBytes);
+    const uploadedPath = await uploadPdfToSupabase(ticket.id, pdfBlob);
+    if (!uploadedPath) {
+      alert('Nepavyko įkelti PDF į serverį.');
+      return;
     }
-    // 4. Download PDF
+
+    // Download PDF
     try {
+      const pdfUrl = SUPABASE_PDF_BASE_URL + uploadedPath;
       const res = await fetch(pdfUrl);
       if (!res.ok) throw new Error('PDF not found');
       const blob = await res.blob();
@@ -209,10 +177,29 @@ export default function TicketsPage() {
     const matchesEvent = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
     const matchesScan =
       scanStatus === 'all' ||
-      (scanStatus === 'scanned' && ticket.is_validated) ||
-      (scanStatus === 'not_scanned' && !ticket.is_validated)
+      (scanStatus === 'scanned' && ticket.status === 'validated') ||
+      (scanStatus === 'not_scanned' && ticket.status !== 'validated')
     return matchesEvent && matchesScan
   })
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 font-semibold">{error}</p>
+        <Button onClick={fetchTickets} className="mt-4">Bandyti dar kartą</Button>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -259,33 +246,52 @@ export default function TicketsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredTickets.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500">Nėra bilietų pagal pasirinktus filtrus</TableCell>
-              </TableRow>
-            ) : (
-              filteredTickets.map((ticket) => (
+            {filteredTickets.length > 0 ? (
+              filteredTickets.map(ticket => (
                 <TableRow key={ticket.id}>
                   <TableCell>{ticket.id}</TableCell>
-                  <TableCell>{ticket.event.title}</TableCell>
-                  <TableCell>{ticket.purchaser_name}</TableCell>
                   <TableCell>
-                    <Badge variant={ticket.is_validated ? "default" : "secondary"}>
-                      {ticket.is_validated ? "Patvirtintas" : "Galiojantis"}
+                    <div className="flex flex-col">
+                      <span className="font-medium">{ticket.event.title}</span>
+                      <span className="text-sm text-gray-500">{ticket.pricing_tier.name}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{ticket.purchaser_name}</span>
+                      <span className="text-sm text-gray-500">{ticket.purchaser_email}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={ticket.status === 'validated' ? "secondary" : "default"}>
+                      {ticket.status === 'validated' ? "Nuskenuotas" : "Nenuskenuotas"}
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleDownloadPDF(ticket.id)} variant="outline" size="sm">
-                      <Download className="h-4 w-4 mr-2" />
-                      PDF
-                    </Button>
-                    <Button onClick={() => handleResend(ticket.id)} variant="outline" size="sm" className="ml-2" disabled={resendingId === ticket.id}>
-                      <RefreshCw className={"h-4 w-4 mr-2 animate-spin" + (resendingId === ticket.id ? "" : " hidden")} />
-                      {resendingId === ticket.id ? "Siunčiama..." : "Persiųsti"}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(ticket.id)}>
+                        <Download className="h-4 w-4 mr-1" />
+                        PDF
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleResend(ticket.id)}
+                        disabled={resendingId === ticket.id}
+                      >
+                        <RefreshCw className={`h-4 w-4 mr-1 ${resendingId === ticket.id ? "animate-spin" : ""}`} />
+                        Siųsti
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-12">
+                  Bilietų nerasta.
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { supabase } from "@/lib/supabase"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Define a local type for table rows with user and subscription info
 interface UserSubscriptionTableRow {
@@ -24,22 +25,41 @@ interface UserSubscriptionTableRow {
 }
 
 export default function SubscriptionsDashboardPage() {
+  const [corporationId, setCorporationId] = useState<string | null>(null);
   const [subs, setSubs] = useState<Subscription[]>([])
   const [userSubs, setUserSubs] = useState<UserSubscriptionTableRow[]>([])
-  const [form, setForm] = useState({ title: "", description: "", price: "", validFrom: "", validUntil: "" })
+  const [form, setForm] = useState({ title: "", description: "", price: "", durationDays: "" })
   const [assign, setAssign] = useState({ userName: "", userEmail: "", subscriptionId: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [createOpen, setCreateOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
+  const [subscription, setSubscription] = useState<UserSubscription | null>(null)
 
   useEffect(() => {
-    supabaseService.getSubscriptions().then(setSubs)
+    if (!user) return;
+    // Fetch corporation_id for the current user
+    supabase
+      .from("users")
+      .select("corporation_id")
+      .eq("id", user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setCorporationId(data.corporation_id);
+        }
+      });
+  }, [user]);
+
+  useEffect(() => {
+    if (!corporationId) return;
+    supabaseService.getSubscriptions(corporationId).then(setSubs)
     // Fetch all user subscriptions
     supabase
       .from("user_subscriptions")
       .select("*, users:user_id(email, name), subscriptions(title)")
+      .eq("corporation_id", corporationId)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
         if (!error && data) {
@@ -58,7 +78,7 @@ export default function SubscriptionsDashboardPage() {
           )
         }
       })
-  }, [])
+  }, [corporationId])
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,16 +86,17 @@ export default function SubscriptionsDashboardPage() {
     setError("")
     setSuccess("")
     try {
+      if (!corporationId) throw new Error("No corporation_id found for user")
       // Only create the subscription
       const sub = await supabaseService.createSubscription({
         title: form.title,
         description: form.description,
         price: Number(form.price),
-        validFrom: form.validFrom,
-        validUntil: form.validUntil,
-      })
+        durationDays: Number(form.durationDays),
+        corporation_id: corporationId,
+      }, corporationId)
       setSubs([sub, ...subs])
-      setForm({ title: "", description: "", price: "", validFrom: "", validUntil: "" })
+      setForm({ title: "", description: "", price: "", durationDays: "" })
       setSuccess("Prenumerata sukurta!")
       setCreateOpen(false)
     } catch (err: any) {
@@ -91,6 +112,7 @@ export default function SubscriptionsDashboardPage() {
     setError("")
     setSuccess("")
     try {
+      if (!corporationId) throw new Error("No corporation_id found for user")
       // Find or create user by email
       let userId: string | null = null
       const { data: user, error: userError } = await supabase
@@ -108,7 +130,7 @@ export default function SubscriptionsDashboardPage() {
         userId = newUser.id
       }
       if (!userId) throw new Error("Nepavyko nustatyti vartotojo ID")
-      await supabaseService.assignSubscriptionToUser(userId as string, assign.subscriptionId)
+      await supabaseService.assignSubscriptionToUser(userId as string, assign.subscriptionId, corporationId)
       setAssign({ userName: "", userEmail: "", subscriptionId: "" })
       setSuccess("Prenumerata priskirta klientui!")
       setAssignOpen(false)
@@ -133,8 +155,7 @@ export default function SubscriptionsDashboardPage() {
             <div className="text-lg font-semibold">{s.title}</div>
             <div className="text-gray-600 flex-1">{s.description}</div>
             <div className="text-sm">Kaina: <span className="font-bold">{s.price} €</span></div>
-            <div className="text-sm">Galioja nuo: <span className="font-bold">{s.validFrom ? new Date(s.validFrom).toLocaleDateString() : "-"}</span></div>
-            <div className="text-sm">Galioja iki: <span className="font-bold">{s.validUntil ? new Date(s.validUntil).toLocaleDateString() : "-"}</span></div>
+            <div className="text-sm">Trukmė (dienomis): <span className="font-bold">{s.durationDays}</span></div>
             <Button
               variant="outline"
               className="mt-2 w-fit"
@@ -167,12 +188,8 @@ export default function SubscriptionsDashboardPage() {
               <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} required />
             </div>
             <div>
-              <Label>Galioja nuo</Label>
-              <Input type="date" value={form.validFrom} onChange={e => setForm(f => ({ ...f, validFrom: e.target.value }))} required />
-            </div>
-            <div>
-              <Label>Galioja iki</Label>
-              <Input type="date" value={form.validUntil} onChange={e => setForm(f => ({ ...f, validUntil: e.target.value }))} required />
+              <Label>Trukmė (dienomis)</Label>
+              <Input type="number" value={form.durationDays} onChange={e => setForm(f => ({ ...f, durationDays: e.target.value }))} required />
             </div>
             <DialogFooter>
               <Button type="submit" disabled={loading}>Sukurti</Button>

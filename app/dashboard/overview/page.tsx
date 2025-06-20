@@ -1,35 +1,25 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from "recharts"
+import { EventStats, TicketWithDetails, RecentActivity } from "@/lib/types"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { CreateEventDialog } from "@/components/create-event-dialog"
+import { Badge } from "@/components/ui/badge"
 import { CalendarDays, Ticket, Users, DollarSign, TrendingUp, Clock } from "lucide-react"
-import type { Event, TicketWithDetails } from "@/lib/types"
-import { supabaseService } from "@/lib/supabase-service"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
+import { supabaseService } from "@/lib/supabase-service"
+import type { Event } from "@/lib/types"
 // import { initializeDemoData } from "@/lib/init-demo-data"
 
-interface DashboardStats {
-  totalEvents: number
-  totalTickets: number
-  validatedTickets: number
-  totalRevenue: number
-}
-
-interface RecentActivity {
-  type: "event_created" | "ticket_generated" | "ticket_validated"
-  title: string
-  timestamp: string
-  details: string
-}
-
-export default function OverviewPage() {
-  const [stats, setStats] = useState<DashboardStats>({
+export default function DashboardOverview() {
+  const [stats, setStats] = useState<EventStats>({
     totalEvents: 0,
     totalTickets: 0,
     validatedTickets: 0,
@@ -38,48 +28,47 @@ export default function OverviewPage() {
   const [recentEvents, setRecentEvents] = useState<Event[]>([])
   const [recentTickets, setRecentTickets] = useState<TicketWithDetails[]>([])
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const { user } = useAuth();
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        const [statsData, eventsData, ticketsData] = await Promise.all([
+          supabaseService.getEventStats(),
+          supabaseService.getEvents(),
+          supabaseService.getTicketsWithDetails(),
+        ])
+
+        setStats(statsData)
+        setRecentEvents(eventsData.slice(0, 3))
+        setRecentTickets(ticketsData.slice(0, 5))
+
+        const activity: RecentActivity[] = [
+          ...eventsData.slice(0, 2).map((event: Event) => ({
+            type: "event_created" as const,
+            title: `Event Created: ${event.title}`,
+            timestamp: event.created_at,
+            details: `${event.date} at ${event.time}`,
+          })),
+          ...ticketsData.slice(0, 3).map((ticket: TicketWithDetails) => ({
+            type: ticket.status === 'validated' ? ("ticket_validated" as const) : ("ticket_generated" as const),
+            title: ticket.status === 'validated' ? `Ticket Validated` : `Ticket Generated`,
+            timestamp: ticket.updated_at || ticket.created_at,
+            details: `${ticket.event.title} - ${ticket.purchaser_name}`,
+          })),
+        ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+
+        setRecentActivity(activity.slice(0, 5))
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchDashboardData()
   }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      const [statsData, eventsData, ticketsData] = await Promise.all([
-        supabaseService.getEventStats(),
-        supabaseService.getEvents(),
-        supabaseService.getTicketsWithDetails(),
-      ])
-
-      setStats(statsData)
-      setRecentEvents(eventsData.slice(0, 3))
-      setRecentTickets(ticketsData.slice(0, 5))
-
-      // Generate recent activity
-      const activity: RecentActivity[] = [
-        ...eventsData.slice(0, 2).map((event: Event) => ({
-          type: "event_created" as const,
-          title: `Event Created: ${event.title}`,
-          timestamp: event.createdAt,
-          details: `${event.date} at ${event.time}`,
-        })),
-        ...ticketsData.slice(0, 3).map((ticket: TicketWithDetails) => ({
-          type: ticket.isValidated ? ("ticket_validated" as const) : ("ticket_generated" as const),
-          title: ticket.isValidated ? `Ticket Validated` : `Ticket Generated`,
-          timestamp: ticket.validatedAt || ticket.createdAt,
-          details: `${ticket.event.title} - ${ticket.purchaserName}`,
-        })),
-      ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-
-      setRecentActivity(activity.slice(0, 5))
-    } catch (error) {
-      console.error("Failed to fetch dashboard data:", error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -97,12 +86,12 @@ export default function OverviewPage() {
     })
   }
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Įkeliama suvestinė...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading Dashboard...</p>
         </div>
       </div>
     )
@@ -122,7 +111,7 @@ export default function OverviewPage() {
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEvents}</div>
+            <div className="text-2xl font-bold">{stats.totalEvents || 0}</div>
             <p className="text-xs text-muted-foreground">Sukurti aktyvūs renginiai</p>
           </CardContent>
         </Card>
@@ -132,8 +121,8 @@ export default function OverviewPage() {
             <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTickets}</div>
-            <p className="text-xs text-muted-foreground">{stats.validatedTickets} patvirtinta ({Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%)</p>
+            <div className="text-2xl font-bold">{stats.totalTickets || 0}</div>
+            <p className="text-xs text-muted-foreground">{stats.validatedTickets || 0} patvirtinta ({Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%)</p>
           </CardContent>
         </Card>
         <Card>
@@ -142,7 +131,7 @@ export default function OverviewPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue || 0)}</div>
             <p className="text-xs text-muted-foreground">Iš bilietų pardavimų</p>
           </CardContent>
         </Card>
@@ -167,17 +156,17 @@ export default function OverviewPage() {
             <CardDescription>Naujausi sukurti renginiai</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {recentEvents.length > 0 ? (
-              recentEvents.map((event) => (
-                <div key={event.id} className="flex items-center justify-between p-3 border rounded-lg">
+            {recentTickets.length > 0 ? (
+              recentTickets.map((ticket) => (
+                <div key={ticket.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
-                    <h4 className="font-medium">{event.title}</h4>
+                    <h4 className="font-medium">{ticket.event.title}</h4>
                     <p className="text-sm text-gray-600">
-                      {event.date} at {event.time}
+                      {ticket.event.date} at {ticket.event.time}
                     </p>
-                    <p className="text-sm text-gray-500">{event.location}</p>
+                    <p className="text-sm text-gray-500">{ticket.event.location}</p>
                   </div>
-                  <Badge variant="outline">Aktyvus</Badge>
+                  <Badge variant="outline">{ticket.status === 'validated' ? 'Patvirtintas' : 'Generuotas'}</Badge>
                 </div>
               ))
             ) : (
