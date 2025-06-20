@@ -115,7 +115,7 @@ export default function EventsPage() {
           Sukurti renginį
         </Button>
       </div>
-      <Tabs value={view} onValueChange={v => setView(v as 'grid' | 'calendar')} className="mb-4">
+      <Tabs value={view} onValueChange={(v: string) => setView(v as 'grid' | 'calendar')} className="mb-4">
         <TabsList>
           <TabsTrigger value="grid">Tinklelio vaizdas</TabsTrigger>
           <TabsTrigger value="calendar">Kalendoriaus vaizdas</TabsTrigger>
@@ -196,6 +196,7 @@ export default function EventsPage() {
           {events.map((event) => {
             const team1 = getTeam(event.team1_id)
             const team2 = getTeam(event.team2_id)
+            const eventTickets = tickets.filter(t => t.event_id === event.id)
             const missingTeam = !team1 || !team2;
             return (
               <Card key={event.id} className="flex flex-col">
@@ -251,8 +252,8 @@ export default function EventsPage() {
                       <p className="font-medium mb-1">Kainų lygiai:</p>
                       <div className="space-y-1">
                         {event.pricing_tiers?.map((tier) => {
-                          const generatedCount = tickets.filter(t => t.pricing_tier.name === tier.name).length;
-                          const validatedCount = tickets.filter(t => t.pricing_tier.name === tier.name && t.status === 'validated').length;
+                          const generatedCount = eventTickets.filter(t => t.tier_id === tier.id).length;
+                          const validatedCount = eventTickets.filter(t => t.tier_id === tier.id && t.status === 'validated').length;
                           return (
                             <div key={tier.id} className="flex justify-between items-center text-xs">
                               <div className="flex items-center">
