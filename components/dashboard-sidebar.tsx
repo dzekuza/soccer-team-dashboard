@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User } from "lucide-react"
-import { useSupabaseClient, useUser } from '@supabase/auth-helpers-react'
+import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon } from "lucide-react"
+import { createClient } from "@/lib/supabase-browser"
+import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./ui/button"
 import { cn } from "@/lib/utils"
 import clsx from "clsx"
@@ -11,8 +12,8 @@ import { useState } from "react"
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const user = useUser()
-  const supabase = useSupabaseClient()
+  const { user } = useAuth()
+  const supabase = createClient()
 
   const navItems = [
     { name: "Overview", href: "/dashboard/overview", icon: BarChart2 },
@@ -62,8 +63,8 @@ export function DashboardSidebar() {
 // Mobile bottom menu for navigation
 export function DashboardMobileMenu() {
   const pathname = usePathname();
-  const user = useUser()
-  const supabase = useSupabaseClient()
+  const { user } = useAuth()
+  const supabase = createClient()
   const [modalOpen, setModalOpen] = useState(false);
 
   // Main navigation for mobile bar
@@ -100,7 +101,7 @@ export function DashboardMobileMenu() {
           className="flex flex-col items-center flex-1 py-2 px-1 text-xs text-gray-600 hover:text-blue-600 transition"
           aria-label="Profilis"
         >
-          <User className="h-6 w-6 mb-0.5" />
+          <UserIcon className="h-6 w-6 mb-0.5" />
           <span className="leading-none text-[11px]">Profilis</span>
         </button>
       </nav>
@@ -123,7 +124,7 @@ export function DashboardMobileMenu() {
                 ) : (
                   <button
                     key={item.name}
-                    onClick={() => { (item.action ?? (() => {}))(); setModalOpen(false); }}
+                    onClick={() => { (item.action ? item.action() : () => {})(); setModalOpen(false); }}
                     className="flex items-center gap-3 py-3 px-2 rounded hover:bg-gray-100 text-gray-700 text-base w-full text-left"
                   >
                     <item.icon className="h-5 w-5" />

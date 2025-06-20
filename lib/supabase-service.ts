@@ -167,8 +167,8 @@ export const supabaseService = {
       .from('tickets')
         .select(`
           *,
-          event:events(*),
-          pricing_tier:pricing_tiers(*)
+          events(*),
+          pricing_tiers(*)
         `)
       .order('created_at', { ascending: false });
 
@@ -198,13 +198,13 @@ export const supabaseService = {
   getTicketWithDetails: async (id: string): Promise<TicketWithDetails | null> => {
       const { data, error } = await supabase
       .from('tickets')
-        .select(`
-          *,
-          event:events(*),
-          pricing_tier:pricing_tiers(*)
-        `)
+      .select(`
+        *,
+        events(*),
+        pricing_tiers(*)
+      `)
       .eq('id', id)
-        .single()
+      .single()
 
       if (error) {
       console.error('Error fetching ticket with details:', error)

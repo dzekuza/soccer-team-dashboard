@@ -187,19 +187,18 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setApiError("")
-    setApiSuccess("")
-    setIsLoading(true)
+    e.preventDefault();
+    setApiError(null);
+    setApiSuccess(null);
 
     if (!validateForm()) {
-      setIsLoading(false)
-      return
+      return;
     }
 
-    try {
-      // The event object to insert
-      const eventToInsert = {
+    setIsLoading(true);
+
+    const eventPayload = {
+      event: {
         title: formData.title,
         description: formData.description,
         date: formData.date,
@@ -208,47 +207,37 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
         team1_id: team1Id || null,
         team2_id: team2Id || null,
         cover_image_url: coverImageUrl || null,
-      };
+      },
+      pricingTiers: pricingTiers,
+    };
 
-      // 1. Insert the event
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .insert(eventToInsert)
-        .select()
-        .single();
+    try {
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventPayload),
+      });
 
-      if (eventError) {
-        throw eventError;
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create event');
       }
 
-      // 2. Insert the pricing tiers
-      const tiersToInsert = pricingTiers.map(tier => ({
-        event_id: eventData.id,
-        name: tier.name,
-        price: tier.price,
-        quantity: tier.maxQuantity
-      }));
-
-      const { error: tiersError } = await supabase
-        .from('pricing_tiers')
-        .insert(tiersToInsert);
-
-      if (tiersError) {
-        // Attempt to roll back the event creation if tiers fail
-        await supabase.from('events').delete().eq('id', eventData.id);
-        throw tiersError;
-      }
-
-      setApiSuccess("Event created successfully!")
-      resetForm()
-      onEventCreated()
-      onOpenChange(false)
+      setApiSuccess("Event created successfully!");
+      resetForm();
+      onEventCreated();
+      onOpenChange(false);
     } catch (error) {
-      console.error('Error creating event:', error)
-      setApiError(error instanceof Error ? error.message : 'Failed to create event')
+      console.error('Error creating event:', error);
+      setApiError(error instanceof Error ? error.message : 'An unknown error occurred.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
+  };
+
+  const handleNextStep = () => {
+    // ... existing code ...
   }
 
   return (

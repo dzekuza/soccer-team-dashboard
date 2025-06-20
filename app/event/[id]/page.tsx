@@ -5,39 +5,54 @@ import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
-import type { EventWithTiers, Team } from "@/lib/types"
+import type { EventWithTiers, Team, PricingTier } from "@/lib/types"
+
+// Add team details to the event type
+interface PublicEvent extends EventWithTiers {
+  team1: Team | null;
+  team2: Team | null;
+  pricing_tiers: PricingTier[];
+}
 
 export default function PublicEventPage() {
   const params = useParams()
   const router = useRouter()
   const { id } = params as { id: string }
-  const [event, setEvent] = useState<EventWithTiers | null>(null)
-  const [teams, setTeams] = useState<Team[]>([])
+  const [event, setEvent] = useState<PublicEvent | null>(null)
   const [selectedTierId, setSelectedTierId] = useState<string>("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!id) return
-    setLoading(true)
-    Promise.all([
-      fetch(`/api/events/${id}`).then(res => res.ok ? res.json() : Promise.reject("Event not found")),
-      fetch("/api/teams").then(res => res.ok ? res.json() : Promise.reject("Teams not found")),
-    ])
-      .then(([eventData, teamsData]) => {
-        setEvent(eventData)
-        setTeams(teamsData)
-        setSelectedTierId(eventData.pricingTiers[0]?.id || "")
-        setError(null)
+    if (!id) {
+        setLoading(false);
+        setError("No event ID provided.");
+        return;
+    }
+
+    setLoading(true);
+    fetch(`/api/events/${id}`)
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({ error: `Request failed with status ${res.status}` }));
+          throw new Error(errorData.error || "Event not found");
+        }
+        return res.json();
+      })
+      .then((eventData) => {
+        setEvent(eventData);
+        if (eventData.pricing_tiers && eventData.pricing_tiers.length > 0) {
+          setSelectedTierId(eventData.pricing_tiers[0].id);
+        }
+        setError(null);
       })
       .catch((err) => {
-        setError(typeof err === "string" ? err : "Failed to load event.")
-        setEvent(null)
+        console.error("Failed to load event:", err);
+        setError(err.message || "Failed to load event.");
+        setEvent(null);
       })
-      .finally(() => setLoading(false))
-  }, [id])
-
-  const getTeam = (teamId?: string) => teams.find(t => t.id === teamId)
+      .finally(() => setLoading(false));
+  }, [id]);
 
   if (loading) {
     return (
@@ -60,9 +75,9 @@ export default function PublicEventPage() {
     )
   }
 
-  const team1 = getTeam(event.team1Id)
-  const team2 = getTeam(event.team2Id)
-  const selectedTier = event.pricingTiers.find(t => t.id === selectedTierId)
+  const team1 = event.team1;
+  const team2 = event.team2;
+  const selectedTier = event.pricing_tiers.find((t: PricingTier) => t.id === selectedTierId)
 
   return (
     <div className="min-h-screen bg-[#0A165B] text-white font-sans">
@@ -74,7 +89,7 @@ export default function PublicEventPage() {
       <div className="w-full bg-gradient-to-r from-[#FF7A00] to-[#FFB347] py-10 px-0 flex flex-col items-center">
         <div className="w-full max-w-6xl flex items-center justify-between mx-auto">
           <div className="flex flex-col items-center flex-1">
-            {team1 && <Image src={team1.logo} alt={team1.team_name} width={72} height={72} className="bg-white rounded-lg p-2 shadow-lg" />}
+            {team1 && team1.logo && <Image src={team1.logo} alt={team1.team_name} width={72} height={72} className="bg-white rounded-lg p-2 shadow-lg" />}
             <span className="mt-3 font-bold text-lg md:text-2xl text-white drop-shadow text-center">{team1?.team_name || "Komanda 1"}</span>
           </div>
           <div className="flex flex-col items-center flex-1">
@@ -87,7 +102,7 @@ export default function PublicEventPage() {
             <div className="text-white text-base md:text-lg mt-2 font-medium text-center opacity-90">{event.location}</div>
           </div>
           <div className="flex flex-col items-center flex-1">
-            {team2 && <Image src={team2.logo} alt={team2.team_name} width={72} height={72} className="bg-white rounded-lg p-2 shadow-lg" />}
+            {team2 && team2.logo && <Image src={team2.logo} alt={team2.team_name} width={72} height={72} className="bg-white rounded-lg p-2 shadow-lg" />}
             <span className="mt-3 font-bold text-lg md:text-2xl text-white drop-shadow text-center">{team2?.team_name || "Komanda 2"}</span>
           </div>
         </div>
@@ -108,7 +123,7 @@ export default function PublicEventPage() {
           <h3 className="text-lg font-bold mb-6 tracking-wide text-white pt-12 pl-12 uppercase">Pasirinkite bilieto tipą</h3>
           <div className="flex-1 flex flex-col items-start justify-start pl-12 pr-12">
             <div className="flex gap-3 mb-8 w-full">
-              {event.pricingTiers.map((tier) => (
+              {event.pricing_tiers.map((tier: PricingTier) => (
                 <button
                   key={tier.id}
                   className={`flex-1 px-6 py-4 rounded-xl border-2 text-lg font-bold transition-all ${selectedTierId === tier.id ? "border-[#FF7A00] bg-[#181f4b] text-white" : "border-[#232b5d] bg-[#232b5d] text-gray-400"}`}

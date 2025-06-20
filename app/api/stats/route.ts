@@ -1,49 +1,56 @@
-import { NextRequest, NextResponse } from "next/server"
-import { dbService } from "@/lib/db-service"
-import { createClient } from "@supabase/supabase-js"
+import { createRouteHandlerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { NextResponse } from "next/server"
 
-// Helper to fetch user record with corporation_id
-type SupabaseUser = { id: string; email: string }
-async function getUserWithCorporationId(supabase: any, userId: string) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("id, email, corporation_id")
-    .eq("id", userId)
-    .single();
-  if (error || !data) throw new Error("Could not fetch user corporation_id")
-  return data;
-}
-
-export async function GET(request: NextRequest) {
-  // Require auth for GET
-  const authHeader = request.headers.get('authorization')
-  const jwt = authHeader?.split(' ')[1]
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      },
+export async function GET() {
+  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  try {
+    // First, verify there is an authenticated user.
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
-  )
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: "You must be logged in." }, { status: 401 })
-  }
-  let userRecord
-  try {
-    userRecord = await getUserWithCorporationId(supabase, user.id)
-  } catch (err) {
-    return NextResponse.json({ error: "Could not fetch user corporation_id" }, { status: 403 })
-  }
-  try {
-    const stats = await dbService.getEventStats(userRecord.corporation_id)
-    return NextResponse.json(stats)
+
+    // Since corporation_id does not exist, we will compute global stats.
+    const { count: totalEvents, error: eventsError } = await supabase
+      .from('events')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: totalTickets, error: ticketsError } = await supabase
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: validatedTickets, error: validatedError } = await supabase
+      .from('tickets')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'validated')
+
+    const { data: ticketsData, error: revenueError } = await supabase
+        .from('tickets')
+        .select('pricing_tiers!inner(price)')
+
+    if (eventsError || ticketsError || validatedError || revenueError) {
+        // Log the specific error for debugging
+        console.error({ eventsError, ticketsError, validatedError, revenueError });
+        return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 });
+    }
+
+    const totalRevenue = ticketsData?.reduce((acc: number, ticket: any) => {
+        return acc + (ticket.pricing_tiers?.price || 0);
+    }, 0) || 0;
+
+
+    const stats = {
+      totalEvents: totalEvents || 0,
+      totalTickets: totalTickets || 0,
+      validatedTickets: validatedTickets || 0,
+      totalRevenue: totalRevenue || 0,
+    }
+
+    return NextResponse.json(stats);
+
   } catch (error) {
-    console.error("Error fetching stats:", error)
-    return NextResponse.json({ error: "Failed to fetch stats" }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
+    return NextResponse.json({ error: "Failed to fetch stats", details: errorMessage }, { status: 500 })
   }
 }

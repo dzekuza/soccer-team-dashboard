@@ -39,8 +39,8 @@ export default function TicketsPage() {
         .from('tickets')
         .select(`
           *,
-          event:events (*),
-          pricing_tier:pricing_tiers (*)
+          events (*),
+          pricing_tiers (*)
         `)
         .order('created_at', { ascending: false });
 
@@ -86,8 +86,8 @@ export default function TicketsPage() {
       .from('tickets')
       .select(`
         *,
-        event:events (*),
-        pricing_tier:pricing_tiers (*)
+        events (*),
+        pricing_tiers (*)
       `)
       .eq('id', ticketId)
       .single();
@@ -100,19 +100,19 @@ export default function TicketsPage() {
 
     let team1 = undefined;
     let team2 = undefined;
-    if (ticket.event.team1_id) {
-      const t1 = await dbService.getTeamById(ticket.event.team1_id);
+    if (ticket.events.team1_id) {
+      const t1 = await dbService.getTeamById(ticket.events.team1_id);
       team1 = t1 || undefined;
       if (!team1) {
-        console.warn(`Team 1 not found for id: ${ticket.event.team1_id}`);
+        console.warn(`Team 1 not found for id: ${ticket.events.team1_id}`);
         alert('Įspėjimas: Nerasta komanda 1. Patikrinkite duomenų bazę.');
       }
     }
-    if (ticket.event.team2_id) {
-      const t2 = await dbService.getTeamById(ticket.event.team2_id);
+    if (ticket.events.team2_id) {
+      const t2 = await dbService.getTeamById(ticket.events.team2_id);
       team2 = t2 || undefined;
       if (!team2) {
-        console.warn(`Team 2 not found for id: ${ticket.event.team2_id}`);
+        console.warn(`Team 2 not found for id: ${ticket.events.team2_id}`);
         alert('Įspėjimas: Nerasta komanda 2. Patikrinkite duomenų bazę.');
       }
     }
@@ -174,7 +174,7 @@ export default function TicketsPage() {
 
   // Filter tickets by event name and scan status
   const filteredTickets = tickets.filter(ticket => {
-    const matchesEvent = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
+    const matchesEvent = ticket.events.title.toLowerCase().includes(eventNameFilter.toLowerCase())
     const matchesScan =
       scanStatus === 'all' ||
       (scanStatus === 'scanned' && ticket.status === 'validated') ||
@@ -252,8 +252,8 @@ export default function TicketsPage() {
                   <TableCell>{ticket.id}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium">{ticket.event.title}</span>
-                      <span className="text-sm text-gray-500">{ticket.pricing_tier.name}</span>
+                      <span className="font-medium">{ticket.events.title}</span>
+                      <span className="text-sm text-gray-500">{ticket.pricing_tiers.name}</span>
                     </div>
                   </TableCell>
                   <TableCell>

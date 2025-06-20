@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { useSupabaseClient } from '@supabase/auth-helpers-react'
+import { createClient } from "@/lib/supabase-browser"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -21,7 +21,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const supabase = useSupabaseClient()
+  const supabase = createClient()
 
   useEffect(() => {
     if (searchParams?.get('registered') === 'true') {

@@ -87,8 +87,8 @@ export interface EventWithTiers extends Event {
 }
 
 export interface TicketWithDetails extends Ticket {
-  event: Event
-  pricing_tier: PricingTier
+  events: Event
+  pricing_tiers: PricingTier
 }
 
 export interface RecentActivity {
