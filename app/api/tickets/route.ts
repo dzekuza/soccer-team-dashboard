@@ -118,29 +118,18 @@ export async function PUT(request: NextRequest) {
     const pdfBytes = await generateTicketPDF(ticket, team1, team2);
     const fileName = `ticket-${ticket.id}.pdf`;
 
-    const { error: uploadError } = await supabase.storage.from('ticket-pdfs').upload(fileName, pdfBytes, {
-      contentType: 'application/pdf',
-      upsert: true,
-    });
-
-    if (uploadError) {
-      throw new Error(`PDF Upload Error: ${uploadError.message}`);
-    }
-
-    const { data: { publicUrl } } = supabase.storage.from('ticket-pdfs').getPublicUrl(fileName);
-
     await resend.emails.send({
       from: 'noreply@soccer-team-dashboard.com',
       to: ticket.purchaser_email,
       subject: `Jūsų bilietas renginiui: ${ticket.events.title}`,
       html: `<p>Dėkojame, kad pirkote! Jūsų bilietas prisegtas.</p>`,
       attachments: [{
-        filename: 'ticket.pdf',
-        path: publicUrl
+        filename: fileName,
+        content: Buffer.from(pdfBytes)
       }]
     });
 
-    return NextResponse.json({ message: "Ticket email resent successfully.", pdfUrl: publicUrl });
+    return NextResponse.json({ message: "Ticket email resent successfully." });
   } catch (error: any) {
     console.error('Error resending ticket:', error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
