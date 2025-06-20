@@ -12,6 +12,12 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { generateTicketPDF, uint8ArrayToPdfBlob } from "@/lib/pdf-generator"
 import { useToast } from "@/components/ui/use-toast"
 import { dbService } from "@/lib/db-service"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
@@ -245,10 +251,10 @@ export default function TicketsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead className="hidden sm:table-cell">ID</TableHead>
               <TableHead>Renginys</TableHead>
               <TableHead>Pirkėjas</TableHead>
-              <TableHead>Statusas</TableHead>
+              <TableHead className="hidden md:table-cell">Statusas</TableHead>
               <TableHead>Veiksmai</TableHead>
             </TableRow>
           </TableHeader>
@@ -256,7 +262,18 @@ export default function TicketsPage() {
             {filteredTickets.length > 0 ? (
               filteredTickets.map(ticket => (
                 <TableRow key={ticket.id}>
-                  <TableCell>{ticket.id}</TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <span className="font-mono">{ticket.id.substring(0, 8)}...</span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{ticket.id}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col">
                       <span className="font-medium">{ticket.events.title}</span>
@@ -269,7 +286,7 @@ export default function TicketsPage() {
                       <span className="text-sm text-gray-500">{ticket.purchaser_email}</span>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Badge variant={ticket.status === 'validated' ? "secondary" : "default"}>
                       {ticket.status === 'validated' ? "Nuskenuotas" : "Nenuskenuotas"}
                     </Badge>
