@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils"
 import type { Subscription } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/components/ui/use-toast"
+import QRCode from "react-qr-code";
 
 type SubscriptionForm = {
   purchaser_name?: string
@@ -46,6 +47,7 @@ export default function SubscriptionsPage() {
   const [error, setError] = useState<string | null>(null)
   const [isCreateOpen, setCreateOpen] = useState(false)
   const [form, setForm] = useState<SubscriptionForm>({})
+  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (user) {
@@ -187,7 +189,20 @@ export default function SubscriptionsPage() {
                   </TableCell>
                    <TableCell>
                     <div className="flex gap-2">
-                       <Button size="sm" variant="outline" onClick={() => alert(`QR Code URL: ${sub.qr_code_url}`)}>
+                       <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => {
+                          if (sub.qr_code_url) {
+                            setQrCodeUrl(sub.qr_code_url)
+                          } else {
+                            toast({
+                              title: "Klaida",
+                              description: "QR kodo URL nerastas.",
+                              variant: "destructive"
+                            })
+                          }
+                        }}>
                         QR Kodas
                       </Button>
                       <Button
@@ -290,6 +305,18 @@ export default function SubscriptionsPage() {
           </form>
         </DialogContent>
       </Dialog>
+      
+      <Dialog open={!!qrCodeUrl} onOpenChange={(isOpen) => !isOpen && setQrCodeUrl(null)}>
+        <DialogContent className="max-w-xs">
+            <DialogHeader>
+                <DialogTitle>Nuskaitykite prenumeratos QR kodą</DialogTitle>
+            </DialogHeader>
+            <div className="p-4 bg-white rounded-md">
+                {qrCodeUrl && <QRCode value={qrCodeUrl} size={256} style={{ height: "auto", maxWidth: "100%", width: "100%" }} />}
+            </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 } 

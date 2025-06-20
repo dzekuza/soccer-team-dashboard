@@ -47,6 +47,7 @@
     "react-day-picker": "8.10.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.1",
+    "react-qr-code": "^2.0.16",
     "recharts": "2.15.0",
     "resend": "^4.6.0",
     "sonner": "^1.7.1",
