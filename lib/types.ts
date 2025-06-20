@@ -141,3 +141,11 @@ export type Database = {
     }
   }
 }
+
+export type Fan = {
+  email: string;
+  name: string;
+  totalTickets: number;
+  moneySpent: number;
+  hasValidSubscription: boolean;
+};
