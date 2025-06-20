@@ -108,6 +108,16 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Ticket not found or missing email" }, { status: 404 });
     }
 
+    // --- Start Debugging Step: Send a simple email ---
+    await resend.emails.send({
+      from: 'noreply@soccer-team-dashboard.com',
+      to: ticket.purchaser_email,
+      subject: `[Test] Jūsų bilietas renginiui: ${ticket.events.title}`,
+      html: `<p>This is a test email to verify the Resend service is configured correctly.</p>`,
+    });
+    // --- End Debugging Step ---
+    
+    /* --- Original Code (Commented Out for Debugging) ---
     // PDF Generation is intensive, let's assume it works as before
     const event = ticket.events; // Note: changed from ticket.event based on previous fixes
     let team1: Team | undefined = undefined;
@@ -128,6 +138,7 @@ export async function PUT(request: NextRequest) {
         content: Buffer.from(pdfBytes)
       }]
     });
+    */
 
     return NextResponse.json({ message: "Ticket email resent successfully." });
   } catch (error: any) {
