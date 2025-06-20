@@ -158,33 +158,34 @@ export default function EventPage() {
 
                     <div className="md:col-span-1">
                         <aside className="bg-div-main p-8 rounded-lg border-main">
-                            <h3 className="text-2xl font-bold mb-6 text-center">
+                            <h3 className="text-2xl font-bold mb-6 uppercase">
                                 Pasirinkite Bilieto Tipą
                             </h3>
-                            <div className="space-y-4 mb-8">
+                            <div className="grid grid-cols-2 gap-2 mb-6">
                                 {event.pricing_tiers.map((tier: PricingTier) => (
                                     <div
                                         key={tier.id}
                                         onClick={() => setSelectedTier(tier)}
-                                        className={`p-6 rounded-lg cursor-pointer transition-all duration-300 ${selectedTier?.id === tier.id
-                                                ? "border-2 border-main-orange bg-main-orange/10"
-                                                : "border border-main"
-                                            }`}
+                                        className={`p-6 rounded-md cursor-pointer text-center transition-all duration-300 border ${
+                                            selectedTier?.id === tier.id
+                                                ? "border-main-orange"
+                                                : "border-main"
+                                        }`}
                                     >
-                                        <h4 className="text-xl font-semibold">{tier.name}</h4>
+                                        <h4 className={`text-2xl font-medium ${selectedTier?.id === tier.id ? 'text-white' : 'text-white/50'}`}>{tier.name}</h4>
                                     </div>
                                 ))}
                             </div>
 
                             {selectedTier && (
                                 <div className="border-t border-main pt-6 space-y-4">
-                                    <div className="flex justify-between items-center text-lg">
-                                        <span className="text-gray-400">Bilieto Tipas:</span>
-                                        <span className="font-semibold">{selectedTier.name}</span>
+                                    <div className="flex justify-between items-center text-lg uppercase">
+                                        <span className="text-white/60">Bilieto Tipas:</span>
+                                        <span className="font-bold">{selectedTier.name}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-lg">
-                                        <span className="text-gray-400">Kaina:</span>
-                                        <span className="font-semibold text-2xl text-main-orange">
+                                    <div className="flex justify-between items-center text-lg uppercase">
+                                        <span className="text-white/60">Bilieto Kaina:</span>
+                                        <span className="font-bold text-main-orange">
                                             €{selectedTier.price.toFixed(2)}
                                         </span>
                                     </div>
@@ -194,7 +195,7 @@ export default function EventPage() {
                             <button
                                 onClick={handleBuyTicket}
                                 disabled={!selectedTier}
-                                className="w-full mt-8 bg-main-orange text-white py-4 rounded-lg text-xl font-bold hover:bg-orange-700 transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                                className="w-full mt-8 bg-main-orange text-white py-4 rounded-md text-base font-bold uppercase hover:bg-orange-700 transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
                             >
                                 Pirkti Bilietą
                             </button>
