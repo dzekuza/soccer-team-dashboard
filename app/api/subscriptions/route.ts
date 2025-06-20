@@ -1,13 +1,21 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { createRouteHandlerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { generateSubscriptionPDF } from "@/lib/pdf-generator";
 import { supabaseService } from "@/lib/supabase-service";
 import { Resend } from "resend";
+import { supabase } from "@/lib/supabase";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
+  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
   try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const {
       purchaser_name,
@@ -15,7 +23,6 @@ export async function POST(req: Request) {
       purchaser_email,
       valid_from,
       valid_to,
-      owner_id,
     } = body;
 
     if (
@@ -23,8 +30,7 @@ export async function POST(req: Request) {
       !purchaser_surname ||
       !purchaser_email ||
       !valid_from ||
-      !valid_to ||
-      !owner_id
+      !valid_to
     ) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -42,7 +48,7 @@ export async function POST(req: Request) {
           purchaser_email,
           valid_from: new Date(valid_from).toISOString(),
           valid_to: new Date(valid_to).toISOString(),
-          owner_id: owner_id,
+          owner_id: user.id,
         },
       ])
       .select()
