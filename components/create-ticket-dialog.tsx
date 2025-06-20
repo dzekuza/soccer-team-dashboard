@@ -62,7 +62,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
       }
 
       if (Array.isArray(data)) {
-        setEvents(data)
+      setEvents(data)
       } else {
         console.error("Fetched events data is not an array:", data);
         setEvents([]);
@@ -115,10 +115,10 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
         .from("tickets")
         .insert([
           {
-            event_id: selectedEventId,
-            tier_id: selectedTierId,
-            purchaser_name: purchaserName,
-            purchaser_email: purchaserEmail,
+          event_id: selectedEventId,
+          tier_id: selectedTierId,
+          purchaser_name: purchaserName,
+          purchaser_email: purchaserEmail,
             purchaser_surname: purchaserSurname,
             status: 'valid',
           },

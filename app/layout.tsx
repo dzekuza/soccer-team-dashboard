@@ -2,6 +2,7 @@ import "./globals.css"
 import { Inter as FontSans } from "next/font/google"
 import { cn } from "@/lib/utils"
 import { Providers } from "@/components/providers"
+import { CartProvider } from "@/context/cart-context"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -28,7 +29,9 @@ export default function RootLayout({
         )}
       >
         <Providers>
-          {children}
+          <CartProvider>
+            {children}
+          </CartProvider>
         </Providers>
       </body>
     </html>

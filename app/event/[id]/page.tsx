@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
-import { AlertTriangle, CalendarIcon, MapPinIcon } from "lucide-react"
+import { AlertTriangle, CalendarIcon, MapPinIcon, Minus, Plus } from "lucide-react"
 import type { EventWithTiers, Team, PricingTier } from "@/lib/types"
 import EventHeader from "@/components/event-header"
+import { useCart } from "@/context/cart-context"
+import { Button } from "@/components/ui/button"
 
 const CalendarIconWrapper = () => (
     <svg
@@ -32,7 +34,9 @@ export default function EventPage() {
     const [team2, setTeam2] = useState<Team | null>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const [selectedTier, setSelectedTier] = useState<any>(null)
+    const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null)
+    const [quantity, setQuantity] = useState(1);
+    const { addToCart } = useCart();
     const router = useRouter()
 
     useEffect(() => {
@@ -62,9 +66,18 @@ export default function EventPage() {
         fetchData()
     }, [id])
 
-    const handleBuyTicket = () => {
-        if (selectedTier) {
-            router.push(`/checkout?eventId=${event?.id}&tierId=${selectedTier.id}`)
+    const handleAddToCart = () => {
+        if (selectedTier && event) {
+            addToCart({
+                id: selectedTier.id,
+                name: selectedTier.name,
+                price: selectedTier.price,
+                quantity: quantity,
+                category: event.title,
+                image: event.cover_image_url || '/placeholder.jpg',
+                color: team1 && team2 ? `${team1.team_name} vs ${team2.team_name}` : 'Renginys'
+            });
+            // maybe add a toast notification here
         }
     }
 
@@ -90,7 +103,7 @@ export default function EventPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#13007C] text-white font-sans">
+        <div className="min-h-screen bg-[#0A165B] text-white font-sans">
             <EventHeader />
             <header
                 className="relative bg-cover bg-center py-20"
@@ -179,6 +192,18 @@ export default function EventPage() {
 
                             {selectedTier && (
                                 <div className="border-t border-main pt-6 space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-white/60 uppercase">Kiekis</span>
+                                        <div className="flex items-center gap-4">
+                                            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="p-1 rounded-full bg-white/10 hover:bg-white/20">
+                                                <Minus className="w-4 h-4" />
+                                            </button>
+                                            <span className="font-bold text-lg">{quantity}</span>
+                                            <button onClick={() => setQuantity(q => q + 1)} className="p-1 rounded-full bg-white/10 hover:bg-white/20">
+                                                <Plus className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
                                     <div className="flex justify-between items-center text-lg uppercase">
                                         <span className="text-white/60">Bilieto Tipas:</span>
                                         <span className="font-bold">{selectedTier.name}</span>
@@ -186,19 +211,19 @@ export default function EventPage() {
                                     <div className="flex justify-between items-center text-lg uppercase">
                                         <span className="text-white/60">Bilieto Kaina:</span>
                                         <span className="font-bold text-main-orange">
-                                            €{selectedTier.price.toFixed(2)}
+                                            €{(selectedTier.price * quantity).toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
                             )}
 
-                            <button
-                                onClick={handleBuyTicket}
+                            <Button
+                                onClick={handleAddToCart}
                                 disabled={!selectedTier}
-                                className="w-full mt-8 bg-main-orange text-white py-4 rounded-md text-base font-bold uppercase hover:bg-orange-700 transition-colors duration-300 disabled:bg-gray-600 disabled:cursor-not-allowed"
+                                className="w-full mt-8 bg-main-orange hover:bg-main-orange/90"
                             >
-                                Pirkti Bilietą
-                            </button>
+                                Pridėti į krepšelį
+                            </Button>
                         </aside>
                     </div>
                 </div>

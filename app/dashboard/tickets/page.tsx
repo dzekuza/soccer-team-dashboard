@@ -98,6 +98,12 @@ export default function TicketsPage() {
       return;
     }
 
+    if (!ticket.events || !ticket.pricing_tiers) {
+      alert("Nepavyko sugeneruoti PDF: bilietui trūksta renginio arba kainos lygio informacijos. Tikėtina, kad susijęs renginys buvo ištrintas.");
+      console.error("Missing event or pricing tier data for ticket:", ticket.id);
+      return;
+    }
+
     let team1 = undefined;
     let team2 = undefined;
     if (ticket.events.team1_id) {

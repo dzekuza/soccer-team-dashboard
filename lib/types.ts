@@ -48,13 +48,16 @@ export interface PricingTier {
 }
 
 export interface Subscription {
-  id: string
-  title: string
-  description?: string
-  price: number
-  duration_days: number
-  created_at: string
-  corporation_id?: string
+  id: string;
+  created_at: string;
+  updated_at: string;
+  purchaser_name?: string;
+  purchaser_surname?: string;
+  purchaser_email?: string;
+  valid_from: string;
+  valid_to: string;
+  qr_code_url?: string;
+  owner_id: string;
 }
 
 export interface Ticket {
@@ -68,17 +71,6 @@ export interface Ticket {
   qr_code_url?: string
   created_at: string
   updated_at: string
-}
-
-export interface UserSubscription {
-  id: string
-  user_id: string
-  subscription_id: string
-  purchase_date: string
-  expires_at?: string
-  assigned_by?: string
-  created_at: string
-  corporation_id?: string
 }
 
 // Extended types for API responses

@@ -1,255 +1,345 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { supabaseService } from "@/lib/supabase-service"
-import type { Subscription, UserSubscription } from "@/lib/types"
-import { Input } from "@/components/ui/input"
+import { useState, useEffect } from "react"
+import { useAuth } from "@/hooks/use-auth"
+import { Plus, Download, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Calendar } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { Calendar as CalendarIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
+import type { Subscription } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useToast } from "@/components/ui/use-toast"
 
-// Define a local type for table rows with user and subscription info
-interface UserSubscriptionTableRow {
-  id: string
-  userId: string
-  subscriptionId: string
-  purchaseDate: string
-  expiresAt?: string
-  assignedBy?: string
-  createdAt: string
-  user?: { email?: string; name?: string }
-  subscription?: { title?: string }
+type SubscriptionForm = {
+  purchaser_name?: string
+  purchaser_surname?: string
+  purchaser_email?: string
+  valid_from?: string
+  valid_to?: string
 }
 
-export default function SubscriptionsDashboardPage() {
-  const [corporationId, setCorporationId] = useState<string | null>(null);
-  const [subs, setSubs] = useState<Subscription[]>([])
-  const [userSubs, setUserSubs] = useState<UserSubscriptionTableRow[]>([])
-  const [form, setForm] = useState({ title: "", description: "", price: "", durationDays: "" })
-  const [assign, setAssign] = useState({ userName: "", userEmail: "", subscriptionId: "" })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const [createOpen, setCreateOpen] = useState(false)
-  const [assignOpen, setAssignOpen] = useState(false)
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null)
+export default function SubscriptionsPage() {
+  const { user, loading: authLoading } = useAuth()
+  const { toast } = useToast()
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isCreateOpen, setCreateOpen] = useState(false)
+  const [form, setForm] = useState<SubscriptionForm>({})
 
   useEffect(() => {
-    if (!user) return;
-    // Fetch corporation_id for the current user
-    supabase
-      .from("users")
-      .select("corporation_id")
-      .eq("id", user.id)
-      .single()
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setCorporationId(data.corporation_id);
-        }
-      });
-  }, [user]);
+    if (user) {
+      fetchSubscriptions()
+    }
+  }, [user])
 
-  useEffect(() => {
-    if (!corporationId) return;
-    supabaseService.getSubscriptions(corporationId).then(setSubs)
-    // Fetch all user subscriptions
-    supabase
-      .from("user_subscriptions")
-      .select("*, users:user_id(email, name), subscriptions(title)")
-      .eq("corporation_id", corporationId)
-      .order("created_at", { ascending: false })
-      .then(({ data, error }) => {
-        if (!error && data) {
-          setUserSubs(
-            data.map((us: any) => ({
-              id: us.id,
-              userId: us.user_id,
-              subscriptionId: us.subscription_id,
-              purchaseDate: us.purchase_date,
-              expiresAt: us.expires_at,
-              assignedBy: us.assigned_by,
-              createdAt: us.created_at,
-              user: us.users,
-              subscription: us.subscriptions,
-            }))
-          )
-        }
-      })
-  }, [corporationId])
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-    setSuccess("")
+  const fetchSubscriptions = async () => {
+    setIsLoading(true)
+    setError(null)
     try {
-      if (!corporationId) throw new Error("No corporation_id found for user")
-      // Only create the subscription
-      const sub = await supabaseService.createSubscription({
-        title: form.title,
-        description: form.description,
-        price: Number(form.price),
-        durationDays: Number(form.durationDays),
-        corporation_id: corporationId,
-      }, corporationId)
-      setSubs([sub, ...subs])
-      setForm({ title: "", description: "", price: "", durationDays: "" })
-      setSuccess("Prenumerata sukurta!")
-      setCreateOpen(false)
-    } catch (err: any) {
-      setError(err.message)
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      setSubscriptions(data || [])
+    } catch (err) {
+      setError("Nepavyko įkelti prenumeratų.")
+      console.error(err)
     } finally {
-      setLoading(false)
+      setIsLoading(false)
     }
   }
 
-  const handleAssign = async (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-    setError("")
-    setSuccess("")
-    try {
-      if (!corporationId) throw new Error("No corporation_id found for user")
-      // Find or create user by email
-      let userId: string | null = null
-      const { data: user, error: userError } = await supabase
-        .from("users").select("id").eq("email", assign.userEmail).single()
-      if (user && user.id) {
-        userId = user.id
-      } else {
-        // Create user if not found
-        const { data: newUser, error: createUserError } = await supabase
-          .from("users")
-          .insert({ email: assign.userEmail, name: assign.userName, password: Math.random().toString(36).slice(-8), role: "staff" })
-          .select("id")
-          .single()
-        if (createUserError || !newUser) throw new Error("Nepavyko sukurti vartotojo")
-        userId = newUser.id
-      }
-      if (!userId) throw new Error("Nepavyko nustatyti vartotojo ID")
-      await supabaseService.assignSubscriptionToUser(userId as string, assign.subscriptionId, corporationId)
-      setAssign({ userName: "", userEmail: "", subscriptionId: "" })
-      setSuccess("Prenumerata priskirta klientui!")
-      setAssignOpen(false)
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
+    if (!user) return
+
+    if (!form.valid_from || !form.valid_to) {
+      toast({
+        title: "Klaida",
+        description: "Prašome pasirinkti galiojimo laikotarpį.",
+        variant: "destructive",
+      })
+      return
     }
+
+    const qr_code_url = `${window.location.origin}/api/validate-subscription/` // Placeholder
+
+    const { data: newSubscription, error } = await supabase
+      .from("subscriptions")
+      .insert([
+        {
+          ...form,
+          valid_from: new Date(form.valid_from).toISOString(),
+          valid_to: new Date(form.valid_to).toISOString(),
+          owner_id: user.id,
+          qr_code_url,
+        },
+      ])
+      .select()
+      .single()
+
+    if (error) {
+      toast({
+        title: "Klaida kuriant prenumeratą",
+        description: error.message,
+        variant: "destructive",
+      })
+    } else if (newSubscription) {
+      // Generate a permanent QR code URL now that we have the ID
+      const final_qr_code_url = `${window.location.origin}/api/validate-subscription/${newSubscription.id}`
+      const { error: updateError } = await supabase
+        .from("subscriptions")
+        .update({ qr_code_url: final_qr_code_url })
+        .eq("id", newSubscription.id)
+      
+      if (updateError) {
+         toast({
+          title: "Klaida atnaujinant QR kodą",
+          description: updateError.message,
+          variant: "destructive",
+        })
+      }
+
+      toast({
+        title: "Sėkmė!",
+        description: "Prenumerata sėkmingai sukurta.",
+      })
+      setSubscriptions([newSubscription, ...subscriptions])
+      setCreateOpen(false)
+      setForm({})
+    }
+  }
+
+  if (isLoading || authLoading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 font-semibold">{error}</p>
+        <Button onClick={fetchSubscriptions} className="mt-4">
+          Bandyti dar kartą
+        </Button>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-2xl font-bold">Prenumeratos</h1>
-        <Button onClick={() => setCreateOpen(true)}>Sukurti prenumeratą</Button>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">Prenumeratos</h1>
+          <p className="text-gray-600">
+            Kurkite ir tvarkykite individualias prenumeratas.
+          </p>
+        </div>
+        <Button onClick={() => setCreateOpen(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Sukurti prenumeratą
+        </Button>
       </div>
-      {error && <div className="text-red-500 mb-2">{error}</div>}
-      {success && <div className="text-green-600 mb-2">{success}</div>}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {subs.map(s => (
-          <div key={s.id} className="border rounded-lg p-5 bg-white shadow flex flex-col gap-2">
-            <div className="text-lg font-semibold">{s.title}</div>
-            <div className="text-gray-600 flex-1">{s.description}</div>
-            <div className="text-sm">Kaina: <span className="font-bold">{s.price} €</span></div>
-            <div className="text-sm">Trukmė (dienomis): <span className="font-bold">{s.durationDays}</span></div>
-            <Button
-              variant="outline"
-              className="mt-2 w-fit"
-              onClick={() => {
-                setAssign({ userName: "", userEmail: "", subscriptionId: s.id })
-                setAssignOpen(true)
-              }}
-            >
-              Priskirti klientui
-            </Button>
-          </div>
-        ))}
-      </div>
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Sukurti prenumeratą</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleCreate} className="space-y-2">
-            <div>
-              <Label>Pavadinimas</Label>
-              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} required />
-            </div>
-            <div>
-              <Label>Aprašymas</Label>
-              <Input value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Kaina</Label>
-              <Input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price: e.target.value }))} required />
-            </div>
-            <div>
-              <Label>Trukmė (dienomis)</Label>
-              <Input type="number" value={form.durationDays} onChange={e => setForm(f => ({ ...f, durationDays: e.target.value }))} required />
-            </div>
-            <DialogFooter>
-              <Button type="submit" disabled={loading}>Sukurti</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      {/* Assign subscription to user modal */}
-      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Priskirti prenumeratą klientui</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleAssign} className="space-y-2">
-            <div>
-              <Label>Kliento vardas</Label>
-              <Input value={assign.userName} onChange={e => setAssign(a => ({ ...a, userName: e.target.value }))} required />
-            </div>
-            <div>
-              <Label>Kliento el. paštas</Label>
-              <Input type="email" value={assign.userEmail} onChange={e => setAssign(a => ({ ...a, userEmail: e.target.value }))} required />
-            </div>
-            <DialogFooter>
-              <Button type="submit" disabled={loading}>Priskirti</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      {/* Table of users who purchased subscriptions */}
-      <div className="mt-10">
-        <h2 className="text-xl font-semibold mb-4">Prenumeratorių sąrašas</h2>
+
+      <div className="bg-white rounded shadow overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Vartotojo el. paštas</TableHead>
-              <TableHead>Vardas</TableHead>
-              <TableHead>Prenumerata</TableHead>
-              <TableHead>Pirkimo data</TableHead>
+              <TableHead>Pirkėjas</TableHead>
+              <TableHead>Galioja nuo</TableHead>
               <TableHead>Galioja iki</TableHead>
+              <TableHead>Veiksmai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {userSubs.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center">Prenumeratorių nerasta</TableCell>
-              </TableRow>
-            ) : (
-              userSubs.map(us => (
-                <TableRow key={us.id}>
-                  <TableCell>{us.user?.email || "-"}</TableCell>
-                  <TableCell>{us.user?.name || "-"}</TableCell>
-                  <TableCell>{us.subscription?.title || "-"}</TableCell>
-                  <TableCell>{us.purchaseDate ? new Date(us.purchaseDate).toLocaleDateString() : "-"}</TableCell>
-                  <TableCell>{us.expiresAt ? new Date(us.expiresAt).toLocaleDateString() : "-"}</TableCell>
+            {subscriptions.length > 0 ? (
+              subscriptions.map((sub) => (
+                <TableRow key={sub.id}>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span className="font-medium">
+                        {sub.purchaser_name} {sub.purchaser_surname}
+                      </span>
+                      <span className="text-sm text-gray-500">
+                        {sub.purchaser_email}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(sub.valid_from), "yyyy-MM-dd")}
+                  </TableCell>
+                  <TableCell>
+                    {format(new Date(sub.valid_to), "yyyy-MM-dd")}
+                  </TableCell>
+                   <TableCell>
+                    <div className="flex gap-2">
+                       <Button size="sm" variant="outline" onClick={() => alert(`QR Code URL: ${sub.qr_code_url}`)}>
+                        QR Kodas
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={async () => {
+                           if (!window.confirm(`Ar tikrai norite ištrinti šią prenumeratą?`)) return;
+                           const { error } = await supabase.from('subscriptions').delete().eq('id', sub.id)
+                           if (error) {
+                              toast({ title: "Klaida", description: error.message, variant: 'destructive'})
+                           } else {
+                              toast({ title: "Sėkmė!", description: "Prenumerata ištrinta."})
+                              fetchSubscriptions()
+                           }
+                        }}
+                      >
+                        Ištrinti
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-12">
+                  Prenumeratų nerasta.
+                </TableCell>
+              </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isCreateOpen} onOpenChange={setCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Sukurti naują prenumeratą</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="purchaser_name">Vardas</Label>
+                <Input
+                  id="purchaser_name"
+                  value={form.purchaser_name || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, purchaser_name: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="purchaser_surname">Pavardė</Label>
+                <Input
+                  id="purchaser_surname"
+                  value={form.purchaser_surname || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, purchaser_surname: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="purchaser_email">El. paštas</Label>
+              <Input
+                id="purchaser_email"
+                type="email"
+                value={form.purchaser_email || ""}
+                onChange={(e) =>
+                  setForm({ ...form, purchaser_email: e.target.value })
+                }
+              />
+            </div>
+             <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Galioja nuo</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.valid_from && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.valid_from ? format(new Date(form.valid_from), "PPP") : <span>Pasirinkite datą</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[9999]">
+                    <Calendar
+                      mode="single"
+                      selected={form.valid_from ? new Date(form.valid_from) : undefined}
+                      onSelect={(date) =>
+                        setForm({
+                          ...form,
+                          valid_from: date ? format(date, "yyyy-MM-dd") : undefined,
+                        })
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Galioja iki</Label>
+                 <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !form.valid_to && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {form.valid_to ? format(new Date(form.valid_to), "PPP") : <span>Pasirinkite datą</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 z-[9999]">
+                    <Calendar
+                      mode="single"
+                      selected={form.valid_to ? new Date(form.valid_to) : undefined}
+                       onSelect={(date) =>
+                        setForm({
+                          ...form,
+                          valid_to: date ? format(date, "yyyy-MM-dd") : undefined,
+                        })
+                      }
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Sukurti</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

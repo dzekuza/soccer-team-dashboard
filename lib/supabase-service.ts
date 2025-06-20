@@ -264,7 +264,7 @@ export const supabaseService = {
     return data
   },
 
-  createSubscription: async (subscription: Omit<Subscription, 'id' | 'created_at' | 'updated_at'>): Promise<Subscription | null> => {
+  createSubscription: async (subscription: Omit<Subscription, 'id' | 'created_at'>): Promise<Subscription | null> => {
     const { data, error } = await supabase
       .from('subscriptions')
       .insert([subscription])
