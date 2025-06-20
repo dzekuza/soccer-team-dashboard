@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from '@supabase/ssr'
+import * as supabaseSSR from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { supabaseService } from "@/lib/supabase-service"
 import { Resend } from "resend"
@@ -9,7 +9,7 @@ import type { Team } from "@/lib/types"
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = supabaseSSR.createRouteHandlerClient({ cookies: () => cookies() })
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = supabaseSSR.createRouteHandlerClient({ cookies: () => cookies() })
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = supabaseSSR.createRouteHandlerClient({ cookies: () => cookies() })
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createRouteHandlerClient } from '@supabase/ssr'
+import * as supabaseSSR from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { generateSubscriptionPDF } from "@/lib/pdf-generator";
 import { supabaseService } from "@/lib/supabase-service";
@@ -9,7 +9,7 @@ import { supabase } from "@/lib/supabase";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: Request) {
-  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = supabaseSSR.createRouteHandlerClient({ cookies: () => cookies() })
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {

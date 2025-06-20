@@ -1,10 +1,10 @@
-import { createRouteHandlerClient } from '@supabase/ssr'
+import * as supabaseSSR from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from "next/server"
 import type { Fan } from '@/lib/types'
 
 export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = supabaseSSR.createRouteHandlerClient({ cookies: () => cookies() })
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
