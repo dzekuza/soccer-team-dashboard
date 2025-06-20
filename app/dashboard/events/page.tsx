@@ -78,8 +78,6 @@ export default function EventsPage() {
       return isSameDay(eventDate, date)
     })
   }
-  // Helper: get attendee count for event
-  const attendeeCount = (eventId: string) => tickets.filter(t => t.event.id === eventId).length
 
   // Map events to FullScreenCalendar data structure
   const calendarData = events
@@ -193,7 +191,7 @@ export default function EventsPage() {
         </Card>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
-          {events.map((event) => {
+          {events.filter(Boolean).map((event) => {
             const team1 = getTeam(event.team1_id)
             const team2 = getTeam(event.team2_id)
             const eventTickets = tickets.filter(t => t.event_id === event.id)

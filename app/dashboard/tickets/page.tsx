@@ -174,6 +174,7 @@ export default function TicketsPage() {
 
   // Filter tickets by event name and scan status
   const filteredTickets = tickets.filter(ticket => {
+    if (!ticket.events) return false; // Guard against tickets with no event data
     const matchesEvent = ticket.events.title.toLowerCase().includes(eventNameFilter.toLowerCase())
     const matchesScan =
       scanStatus === 'all' ||

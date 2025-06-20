@@ -52,11 +52,11 @@ export default function DashboardOverview() {
             timestamp: event.created_at,
             details: `${event.date} at ${event.time}`,
           })),
-          ...ticketsData.slice(0, 3).map((ticket: TicketWithDetails) => ({
+          ...ticketsData.slice(0, 3).filter(ticket => ticket.events).map((ticket: TicketWithDetails) => ({
             type: ticket.status === 'validated' ? ("ticket_validated" as const) : ("ticket_generated" as const),
             title: ticket.status === 'validated' ? `Ticket Validated` : `Ticket Generated`,
             timestamp: ticket.updated_at || ticket.created_at,
-            details: `${ticket.event.title} - ${ticket.purchaser_name}`,
+            details: `${ticket.events.title} - ${ticket.purchaser_name}`,
           })),
         ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
@@ -157,14 +157,14 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent className="space-y-4">
             {recentTickets.length > 0 ? (
-              recentTickets.map((ticket) => (
+              recentTickets.filter(ticket => ticket.events).map((ticket) => (
                 <div key={ticket.id} className="flex items-center justify-between p-3 border rounded-lg">
                   <div>
-                    <h4 className="font-medium">{ticket.event.title}</h4>
+                    <h4 className="font-medium">{ticket.events.title}</h4>
                     <p className="text-sm text-gray-600">
-                      {ticket.event.date} at {ticket.event.time}
+                      {ticket.events.date} at {ticket.events.time}
                     </p>
-                    <p className="text-sm text-gray-500">{ticket.event.location}</p>
+                    <p className="text-sm text-gray-500">{ticket.events.location}</p>
                   </div>
                   <Badge variant="outline">{ticket.status === 'validated' ? 'Patvirtintas' : 'Generuotas'}</Badge>
                 </div>
