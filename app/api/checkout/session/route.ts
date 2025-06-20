@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
       line_items: line_items,
       mode: "payment",
       customer_email: purchaserEmail,
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://soccer-team-dashboard-843v.vercel.app"}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://soccer-team-dashboard-843v.vercel.app"}/checkout`,
+      success_url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/checkout`,
       metadata: {
         cart: JSON.stringify(cartItems.map(item => ({ id: item.id, quantity: item.quantity }))),
         purchaserEmail,

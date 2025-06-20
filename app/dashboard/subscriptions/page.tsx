@@ -85,51 +85,39 @@ export default function SubscriptionsPage() {
       return
     }
 
-    const qr_code_url = `${window.location.origin}/api/validate-subscription/` // Placeholder
-
-    const { data: newSubscription, error } = await supabase
-      .from("subscriptions")
-      .insert([
-        {
-          ...form,
-          valid_from: new Date(form.valid_from).toISOString(),
-          valid_to: new Date(form.valid_to).toISOString(),
-          owner_id: user.id,
-          qr_code_url,
+    try {
+      const response = await fetch('/api/subscriptions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      ])
-      .select()
-      .single()
+        body: JSON.stringify({
+          ...form,
+          owner_id: user.id,
+        }),
+      });
 
-    if (error) {
-      toast({
-        title: "Klaida kuriant prenumeratą",
-        description: error.message,
-        variant: "destructive",
-      })
-    } else if (newSubscription) {
-      // Generate a permanent QR code URL now that we have the ID
-      const final_qr_code_url = `${window.location.origin}/api/validate-subscription/${newSubscription.id}`
-      const { error: updateError } = await supabase
-        .from("subscriptions")
-        .update({ qr_code_url: final_qr_code_url })
-        .eq("id", newSubscription.id)
-      
-      if (updateError) {
-         toast({
-          title: "Klaida atnaujinant QR kodą",
-          description: updateError.message,
-          variant: "destructive",
-        })
+      const newSubscription = await response.json();
+
+      if (!response.ok) {
+        throw new Error(newSubscription.error || 'Failed to create subscription.');
       }
-
+      
       toast({
         title: "Sėkmė!",
-        description: "Prenumerata sėkmingai sukurta.",
+        description: "Prenumerata sėkmingai sukurta ir išsiųsta pirkėjui.",
       })
       setSubscriptions([newSubscription, ...subscriptions])
       setCreateOpen(false)
       setForm({})
+
+    } catch (error) {
+       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
+       toast({
+        title: "Klaida kuriant prenumeratą",
+        description: errorMessage,
+        variant: "destructive",
+      })
     }
   }
 
@@ -274,64 +262,26 @@ export default function SubscriptionsPage() {
             </div>
              <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label>Galioja nuo</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !form.valid_from && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.valid_from ? format(new Date(form.valid_from), "PPP") : <span>Pasirinkite datą</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[9999]">
-                    <Calendar
-                      mode="single"
-                      selected={form.valid_from ? new Date(form.valid_from) : undefined}
-                      onSelect={(date) =>
-                        setForm({
-                          ...form,
-                          valid_from: date ? format(date, "yyyy-MM-dd") : undefined,
-                        })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label htmlFor="valid_from">Galioja nuo</Label>
+                <Input
+                  id="valid_from"
+                  type="date"
+                  value={form.valid_from || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, valid_from: e.target.value })
+                  }
+                />
               </div>
               <div>
-                <Label>Galioja iki</Label>
-                 <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !form.valid_to && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {form.valid_to ? format(new Date(form.valid_to), "PPP") : <span>Pasirinkite datą</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[9999]">
-                    <Calendar
-                      mode="single"
-                      selected={form.valid_to ? new Date(form.valid_to) : undefined}
-                       onSelect={(date) =>
-                        setForm({
-                          ...form,
-                          valid_to: date ? format(date, "yyyy-MM-dd") : undefined,
-                        })
-                      }
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Label htmlFor="valid_to">Galioja iki</Label>
+                <Input
+                  id="valid_to"
+                  type="date"
+                  value={form.valid_to || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, valid_to: e.target.value })
+                  }
+                />
               </div>
             </div>
             <DialogFooter>

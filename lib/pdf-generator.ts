@@ -1,5 +1,5 @@
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
-import QRCode from 'qrcode'
+import { PDFDocument, rgb, StandardFonts, PDFFont } from 'pdf-lib'
+import qr from 'qrcode'
 import type { TicketWithDetails, Team } from './types'
 import { formatCurrency } from './utils'
 
@@ -192,11 +192,11 @@ export async function generateTicketPDF(
   })
 
   // Event start (large orange)
-  page.drawText(`RUNGtyniu PRADzIA: ${ticket.event.time || ''}`, {
+  page.drawText(`RUNGtyniu PRADzIA: ${ticket.events.time || ''}`, {
     x: 40, y: height/2 - 40, size: 22, font: customFont, color: orange,
   })
   // Date (gray)
-  page.drawText(ticket.event.date || '', {
+  page.drawText(ticket.events.date || '', {
     x: 40, y: height/2 - 65, size: 13, font: customFont, color: gray,
   })
 
@@ -208,17 +208,17 @@ export async function generateTicketPDF(
     x: 180, y: 40, size: 10, font: customFont, color: gray,
   })
   // Values
-  page.drawText((ticket.event.location || '').toUpperCase(), {
+  page.drawText((ticket.events.location || '').toUpperCase(), {
     x: 40, y: 20, size: 12, font: customFont, color: white,
   })
-  page.drawText((ticket.pricing_tier.name || '').toUpperCase(), {
+  page.drawText((ticket.pricing_tiers.name || '').toUpperCase(), {
     x: 180, y: 20, size: 12, font: customFont, color: white,
   })
 
   // QR code (centered in orange section)
   const qrCodeUrl = `/api/validate-ticket/${ticket.id}`;  // Always use validation URL for consistency
   try {
-    const qrCodeDataUrl = await QRCode.toDataURL(qrCodeUrl, { width: 180, margin: 1 })
+    const qrCodeDataUrl = await qr.toDataURL(qrCodeUrl, { width: 180, margin: 1 })
     const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
     const qrImage = await pdfDoc.embedPng(qrImageBytes)
     page.drawImage(qrImage, {
@@ -237,4 +237,62 @@ export async function generateTicketPDF(
  */
 export function uint8ArrayToPdfBlob(bytes: Uint8Array): Blob {
   return new Blob([bytes], { type: 'application/pdf' });
+}
+
+export async function generateSubscriptionPDF(subscription: {
+  id: string;
+  purchaser_name: string;
+  purchaser_surname: string;
+  purchaser_email: string;
+  qr_code_url: string;
+}) {
+  const doc = await PDFDocument.create();
+  const page = doc.addPage([226.77, 453.54]); // 80mm x 160mm
+
+  const font = await doc.embedFont(StandardFonts.Helvetica);
+
+  // QR Code
+  const qrImage = await qr.toDataURL(subscription.qr_code_url, {
+    errorCorrectionLevel: "H",
+    type: "image/png",
+    width: 150,
+    margin: 1,
+  });
+  const qrImageBytes = Buffer.from(qrImage.split(",")[1], "base64");
+  const embeddedQrImage = await doc.embedPng(qrImageBytes);
+
+  page.drawImage(embeddedQrImage, {
+    x: 38,
+    y: 280,
+    width: 150,
+    height: 150,
+  });
+
+  // Details
+  page.drawText("Subscription Confirmation", {
+    x: 30,
+    y: 240,
+    font,
+    size: 16,
+    color: rgb(0, 0, 0),
+  });
+
+  const detailsY = 200;
+  const details = [
+    `Name: ${subscription.purchaser_name} ${subscription.purchaser_surname}`,
+    `Email: ${subscription.purchaser_email}`,
+    `ID: ${subscription.id}`,
+  ];
+
+  details.forEach((text, i) => {
+    page.drawText(text, {
+      x: 30,
+      y: detailsY - i * 20,
+      font,
+      size: 10,
+      color: rgb(0.2, 0.2, 0.2),
+    });
+  });
+
+  return doc.save();
 }

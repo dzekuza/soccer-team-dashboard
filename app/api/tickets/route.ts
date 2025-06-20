@@ -35,6 +35,37 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 });
     }
 
+    // --- Start Email Logic ---
+    const fullTicketDetails = await supabaseService.getTicketWithDetails(ticket.id);
+    if (!fullTicketDetails) {
+      // Log an error but don't fail the whole request
+      console.error("Could not fetch full details for the new ticket, cannot send email.", ticket.id);
+      return NextResponse.json({ ticket });
+    }
+    
+    const event = fullTicketDetails.events;
+    let team1: Team | undefined = undefined;
+    let team2: Team | undefined = undefined;
+    if (event.team1_id) team1 = await supabaseService.getTeamById(event.team1_id) || undefined;
+    if (event.team2_id) team2 = await supabaseService.getTeamById(event.team2_id) || undefined;
+    
+    const pdfBytes = await generateTicketPDF(fullTicketDetails, team1, team2);
+    const fileName = `ticket-${fullTicketDetails.id}.pdf`;
+
+    if (fullTicketDetails.purchaser_email) {
+      await resend.emails.send({
+        from: 'noreply@soccer-team-dashboard.com',
+        to: fullTicketDetails.purchaser_email,
+        subject: `Jūsų bilietas renginiui: ${fullTicketDetails.events.title}`,
+        html: `<p>Dėkojame, kad pirkote! Jūsų bilietas prisegtas.</p>`,
+        attachments: [{
+          filename: fileName,
+          content: Buffer.from(pdfBytes)
+        }]
+      });
+    }
+    // --- End Email Logic ---
+
     return NextResponse.json({ ticket });
   } catch (error: any) {
     console.error('Error creating ticket:', error);
@@ -99,10 +130,10 @@ export async function PUT(request: NextRequest) {
     const { data: { publicUrl } } = supabase.storage.from('ticket-pdfs').getPublicUrl(fileName);
 
     await resend.emails.send({
-      from: 'tickets@example.com',
+      from: 'noreply@soccer-team-dashboard.com',
       to: ticket.purchaser_email,
-      subject: `Your ticket for ${ticket.events.title}`,
-      html: `<p>Thank you for your purchase! Your ticket is attached.</p>`,
+      subject: `Jūsų bilietas renginiui: ${ticket.events.title}`,
+      html: `<p>Dėkojame, kad pirkote! Jūsų bilietas prisegtas.</p>`,
       attachments: [{
         filename: 'ticket.pdf',
         path: publicUrl
