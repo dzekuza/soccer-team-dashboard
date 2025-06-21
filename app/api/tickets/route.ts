@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 import { supabaseService } from "@/lib/supabase-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
-import type { Team } from "@/lib/types"
+import type { Team, TicketWithDetails } from "@/lib/types"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -22,7 +22,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const ticket = await supabaseService.createTicket({
+    // --- Start New, Robust Logic ---
+
+    // 1. Fetch all necessary data upfront
+    const event = await supabaseService.getEventWithTiers(event_id);
+    if (!event) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+    
+    const tier = event.pricing_tiers.find(t => t.id === tier_id);
+    if (!tier) {
+      return NextResponse.json({ error: "Pricing tier not found" }, { status: 404 });
+    }
+    
+    let team1: Team | undefined = undefined;
+    let team2: Team | undefined = undefined;
+    if (event.team1_id) team1 = await supabaseService.getTeamById(event.team1_id) || undefined;
+    if (event.team2_id) team2 = await supabaseService.getTeamById(event.team2_id) || undefined;
+    
+    // 2. Create the ticket
+    const newTicket = await supabaseService.createTicket({
       event_id,
       tier_id,
       purchaser_name,
@@ -31,24 +50,17 @@ export async function POST(request: NextRequest) {
       status: 'valid',
     });
 
-    if (!ticket) {
+    if (!newTicket) {
       return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 });
     }
 
-    // --- Start Email Logic ---
-    const fullTicketDetails = await supabaseService.getTicketWithDetails(ticket.id);
-    if (!fullTicketDetails) {
-      // Log an error but don't fail the whole request
-      console.error("Could not fetch full details for the new ticket, cannot send email.", ticket.id);
-      return NextResponse.json({ ticket });
-    }
-    
-    const event = fullTicketDetails.events;
-    let team1: Team | undefined = undefined;
-    let team2: Team | undefined = undefined;
-    if (event.team1_id) team1 = await supabaseService.getTeamById(event.team1_id) || undefined;
-    if (event.team2_id) team2 = await supabaseService.getTeamById(event.team2_id) || undefined;
-    
+    // 3. Generate PDF and Send Email
+    const fullTicketDetails: TicketWithDetails = {
+      ...newTicket,
+      events: event,
+      pricing_tiers: tier,
+    };
+
     const pdfBytes = await generateTicketPDF(fullTicketDetails, team1, team2);
     const fileName = `ticket-${fullTicketDetails.id}.pdf`;
 
@@ -64,9 +76,12 @@ export async function POST(request: NextRequest) {
         }]
       });
     }
-    // --- End Email Logic ---
 
-    return NextResponse.json({ ticket });
+    // 4. Return success
+    return NextResponse.json({ ticket: newTicket });
+    
+    // --- End New Logic ---
+
   } catch (error: any) {
     console.error('Error creating ticket:', error);
     return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
