@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase-server"
 import { supabaseService } from "@/lib/supabase-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
-import type { Team, TicketWithDetails } from "@/lib/types"
+import type { Team, TicketWithDetails, EventWithTiers } from "@/lib/types"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const event = await supabaseService.getEventWithTiers(event_id);
+    const event = await supabaseService.getEventWithTiers(event_id) as EventWithTiers | null;
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }

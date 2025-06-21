@@ -62,22 +62,34 @@ export const supabaseService = {
     return data
   },
 
-  getEventWithTiers: async (id: string): Promise<EventWithTiers | null> => {
-    const { data, error } = await supabase
-      .from('events')
-      .select(`
-        *,
-        pricing_tiers (*)
-      `)
-      .eq('id', id)
-      .single()
+  getEventWithTiers: async (id?: string): Promise<EventWithTiers[] | EventWithTiers | null> => {
+    let query = supabase.from('events').select('*, pricing_tiers (*)')
 
-    if (error) {
-      console.error('Error fetching event with tiers:', error)
-      return null
+    if (id) {
+      try {
+        const { data, error } = await query.eq('id', id).single()
+
+        if (error) {
+          // Gracefully handle the case where no rows are returned
+          if (error.code === 'PGRST116') {
+            console.warn(`Event with id ${id} not found.`);
+            return null;
+          }
+          throw error;
+        }
+        return data;
+      } catch (err) {
+        console.error('Error fetching event with tiers by id:', err)
+        return null
+      }
+    } else {
+      const { data, error } = await query.order('created_at', { ascending: false })
+      if (error) {
+        console.error('Error fetching events with tiers:', error)
+        return []
+      }
+      return data
     }
-
-    return data
   },
 
   createEvent: async (
@@ -219,14 +231,13 @@ export const supabaseService = {
       .from('tickets')
       .insert([ticket])
       .select()
-      .single()
 
       if (error) {
-      console.error('Error creating ticket:', error)
-      return null
-    }
-
-    return data
+        console.error('Error creating ticket:', error)
+        return null
+      }
+      // Return the first element of the array, or null if it's empty
+      return data?.[0] || null;
   },
 
   validateTicket: async (id: string): Promise<{ success: boolean; ticket?: TicketWithDetails }> => {
