@@ -1,8 +1,10 @@
+import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server"
-import type { Fan } from '@/lib/types'
+import type { Fan, PricingTier } from '@/lib/types'
 import { supabaseService } from "@/lib/supabase-service";
 
 export async function GET() {
+  const supabase = createClient();
   try {
     const [tickets, subscriptions] = await Promise.all([
       supabaseService.getTicketsWithDetails(),
@@ -28,10 +30,13 @@ export async function GET() {
 
         fan.totalTickets += 1;
         
-        if (ticket.pricing_tiers && !Array.isArray(ticket.pricing_tiers)) {
-            fan.moneySpent += ticket.pricing_tiers.price || 0;
+        const tiers: PricingTier | PricingTier[] = ticket.pricing_tiers;
+        if (Array.isArray(tiers)) {
+          fan.moneySpent += tiers.reduce((acc, tier) => acc + (tier?.price || 0), 0)
+        } else if (tiers) {
+          fan.moneySpent += tiers.price || 0
         }
-
+        
         fansMap.set(ticket.purchaser_email, fan);
     }
     

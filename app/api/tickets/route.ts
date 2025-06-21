@@ -1,18 +1,16 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { createRouteHandlerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { createClient } from "@/lib/supabase-server"
 import { supabaseService } from "@/lib/supabase-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
 import type { Team, TicketWithDetails } from "@/lib/types"
-import { supabase } from "@/lib/supabase"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
-  const supabaseAuth = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = createClient()
   try {
-    const { data: { user } } = await supabaseAuth.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -38,7 +36,7 @@ export async function POST(request: NextRequest) {
     if (event.team1_id) team1 = await supabaseService.getTeamById(event.team1_id) || undefined;
     if (event.team2_id) team2 = await supabaseService.getTeamById(event.team2_id) || undefined;
     
-    await supabase.from('fans').upsert({
+    await createClient().from('fans').upsert({
         name: purchaser_name,
         surname: purchaser_surname,
         email: purchaser_email
@@ -79,9 +77,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const supabaseAuth = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = createClient()
   try {
-    const { data: { user } } = await supabaseAuth.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -94,9 +92,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const supabaseAuth = createRouteHandlerClient({ cookies: () => cookies() })
+  const supabase = createClient()
   try {
-    const { data: { user } } = await supabaseAuth.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
