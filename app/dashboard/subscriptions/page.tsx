@@ -99,15 +99,16 @@ export default function SubscriptionsPage() {
         }),
       });
 
-      const newSubscription = await response.json();
-
       if (!response.ok) {
-        throw new Error(newSubscription.error || 'Failed to create subscription.');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create subscription.');
       }
+      
+      const newSubscription = await response.json();
       
       toast({
         title: "Sėkmė!",
-        description: "Prenumerata sėkmingai sukurta ir išsiųsta pirkėjui.",
+        description: "Prenumerata sėkmingai sukurta.",
       })
       setSubscriptions([newSubscription, ...subscriptions])
       setCreateOpen(false)

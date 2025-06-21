@@ -187,12 +187,17 @@ export default function TicketsPage() {
   // Filter tickets by event name and scan status
   const filteredTickets = tickets.filter(ticket => {
     if (!ticket.events) return false; // Guard against tickets with no event data
-    const matchesEvent = ticket.events.title.toLowerCase().includes(eventNameFilter.toLowerCase())
+
+    const searchTerm = eventNameFilter.toLowerCase();
+    const matchesEvent = ticket.events.title.toLowerCase().includes(searchTerm)
+    const matchesName = ticket.purchaser_name?.toLowerCase().includes(searchTerm)
+    const matchesSurname = ticket.purchaser_surname?.toLowerCase().includes(searchTerm)
+
     const matchesScan =
       scanStatus === 'all' ||
       (scanStatus === 'scanned' && ticket.status === 'validated') ||
       (scanStatus === 'not_scanned' && ticket.status !== 'validated')
-    return matchesEvent && matchesScan
+    return (matchesEvent || matchesName || !!matchesSurname) && matchesScan
   })
 
   // Loading state
@@ -231,7 +236,7 @@ export default function TicketsPage() {
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <input
           type="text"
-          placeholder="Filtruoti pagal renginio pavadinimą"
+          placeholder="Filtruoti pagal renginį, vardą..."
           value={eventNameFilter}
           onChange={e => setEventNameFilter(e.target.value)}
           className="border border-gray-300 rounded px-3 py-2 w-full sm:w-64"

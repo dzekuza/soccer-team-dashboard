@@ -90,7 +90,7 @@ export default function ScannerPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-gray-50">
+    <div className="relative min-h-screen">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">QR kodų skaitytuvas</h1>
