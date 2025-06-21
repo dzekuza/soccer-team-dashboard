@@ -26,7 +26,7 @@ export function DashboardSidebar() {
   ]
 
   return (
-    <div className="flex h-full max-h-screen flex-col gap-2">
+    <div className="flex h-full max-h-screen flex-col gap-2 border-r border-main">
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <span className="">My Team</span>
@@ -124,7 +124,10 @@ export function DashboardMobileMenu() {
                 ) : (
                   <button
                     key={item.name}
-                    onClick={() => { (item.action ? item.action() : () => {})(); setModalOpen(false); }}
+                    onClick={async () => {
+                      if (item.action) await item.action();
+                      setModalOpen(false);
+                    }}
                     className="flex items-center gap-3 py-3 px-2 rounded hover:bg-gray-100 text-gray-700 text-base w-full text-left"
                   >
                     <item.icon className="h-5 w-5" />

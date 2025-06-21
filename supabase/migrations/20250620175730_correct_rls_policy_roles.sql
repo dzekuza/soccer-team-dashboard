@@ -10,21 +10,16 @@ DROP POLICY IF EXISTS "Admins can manage all tickets" ON public.tickets;
 -- Recreate policies, explicitly assigning them to the 'authenticated' role.
 
 -- Policies for: public.users
-CREATE POLICY "Authenticated users can see their own profile"
+CREATE POLICY "Authenticated users can see their own or all profiles"
   ON public.users FOR SELECT
   TO authenticated
-  USING (auth.uid() = id);
-
-CREATE POLICY "Admins can view all user profiles"
-  ON public.users FOR SELECT
-  TO authenticated
-  USING (is_admin());
+  USING (((SELECT auth.uid()) = id) OR (is_admin()));
 
 CREATE POLICY "Authenticated users can update their own profile"
   ON public.users FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+  USING ((SELECT auth.uid()) = id)
+  WITH CHECK ((SELECT auth.uid()) = id);
 
 -- Policies for: public.events
 CREATE POLICY "Admins can manage events"

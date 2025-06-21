@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { Event, EventWithTiers, PricingTier, Subscription, Ticket, TicketWithDetails, User, UserSubscription, Team, EventStats } from './types'
+import { Event, EventWithTiers, PricingTier, Subscription, Ticket, TicketWithDetails, User, Team, EventStats } from './types'
 
 export const supabaseService = {
   // User management
@@ -254,17 +254,32 @@ export const supabaseService = {
     const { data, error } = await supabase
       .from('subscriptions')
       .select('*')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching subscriptions:', error)
-      return []
+      console.error('Error fetching subscriptions:', error);
+      return [];
+    }
+
+    return data;
+  },
+
+  getSubscription: async (id: string): Promise<Subscription | null> => {
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) {
+      console.error('Error fetching subscription:', error)
+      return null
     }
 
     return data
   },
 
-  createSubscription: async (subscription: Omit<Subscription, 'id' | 'created_at'>): Promise<Subscription | null> => {
+  createSubscription: async (subscription: Omit<Subscription, 'id' | 'created_at' | 'updated_at' | 'qr_code_url'>): Promise<Subscription | null> => {
     const { data, error } = await supabase
       .from('subscriptions')
       .insert([subscription])
@@ -273,37 +288,6 @@ export const supabaseService = {
 
     if (error) {
       console.error('Error creating subscription:', error)
-      return null
-    }
-
-    return data
-  },
-
-  // User subscription management
-  getUserSubscriptions: async (userId: string): Promise<UserSubscription[]> => {
-    const { data, error } = await supabase
-      .from('user_subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching user subscriptions:', error)
-      return []
-    }
-
-    return data
-  },
-
-  assignSubscriptionToUser: async (subscription: Omit<UserSubscription, 'id' | 'created_at' | 'updated_at'>): Promise<UserSubscription | null> => {
-    const { data, error } = await supabase
-      .from('user_subscriptions')
-      .insert([subscription])
-      .select()
-      .single()
-
-    if (error) {
-      console.error('Error assigning subscription to user:', error)
       return null
     }
 

@@ -1,27 +1,13 @@
-import * as supabaseSSR from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextResponse } from "next/server"
 import type { Fan } from '@/lib/types'
+import { supabaseService } from "@/lib/supabase-service";
 
 export async function GET() {
-  const supabase = supabaseSSR.createRouteHandlerClient({ cookies: () => cookies() })
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
-    const { data: tickets, error: ticketsError } = await supabase
-      .from('tickets')
-      .select('purchaser_name, purchaser_surname, purchaser_email, pricing_tiers(price)');
-      
-    if (ticketsError) throw ticketsError;
-
-    const { data: subscriptions, error: subsError } = await supabase
-      .from('subscriptions')
-      .select('purchaser_name, purchaser_surname, purchaser_email, valid_to');
-
-    if (subsError) throw subsError;
+    const [tickets, subscriptions] = await Promise.all([
+      supabaseService.getTicketsWithDetails(),
+      supabaseService.getSubscriptions(),
+    ]);
 
     const fansMap = new Map<string, Fan>();
 
@@ -41,7 +27,11 @@ export async function GET() {
         }
 
         fan.totalTickets += 1;
-        fan.moneySpent += ticket.pricing_tiers?.price || 0;
+        
+        if (ticket.pricing_tiers && !Array.isArray(ticket.pricing_tiers)) {
+            fan.moneySpent += ticket.pricing_tiers.price || 0;
+        }
+
         fansMap.set(ticket.purchaser_email, fan);
     }
     

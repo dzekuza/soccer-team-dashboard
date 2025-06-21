@@ -36,9 +36,9 @@ CREATE POLICY "authenticated_user_can_manage_teams" ON teams FOR ALL TO authenti
 CREATE POLICY "authenticated_user_can_manage_pricing_tiers" ON pricing_tiers FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Allow public read access to events, teams, and pricing tiers
-CREATE POLICY "public_can_read_events" ON events FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "public_can_read_teams" ON teams FOR SELECT TO anon, authenticated USING (true);
-CREATE POLICY "public_can_read_pricing_tiers" ON pricing_tiers FOR SELECT TO anon, authenticated USING (true);
+-- CREATE POLICY "public_can_read_events" ON events FOR SELECT TO anon, authenticated USING (true);
+-- CREATE POLICY "public_can_read_teams" ON teams FOR SELECT TO anon, authenticated USING (true);
+-- CREATE POLICY "public_can_read_pricing_tiers" ON pricing_tiers FOR SELECT TO anon, authenticated USING (true);
 
 -- Grant permissions (redundant if policies are permissive, but good for clarity)
 GRANT ALL ON users TO authenticated;
@@ -46,3 +46,13 @@ GRANT ALL ON events TO authenticated;
 GRANT ALL ON pricing_tiers TO authenticated;
 GRANT ALL ON tickets TO authenticated;
 GRANT ALL ON teams TO authenticated;
+
+-- Subscriptions Table
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- Tickets Table
+ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "public_can_read_tickets" ON tickets FOR SELECT TO anon, authenticated USING (true);
+
+-- Pricing Tiers Table
+ALTER TABLE pricing_tiers ENABLE ROW LEVEL SECURITY;

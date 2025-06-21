@@ -9,7 +9,7 @@ BEGIN
     WHERE id = auth.uid()
   ) = 'admin';
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 --
 -- Policies for: public.users

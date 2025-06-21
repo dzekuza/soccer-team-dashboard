@@ -170,8 +170,8 @@ export default function ScannerPage() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Bilieto informacija</CardTitle>
-                <Badge variant={ticket.isValidated ? "default" : "secondary"}>
-                  {ticket.isValidated ? "Validated" : "Valid"}
+                <Badge variant={ticket.status === 'validated' ? "default" : "secondary"}>
+                  {ticket.status === 'validated' ? "Validated" : "Valid"}
                 </Badge>
               </div>
             </CardHeader>
@@ -179,42 +179,42 @@ export default function ScannerPage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="font-medium">Renginys:</p>
-                  <p>{ticket.event.title}</p>
+                  <p>{ticket.events.title}</p>
                 </div>
                 <div>
                   <p className="font-medium">Data:</p>
-                  <p>{ticket.event.date}</p>
+                  <p>{ticket.events.date}</p>
                 </div>
                 <div>
                   <p className="font-medium">Laikas:</p>
-                  <p>{ticket.event.time}</p>
+                  <p>{ticket.events.time}</p>
                 </div>
                 <div>
                   <p className="font-medium">Vieta:</p>
-                  <p>{ticket.event.location}</p>
+                  <p>{ticket.events.location}</p>
                 </div>
                 <div>
                   <p className="font-medium">Kainų lygis:</p>
-                  <p>{ticket.tier.name}</p>
+                  <p>{ticket.pricing_tiers.name}</p>
                 </div>
                 <div>
                   <p className="font-medium">Kaina:</p>
-                  <p>${ticket.tier.price}</p>
+                  <p>${ticket.pricing_tiers.price}</p>
                 </div>
                 <div>
                   <p className="font-medium">Pirkėjas:</p>
-                  <p>{ticket.purchaserName}</p>
+                  <p>{ticket.purchaser_name}</p>
                 </div>
                 <div>
                   <p className="font-medium">El. paštas:</p>
-                  <p>{ticket.purchaserEmail}</p>
+                  <p>{ticket.purchaser_email}</p>
                 </div>
               </div>
 
-              {ticket.isValidated && ticket.validatedAt && (
+              {ticket.status === 'validated' && ticket.updated_at && (
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <p className="text-sm font-medium">Patvirtinta:</p>
-                  <p className="text-sm">{formatDateTime(ticket.validatedAt)}</p>
+                  <p className="text-sm">{formatDateTime(ticket.updated_at)}</p>
                 </div>
               )}
             </CardContent>

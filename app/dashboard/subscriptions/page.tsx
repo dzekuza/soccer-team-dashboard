@@ -193,15 +193,8 @@ export default function SubscriptionsPage() {
                         size="sm" 
                         variant="outline" 
                         onClick={() => {
-                          if (sub.qr_code_url) {
-                            setQrCodeUrl(sub.qr_code_url)
-                          } else {
-                            toast({
-                              title: "Klaida",
-                              description: "QR kodo URL nerastas.",
-                              variant: "destructive"
-                            })
-                          }
+                          const validationUrl = `${window.location.origin}/api/validate-subscription/${sub.id}`;
+                          setQrCodeUrl(validationUrl);
                         }}>
                         QR Kodas
                       </Button>
