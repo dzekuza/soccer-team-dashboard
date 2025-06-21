@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     }
     
     // 2. Generate final QR code and PDF URLs
-    const qr_code_url = `https://soccer-team-dashboard.vercel.app/api/validate-subscription/${newSubscription.id}`;
+    const qr_code_url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/validate-subscription/${newSubscription.id}`;
     const pdf_file_name = `subscription-${newSubscription.id}.pdf`;
     
     // 3. Generate PDF

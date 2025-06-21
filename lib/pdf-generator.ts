@@ -216,7 +216,7 @@ export async function generateTicketPDF(
   })
 
   // QR code (centered in orange section)
-  const qrCodeUrl = `https://soccer-team-dashboard.vercel.app/api/validate-ticket/${ticket.id}`;
+  const qrCodeUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/validate-ticket/${ticket.id}`;
   try {
     const qrCodeDataUrl = await qr.toDataURL(qrCodeUrl, { width: 180, margin: 1 })
     const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
