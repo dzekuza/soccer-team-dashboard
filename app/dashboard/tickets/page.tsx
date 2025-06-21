@@ -165,20 +165,52 @@ export default function TicketsPage() {
 
   const handleResend = async (ticketId: string) => {
     setResendingId(ticketId)
+    toast({ title: "Bilietas generuojamas iš naujo...", description: "Prašome palaukti, kol bus atnaujintas PDF ir išsiųstas el. laiškas." })
+
     try {
+      // 1. Fetch complete ticket details
+      const { data: ticket, error: ticketError } = await supabase
+        .from('tickets')
+        .select(`*, events(*), pricing_tiers(*)`)
+        .eq('id', ticketId)
+        .single();
+
+      if (ticketError || !ticket || !ticket.events || !ticket.pricing_tiers) {
+        throw new Error("Nepavyko gauti visų bilieto duomenų, reikalingų pergeneravimui.");
+      }
+
+      // 2. Fetch team details
+      const [team1, team2] = await Promise.all([
+        ticket.events.team1_id ? dbService.getTeamById(ticket.events.team1_id) : Promise.resolve(undefined),
+        ticket.events.team2_id ? dbService.getTeamById(ticket.events.team2_id) : Promise.resolve(undefined)
+      ]);
+
+      // 3. Generate new PDF with the correct QR code URL
+      const pdfBytes = await generateTicketPDF(ticket, team1 || undefined, team2 || undefined);
+      const pdfBlob = uint8ArrayToPdfBlob(pdfBytes);
+      
+      // 4. Re-upload to Supabase
+      const uploadedPath = await uploadPdfToSupabase(ticket.id, pdfBlob);
+      if (!uploadedPath) {
+        throw new Error('Nepavyko išsaugoti atnaujinto PDF failo.');
+      }
+
+      // 5. Call API to resend email
       const res = await fetch(`${API_BASE_URL}/api/tickets`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ticket_id: ticketId }),
       })
-      if (res.ok) {
-        toast({ title: "Bilietas išsiųstas pakartotinai", description: "El. laiškas su PDF bilietu išsiųstas pirkėjui." })
-      } else {
+      if (!res.ok) {
         const data = await res.json()
-        toast({ title: "Klaida siunčiant bilietą", description: data.error || "Nepavyko išsiųsti bilieto el. paštu.", variant: "destructive" })
+        throw new Error(data.error || "Nepavyko išsiųsti bilieto el. paštu.");
       }
+
+      toast({ title: "Bilietas sėkmingai atnaujintas ir išsiųstas", description: "El. laiškas su atnaujintu PDF bilietu išsiųstas pirkėjui." })
+
     } catch (err) {
-      toast({ title: "Klaida siunčiant bilietą", description: "Nepavyko išsiųsti bilieto el. paštu.", variant: "destructive" })
+      const errorMessage = err instanceof Error ? err.message : "Įvyko nežinoma klaida."
+      toast({ title: "Klaida", description: errorMessage, variant: "destructive" })
     } finally {
       setResendingId(null)
     }

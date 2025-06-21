@@ -25,7 +25,8 @@ export default function ScannerPage() {
     setLastScan(null)
 
     try {
-      const url = new URL(data)
+      // Allow both full URLs and relative paths starting with "/"
+      const url = new URL(data, window.location.origin)
       const path = url.pathname
       let result: ScanResult | null = null
 
