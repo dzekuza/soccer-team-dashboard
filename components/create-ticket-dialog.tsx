@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Event, PricingTier } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
-import { v4 as uuidv4 } from "uuid"
+import { useToast } from "@/components/ui/use-toast"
 
 interface CreateTicketDialogProps {
   open: boolean
@@ -34,6 +34,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
   const [purchaserEmail, setPurchaserEmail] = useState("")
   const [purchaserSurname, setPurchaserSurname] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (open) {
@@ -97,47 +98,45 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
     setIsLoading(true)
 
     try {
-      const ticketId = uuidv4()
-      const qrCodeUrl = `/api/validate-ticket/${ticketId}`
-
-      // Fetch event data to get team1_id, team2_id
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("team1_id, team2_id")
-        .eq("id", selectedEventId)
-        .single()
-      if (eventError || !eventData) throw eventError || new Error("Event not found")
-
-      const { team1_id, team2_id } = eventData
-
-      // Insert ticket directly into Supabase
-      const { data: ticket, error } = await supabase
-        .from("tickets")
-        .insert([
-          {
+      const response = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           event_id: selectedEventId,
           tier_id: selectedTierId,
           purchaser_name: purchaserName,
+          purchaser_surname: purchaserSurname,
           purchaser_email: purchaserEmail,
-            purchaser_surname: purchaserSurname,
-            status: 'valid',
-          },
-        ])
-        .select()
-        .single()
+        }),
+      });
 
-      if (error) {
-        alert("Supabase error: " + (error.message || JSON.stringify(error)))
-        throw error
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Nepavyko sukurti bilieto.');
       }
+      
+      toast({
+        title: "Sėkmė!",
+        description: "Bilietas sėkmingai sukurtas ir išsiųstas pirkėjui.",
+      });
+
       onTicketCreated()
+      // Reset form
       setSelectedEventId("")
       setSelectedTierId("")
       setPurchaserName("")
       setPurchaserEmail("")
       setPurchaserSurname("")
+      
     } catch (error) {
-      alert("Failed to create ticket: " + JSON.stringify(error))
+       const errorMessage = error instanceof Error ? error.message : "Įvyko nežinoma klaida";
+       toast({
+        title: "Klaida kuriant bilietą",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false)
     }
@@ -186,9 +185,15 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="name">Pirkėjo vardas</Label>
-            <Input id="name" value={purchaserName} onChange={(e) => setPurchaserName(e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Pirkėjo vardas</Label>
+              <Input id="name" value={purchaserName} onChange={(e) => setPurchaserName(e.target.value)} required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="surname">Pirkėjo pavardė</Label>
+              <Input id="surname" value={purchaserSurname} onChange={(e) => setPurchaserSurname(e.target.value)} required />
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -202,19 +207,14 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="surname">Pirkėjo pavardė</Label>
-            <Input id="surname" value={purchaserSurname} onChange={(e) => setPurchaserSurname(e.target.value)} required />
-          </div>
-
-          <div className="flex justify-end gap-2">
+          <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Atšaukti
             </Button>
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Generuojama..." : "Generuoti"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
