@@ -1,54 +1,58 @@
--- Enable Row Level Security
+-- Drop existing policies if they exist
+DO $$
+BEGIN
+  -- Drop policies in reverse order of creation if dependencies exist
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'teams_admin_policy') THEN DROP POLICY "teams_admin_policy" ON teams; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'teams_select_policy') THEN DROP POLICY "teams_select_policy" ON teams; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'tickets_admin_policy') THEN DROP POLICY "tickets_admin_policy" ON tickets; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'tickets_select_policy') THEN DROP POLICY "tickets_select_policy" ON tickets; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'pricing_tiers_admin_policy') THEN DROP POLICY "pricing_tiers_admin_policy" ON pricing_tiers; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'pricing_tiers_select_policy') THEN DROP POLICY "pricing_tiers_select_policy" ON pricing_tiers; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'events_admin_policy') THEN DROP POLICY "events_admin_policy" ON events; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'events_select_policy') THEN DROP POLICY "events_select_policy" ON events; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'users_update_policy') THEN DROP POLICY "users_update_policy" ON users; END IF;
+  IF EXISTS (SELECT 1 FROM pg_policy WHERE polname = 'users_select_policy') THEN DROP POLICY "users_select_policy" ON users; END IF;
+END;
+$$;
+
+-- Enable RLS on all tables that need it
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pricing_tiers ENABLE ROW LEVEL SECURITY;
 ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teams ENABLE ROW LEVEL SECURITY;
 
--- Users policies
-CREATE POLICY "Users can view all users" ON users
-    FOR SELECT USING (true);
+-- USERS
+-- Authenticated users can view any user profile
+CREATE POLICY "users_select_policy" ON users FOR SELECT TO authenticated USING (true);
+-- Users can update their own profile
+CREATE POLICY "users_update_policy" ON users FOR UPDATE TO authenticated USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
-CREATE POLICY "Users can insert new users" ON users
-    FOR INSERT WITH CHECK (true);
+-- EVENTS, TICKETS, TEAMS, PRICING TIERS
+-- Any authenticated user can manage all records in these tables.
+CREATE POLICY "authenticated_user_can_manage_events" ON events FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_user_can_manage_tickets" ON tickets FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_user_can_manage_teams" ON teams FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_user_can_manage_pricing_tiers" ON pricing_tiers FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
-CREATE POLICY "Users can update their own data" ON users
-    FOR UPDATE USING (auth.uid()::text = id::text);
+-- Allow public read access to events, teams, and pricing tiers
+-- CREATE POLICY "public_can_read_events" ON events FOR SELECT TO anon, authenticated USING (true);
+-- CREATE POLICY "public_can_read_teams" ON teams FOR SELECT TO anon, authenticated USING (true);
+-- CREATE POLICY "public_can_read_pricing_tiers" ON pricing_tiers FOR SELECT TO anon, authenticated USING (true);
 
--- Events policies
-CREATE POLICY "Anyone can view events" ON events
-    FOR SELECT USING (true);
+-- Grant permissions (redundant if policies are permissive, but good for clarity)
+GRANT ALL ON users TO authenticated;
+GRANT ALL ON events TO authenticated;
+GRANT ALL ON pricing_tiers TO authenticated;
+GRANT ALL ON tickets TO authenticated;
+GRANT ALL ON teams TO authenticated;
 
-CREATE POLICY "Authenticated users can create events" ON events
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+-- Subscriptions Table
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Authenticated users can update events" ON events
-    FOR UPDATE USING (auth.role() = 'authenticated');
+-- Tickets Table
+ALTER TABLE tickets ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "public_can_read_tickets" ON tickets FOR SELECT TO anon, authenticated USING (true);
 
-CREATE POLICY "Authenticated users can delete events" ON events
-    FOR DELETE USING (auth.role() = 'authenticated');
-
--- Pricing tiers policies
-CREATE POLICY "Anyone can view pricing tiers" ON pricing_tiers
-    FOR SELECT USING (true);
-
-CREATE POLICY "Authenticated users can create pricing tiers" ON pricing_tiers
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can update pricing tiers" ON pricing_tiers
-    FOR UPDATE USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can delete pricing tiers" ON pricing_tiers
-    FOR DELETE USING (auth.role() = 'authenticated');
-
--- Tickets policies
-CREATE POLICY "Anyone can view tickets" ON tickets
-    FOR SELECT USING (true);
-
-CREATE POLICY "Authenticated users can create tickets" ON tickets
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can update tickets" ON tickets
-    FOR UPDATE USING (auth.role() = 'authenticated');
-
-CREATE POLICY "Authenticated users can delete tickets" ON tickets
-    FOR DELETE USING (auth.role() = 'authenticated');
+-- Pricing Tiers Table
+ALTER TABLE pricing_tiers ENABLE ROW LEVEL SECURITY;

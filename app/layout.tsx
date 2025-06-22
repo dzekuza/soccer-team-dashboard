@@ -1,26 +1,38 @@
-import type React from "react"
-import type { Metadata } from "next"
 import "./globals.css"
-import { AuthProvider } from "@/lib/auth-context"
-import { AuthGuard } from "@/components/auth-guard"
+import { Inter as FontSans } from "next/font/google"
+import { cn } from "@/lib/utils"
+import { Providers } from "@/components/providers"
+import { CartProvider } from "@/context/cart-context"
 
-export const metadata: Metadata = {
+const fontSans = FontSans({
+  subsets: ["latin"],
+  variable: "--font-sans",
+})
+
+export const metadata = {
   title: "FK Banga tickets dash",
   description: "Manage soccer team events and tickets",
-    generator: 'v0.dev'
-}
+  generator: 'v0.dev'
+};
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body>
-        <AuthProvider>
-          <AuthGuard>{children}</AuthGuard>
-        </AuthProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          fontSans.variable
+        )}
+      >
+        <Providers>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </Providers>
       </body>
     </html>
   )

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import type { Event, Ticket } from "@/lib/types"
 import { Download } from "lucide-react"
 import { supabaseService } from "@/lib/supabase-service"
+import { cn } from "@/lib/utils"
 
 export default function ExportPage() {
   const [events, setEvents] = useState<Event[]>([])
@@ -49,15 +50,15 @@ export default function ExportPage() {
         date: event.date,
         time: event.time,
         location: event.location,
-        createdAt: event.createdAt,
+        createdAt: event.created_at,
       })),
       tickets: tickets.map((ticket) => ({
         id: ticket.id,
-        eventId: ticket.eventId,
-        purchaserName: ticket.purchaserName,
-        purchaserEmail: ticket.purchaserEmail,
-        isValidated: ticket.isValidated,
-        createdAt: ticket.createdAt,
+        eventId: ticket.event_id,
+        purchaserName: ticket.purchaser_name,
+        purchaserEmail: ticket.purchaser_email,
+        isValidated: ticket.status === 'validated',
+        createdAt: ticket.created_at,
       })),
     }
 
@@ -85,7 +86,7 @@ export default function ExportPage() {
           event.date,
           event.time,
           `"${event.location}"`,
-          event.createdAt,
+          event.created_at,
         ].join(","),
       ),
     ].join("\n")
@@ -108,11 +109,11 @@ export default function ExportPage() {
       ...tickets.map((ticket) =>
         [
           ticket.id,
-          ticket.eventId,
-          `"${ticket.purchaserName}"`,
-          ticket.purchaserEmail,
-          ticket.isValidated,
-          ticket.createdAt,
+          ticket.event_id,
+          `"${ticket.purchaser_name}"`,
+          ticket.purchaser_email,
+          ticket.status === 'validated',
+          ticket.created_at,
         ].join(","),
       ),
     ].join("\n")

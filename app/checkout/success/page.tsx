@@ -1,41 +1,38 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { useRouter } from "next/navigation";
 
 interface Ticket {
   id: string;
   qrCodeUrl: string;
 }
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessContent() {
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session_id");
+  const router = useRouter();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const didRun = React.useRef(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!sessionId || typeof sessionId !== "string") {
-      setError("Invalid or missing session ID.");
+    if (didRun.current) return;
+    didRun.current = true;
+
+    const sessionId = searchParams.get("session_id");
+    if (!sessionId) {
+      router.replace("/");
       return;
     }
-    setLoading(true);
-    setError("");
-    fetch(`/api/checkout/tickets?session_id=${encodeURIComponent(sessionId)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data.tickets)) {
-          setTickets(data.tickets);
-        } else {
-          setError(data.error || "No tickets found.");
-        }
-      })
-      .catch(() => setError("Failed to fetch tickets."))
-      .finally(() => setLoading(false));
-  }, [sessionId]);
+
+    // No need to fetch, just show success message
+    setIsLoading(false);
+  }, [searchParams, router]);
 
   const handleDownloadTickets = async () => {
     if (tickets.length === 0) return;
@@ -64,10 +61,7 @@ export default function CheckoutSuccessPage() {
       <h1 className="text-3xl font-bold mb-4 text-green-700">Payment Successful!</h1>
       <p className="mb-4">Thank you for your purchase. Your payment was successful.</p>
       <p className="mb-4">Your ticket(s) will be emailed to you shortly, or you can now access them below.</p>
-      {sessionId && (
-        <p className="mb-4 text-xs text-gray-500">Session ID: {sessionId}</p>
-      )}
-      {loading && <p className="text-gray-500">Loading your tickets...</p>}
+      {isLoading && <p className="text-gray-500">Loading your tickets...</p>}
       {error && <p className="text-red-600">{error}</p>}
       {tickets.length > 0 && (
         <div className="mt-6">
@@ -81,5 +75,13 @@ export default function CheckoutSuccessPage() {
       )}
       <a href="/" className="inline-block mt-8 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Back to Home</a>
     </div>
+  );
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 } 

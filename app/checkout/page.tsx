@@ -1,209 +1,93 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
-import { useSearchParams } from "next/navigation";
-import { formatCurrency } from "@/lib/utils";
-
-interface Event {
-  id: string;
-  title: string;
-  pricingTiers: PricingTier[];
-}
-
-interface PricingTier {
-  id: string;
-  name: string;
-  price: number;
-  maxQuantity: number;
-}
+import { useState } from "react";
+import { InteractiveCheckout } from "@/components/ui/interactive-checkout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useCart } from "@/context/cart-context";
+import { CreditCard } from "lucide-react";
 
 export default function CheckoutPage() {
-  const searchParams = useSearchParams();
-  const [events, setEvents] = useState<Event[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState("");
-  const [selectedTierId, setSelectedTierId] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [purchaserName, setPurchaserName] = useState("");
-  const [purchaserEmail, setPurchaserEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+    const { cart, clearCart } = useCart();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
+    const [name, setName] = useState("");
+    const [surname, setSurname] = useState("");
+    const [email, setEmail] = useState("");
 
-  useEffect(() => {
-    fetch("/api/events")
-      .then((res) => res.json())
-      .then((data) => setEvents(data));
-  }, []);
+    const handleCheckout = async () => {
+        setIsLoading(true);
+        setError(null);
 
-  useEffect(() => {
-    const eventId = searchParams.get("eventId");
-    const tierId = searchParams.get("tierId");
-    if (eventId) setSelectedEventId(eventId);
-    if (tierId) setSelectedTierId(tierId);
-  }, [searchParams]);
+        if (!name || !surname || !email) {
+            setError("Prašome užpildyti visus laukus.");
+            setIsLoading(false);
+            return;
+        }
 
-  const selectedEvent = events.find((e) => e.id === selectedEventId);
-  const selectedTier = selectedEvent?.pricingTiers.find((t) => t.id === selectedTierId);
-  const totalPrice = selectedTier ? selectedTier.price * quantity : 0;
+        try {
+            const response = await fetch('/api/checkout/session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    cartItems: cart, 
+                    purchaserEmail: email,
+                    purchaserName: `${name} ${surname}`
+                }),
+            });
 
-  return (
-    <div className="min-h-screen bg-[#f6f8fb] flex items-center justify-center font-sans">
-      <div className="flex flex-col md:flex-row w-full max-w-5xl bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Order Summary (Left) */}
-        <div className="w-full md:w-1/2 p-8 flex flex-col justify-between bg-[#f6f8fb] border-r border-gray-200">
-          <div>
-            <h2 className="text-[#697386] text-lg font-medium mb-2">Order Summary</h2>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-[#1a1f36] text-base font-medium">Event</span>
-                <span className="text-[#1a1f36] text-base">{selectedEvent?.title || "-"}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[#1a1f36] text-base font-medium">Ticket Type</span>
-                <span className="text-[#1a1f36] text-base">{selectedTier?.name || "-"}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-[#1a1f36] text-base font-medium">Quantity</span>
-                <span className="text-[#1a1f36] text-base">{quantity}</span>
-              </div>
-              <div className="flex items-center justify-between mt-4 border-t pt-4">
-                <span className="text-[#1a1f36] text-lg font-semibold">Total</span>
-                <span className="text-[#1a1f36] text-3xl font-bold tracking-tight">{formatCurrency(totalPrice)}</span>
-              </div>
+            const { url, error: apiError } = await response.json();
+
+            if (!response.ok) {
+                throw new Error(apiError || "Something went wrong");
+            }
+
+            if (url) {
+                clearCart();
+                window.location.href = url;
+            }
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-[#0A2065] text-white py-12">
+            <div className="container mx-auto">
+                <h1 className="text-3xl font-bold mb-8 text-center">Apmokėjimas</h1>
+                <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto items-start">
+                    <div>
+                        <InteractiveCheckout />
+                    </div>
+                    <div className="bg-[#070F40] p-6 rounded-xl border border-[rgba(95,95,113,0.3)]">
+                        <h2 className="text-xl font-semibold mb-4">Jūsų duomenys</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <Label htmlFor="name">Vardas</Label>
+                                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jonas" className="bg-transparent border-main-orange text-white" />
+                            </div>
+                            <div>
+                                <Label htmlFor="surname">Pavardė</Label>
+                                <Input id="surname" value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="Jonaitis" className="bg-transparent border-main-orange text-white" />
+                            </div>
+                            <div>
+                                <Label htmlFor="email">El. paštas</Label>
+                                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jonas.jonaitis@email.com" className="bg-transparent border-main-orange text-white" />
+                            </div>
+                        </div>
+                        <Button size="lg" className="w-full gap-2 mt-8 bg-main-orange hover:bg-main-orange/90" onClick={handleCheckout} disabled={isLoading || cart.length === 0}>
+                            {isLoading ? "Vykdoma..." : <><CreditCard className="w-4 h-4" /> Apmokėti</>}
+                        </Button>
+                        {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-        {/* Checkout Form (Right) */}
-        <div className="w-full md:w-1/2 p-8 flex flex-col justify-center">
-          <h1 className="text-2xl font-bold text-[#1a1f36] mb-6">Checkout</h1>
-          <form
-            className="flex flex-col gap-6"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setLoading(true);
-              setError("");
-              try {
-                const res = await fetch("/api/checkout/session", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    eventId: selectedEventId,
-                    tierId: selectedTierId,
-                    quantity,
-                    purchaserName,
-                    purchaserEmail,
-                  }),
-                });
-                const data = await res.json();
-                if (res.ok && data.url) {
-                  window.location.href = data.url;
-                } else {
-                  setError(data.error || "Failed to start payment session.");
-                }
-              } catch (err) {
-                setError("Network error. Please try again.");
-              } finally {
-                setLoading(false);
-              }
-            }}
-          >
-            {/* Event selection */}
-            <div>
-              <label className="block text-[#697386] text-sm font-medium mb-1">Select Event</label>
-              <select
-                className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={selectedEventId}
-                onChange={(e) => {
-                  setSelectedEventId(e.target.value);
-                  setSelectedTierId("");
-                }}
-                required
-                disabled={!!searchParams.get("eventId")}
-              >
-                <option value="">-- Choose an event --</option>
-                {events.map((event) => (
-                  <option key={event.id} value={event.id}>
-                    {event.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            {/* Pricing tier selection */}
-            {selectedEvent && (
-              <div>
-                <label className="block text-[#697386] text-sm font-medium mb-1">Select Ticket Type</label>
-                <select
-                  className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={selectedTierId}
-                  onChange={(e) => setSelectedTierId(e.target.value)}
-                  required
-                  disabled={!!searchParams.get("tierId")}
-                >
-                  <option value="">-- Choose a ticket type --</option>
-                  {selectedEvent.pricingTiers.map((tier) => (
-                    <option key={tier.id} value={tier.id}>
-                      {tier.name} ({formatCurrency(tier.price)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-            {/* Quantity */}
-            {selectedTier && (
-              <div>
-                <label className="block text-[#697386] text-sm font-medium mb-1">Quantity</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={selectedTier.maxQuantity}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Number(e.target.value))}
-                  className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            )}
-            {/* Purchaser info */}
-            <div>
-              <label className="block text-[#697386] text-sm font-medium mb-1">Your Name</label>
-              <input
-                type="text"
-                className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={purchaserName}
-                onChange={(e) => setPurchaserName(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-[#697386] text-sm font-medium mb-1">Your Email</label>
-              <input
-                type="email"
-                className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={purchaserEmail}
-                onChange={(e) => setPurchaserEmail(e.target.value)}
-                required
-              />
-            </div>
-            {/* Payment button */}
-            <button
-              type="submit"
-              className="w-full py-4 mt-2 bg-[#1a1f36] text-white text-lg font-semibold rounded-md shadow hover:bg-[#232946] transition"
-              disabled={
-                loading ||
-                !selectedEventId ||
-                !selectedTierId ||
-                !purchaserName ||
-                !purchaserEmail ||
-                quantity < 1
-              }
-            >
-              {loading ? "Redirecting to Stripe..." : `Pay ${formatCurrency(totalPrice)}`}
-            </button>
-            {error && <div className="text-red-600 mt-2">{error}</div>}
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+    );
 } 

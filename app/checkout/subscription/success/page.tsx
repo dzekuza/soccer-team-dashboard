@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function SubscriptionSuccessPage() {
+function SubscriptionSuccessContent() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
 
@@ -17,5 +17,13 @@ export default function SubscriptionSuccessPage() {
       )}
       <a href="/dashboard/subscriptions" className="inline-block mt-8 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Go to Subscriptions Dashboard</a>
     </div>
+  );
+}
+
+export default function SubscriptionSuccessPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SubscriptionSuccessContent />
+    </Suspense>
   );
 } 

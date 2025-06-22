@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { supabase } from "@/lib/supabase"
+import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase-browser"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,47 +11,66 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2 } from "lucide-react"
 
-export default function RegisterPage() {
-  const [form, setForm] = useState({ email: "", password: "", name: "" })
+export default function Register() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-
-  const handleChange = (field: string, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }))
-  }
+  const router = useRouter()
+  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError("")
-    setSuccess("")
+    setError(null)
     setIsLoading(true)
-    const { error } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: { data: { name: form.name } }
-    })
-    setIsLoading(false)
-    if (error) setError(error.message)
-    else setSuccess("Registracija sėkminga! Patikrinkite el. paštą.")
+
+    try {
+      console.log(`Bandoma registruoti naują vartotoją: ${email} su vardu: ${name}`);
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            role: 'admin'
+          }
+        }
+      })
+
+      if (authError) {
+        console.error("Supabase registracijos klaida:", authError.message);
+        throw authError
+      }
+
+      if (authData.user) {
+        console.log("Vartotojas sėkmingai sukurtas:", authData.user.id);
+        console.log("Atnaujinama sesija ir nukreipiama...");
+        await router.refresh();
+        router.replace('/dashboard/overview');
+        console.log("Nukreipimas į /dashboard/overview įvykdytas.");
+      } else {
+        console.warn("Registracija pavyko, bet nebuvo gauti vartotojo duomenys.");
+      }
+    } catch (error: any) {
+      console.error("Klaida registracijos bloke:", error);
+      setError(error.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <Card className="w-full mx-4 max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Futbolo komandos registracija</CardTitle>
-          <CardDescription>Užpildykite formą norėdami sukurti paskyrą</CardDescription>
+          <CardTitle className="text-2xl font-bold">Registracija</CardTitle>
+          <CardDescription>Sukurkite naują paskyrą</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          {success && (
-            <Alert className="mb-4 bg-green-50 text-green-800 border-green-200">
-              <AlertDescription>{success}</AlertDescription>
             </Alert>
           )}
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,9 +79,9 @@ export default function RegisterPage() {
               <Input
                 id="name"
                 type="text"
-                placeholder="Jūsų vardas"
-                value={form.name}
-                onChange={e => handleChange("name", e.target.value)}
+                placeholder="Jonas"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
@@ -70,9 +90,9 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="el.pastas@pavyzdys.lt"
-                value={form.email}
-                onChange={e => handleChange("email", e.target.value)}
+                placeholder="jonas@pavyzdys.lt"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -81,9 +101,9 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="slaptazodis123"
-                value={form.password}
-                onChange={e => handleChange("password", e.target.value)}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
@@ -98,8 +118,8 @@ export default function RegisterPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4 text-center text-sm text-gray-600">
-          <p>
+        <CardFooter className="flex justify-center">
+          <p className="text-sm text-gray-600">
             Jau turite paskyrą?{" "}
             <Link href="/login" className="text-blue-600 hover:underline">
               Prisijungti

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabaseService } from "@/lib/supabase-service";
 import { createClient } from "@supabase/supabase-js";
+import { type Database } from "@/lib/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// Initialize Supabase with the service role key
-const supabase = createClient(
+// Initialize Supabase with the service role key for admin-level access
+const supabaseAdmin = createClient<Database>(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -14,51 +14,62 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   const sig = req.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  let event;
+  let event: Stripe.Event;
+  
   try {
     const body = await req.text();
-    if (!sig || !webhookSecret) throw new Error("Missing Stripe signature or webhook secret");
+    if (!sig || !webhookSecret) {
+      console.warn("Stripe webhook signature or secret is missing.");
+      return NextResponse.json({ error: "Webhook Error: Missing signature or secret" }, { status: 400 });
+    }
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err) {
-    console.error("Webhook signature verification failed.", err);
-    return NextResponse.json({ error: "Webhook Error" }, { status: 400 });
+  } catch (err: any) {
+    console.error("Webhook signature verification failed.", err.message);
+    return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-    if (session.mode === "subscription" && session.customer_email && session.metadata?.subscriptionId) {
-      try {
-        // Find user by email
-        const { data: user, error: userError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("email", session.customer_email)
-          .single();
-        if (userError || !user) throw new Error("User not found for email: " + session.customer_email);
-        // Assign subscription to user
-        await supabaseService.assignSubscriptionToUser(user.id, session.metadata.subscriptionId);
-        console.log(`Assigned subscription ${session.metadata.subscriptionId} to user ${user.id}`);
-      } catch (err) {
-        console.error("Failed to assign subscription after Stripe payment:", err);
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const { user_id, event_id, tier_id, subscription_id } = session.metadata || {};
+
+      if (session.mode === "payment" && user_id && event_id && tier_id) {
+        // Handle one-time payment for a ticket
+        const { error: ticketError } = await supabaseAdmin.from('tickets').insert({
+          event_id: event_id,
+          tier_id: tier_id,
+          user_id: user_id,
+          purchaser_name: session.customer_details?.name,
+          purchaser_email: session.customer_details?.email,
+          status: 'valid'
+        });
+
+        if (ticketError) {
+          console.error(`Failed to create ticket for user ${user_id} after Stripe payment.`, ticketError);
+        } else {
+          console.log(`Ticket created for user ${user_id} via Stripe webhook.`);
+        }
+      } else if (session.mode === 'subscription' && user_id && session.subscription && subscription_id) {
+        // Handle a new subscription
+        const subscription = await stripe.subscriptions.retrieve(session.subscription.toString());
+        const { error: subError } = await supabaseAdmin.from('user_subscriptions').insert({
+            user_id: user_id,
+            subscription_id: subscription_id,
+            start_date: new Date(subscription.current_period_start * 1000).toISOString(),
+            end_date: new Date(subscription.current_period_end * 1000).toISOString()
+        });
+
+        if (subError) {
+             console.error(`Failed to create subscription for user ${user_id} after Stripe payment.`, subError);
+        } else {
+             console.log(`Subscription created for user ${user_id} via Stripe webhook.`);
+        }
       }
     }
-    // Example: create a ticket after payment
-    if (session.customer_email && session.metadata?.eventId && session.metadata?.tierId) {
-      try {
-        await supabaseService.createTicket(
-          {
-            eventId: session.metadata.eventId,
-            tierId: session.metadata.tierId,
-            purchaserName: session.customer_details?.name || "Unknown",
-            purchaserEmail: session.customer_email,
-          },
-          supabase // Use service role client
-        );
-        console.log(`Ticket created for ${session.customer_email}`);
-      } catch (err) {
-        console.error("Failed to create ticket after Stripe payment:", err);
-      }
-    }
+  } catch(e) {
+      console.error("Error processing webhook event:", e);
+      // Don't return 500 to stripe, it will retry.
   }
+
   return NextResponse.json({ received: true });
 } 

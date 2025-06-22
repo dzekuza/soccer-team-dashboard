@@ -1,41 +1,37 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { dbService } from "@/lib/db-service"
-import { supabase } from "@/lib/supabase"
-import { testSupabaseConnection } from "@/lib/supabase"
+import { NextRequest, NextResponse } from "next/server"
+import { supabaseService } from "@/lib/supabase-service"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } },
+) {
+  const { id } = params
+  if (!id) {
+    return NextResponse.json({ error: "Event ID is required" }, { status: 400 })
+  }
+
   try {
-    const event = await dbService.getEventWithTiers(params.id)
-
+    const event = await supabaseService.getEventWithTiers(id)
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 })
     }
+    
+    // Fetch teams separately
+    const team1 = event.team1_id
+      ? await supabaseService.getTeamById(event.team1_id)
+      : null
+    const team2 = event.team2_id
+      ? await supabaseService.getTeamById(event.team2_id)
+      : null
 
-    return NextResponse.json(event)
+    return NextResponse.json({ event, team1, team2 })
   } catch (error) {
-    console.error("Error fetching event:", error)
-    return NextResponse.json({ error: "Failed to fetch event" }, { status: 500 })
+    console.error(`Error fetching event ${id}:`, error)
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal Server Error"
+    return NextResponse.json(
+      { error: "Failed to fetch event", details: errorMessage },
+      { status: 500 },
+    )
   }
-}
-
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    // Ensure connection
-    await testSupabaseConnection();
-    // Attempt to delete the event
-    const { data, error } = await supabase
-      .from("events")
-      .delete()
-      .eq("id", params.id);
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    if ((data as any)?.length === 0) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error("Error deleting event:", error)
-    return NextResponse.json({ error: "Failed to delete event" }, { status: 500 });
-  }
-}
+} 

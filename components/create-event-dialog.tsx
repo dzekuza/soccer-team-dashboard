@@ -22,6 +22,9 @@ import Image from "next/image"
 import type { Team } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 import { Stepper } from "@/components/ui/stepper"
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { Calendar } from "./ui/calendar"
+import { format } from "date-fns"
 
 interface PricingTier {
   name: string
@@ -153,84 +156,88 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
+
+    setApiError(null)
     setCoverImageFile(file)
     setCoverImageUploading(true)
-    const fileExt = file.name.split('.').pop()
-    const fileName = `event-cover-${Date.now()}.${fileExt}`
-    const { data, error } = await supabase.storage.from('covers').upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: false,
-    })
-    if (error) {
-      setApiError('Failed to upload cover image')
+
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `event-cover-${Date.now()}.${fileExt}`
+
+      const { data, error } = await supabase.storage
+        .from('covers')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (error) {
+        throw error
+      }
+
+      const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName)
+      setCoverImageUrl(urlData.publicUrl)
+    } catch (error) {
+      console.error("Cover upload error:", error)
+      setApiError(error instanceof Error ? error.message : "Failed to upload cover image")
+    } finally {
       setCoverImageUploading(false)
-      return
     }
-    const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName)
-    setCoverImageUrl(urlData.publicUrl)
-    setCoverImageUploading(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setApiError("")
-    setApiSuccess("")
+    e.preventDefault();
+    setApiError(null);
+    setApiSuccess(null);
 
-    console.log("[DEBUG] Submitting event form", { formData, pricingTiers, team1Id, team2Id, coverImageUrl })
-
-    const isValid = validateForm()
-    console.log("[DEBUG] Validation result:", isValid, errors)
-    if (!isValid) {
-      console.warn("[DEBUG] Validation failed", errors)
-      return
+    if (!validateForm()) {
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
+
+    const eventPayload = {
+      event: {
+        title: formData.title,
+        description: formData.description,
+        date: formData.date,
+        time: formData.time,
+        location: formData.location,
+        team1_id: team1Id || null,
+        team2_id: team2Id || null,
+        cover_image_url: coverImageUrl || null,
+      },
+      pricingTiers: pricingTiers,
+    };
 
     try {
-      // Get the current session
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setApiError("You must be logged in to create an event.")
-        setIsLoading(false)
-        return
-      }
-      console.log("[DEBUG] Submitting event data to API:", { ...formData, pricingTiers, team1Id, team2Id, coverImageUrl })
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventPayload),
+      });
 
-      const response = await fetch("/api/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          ...formData,
-          pricingTiers,
-          team1Id,
-          team2Id,
-          coverImageUrl: coverImageUrl || undefined,
-        }),
-      })
-
-      const responseData = await response.json()
-      console.log("[DEBUG] API response:", response.status, responseData)
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.error || "Failed to create event")
+        throw new Error(result.error || 'Failed to create event');
       }
 
-      setApiSuccess("Event created successfully!")
-      resetForm()
-      setTimeout(() => {
-        onEventCreated()
-        onOpenChange(false)
-      }, 1500)
+      setApiSuccess("Event created successfully!");
+      resetForm();
+      onEventCreated();
+      onOpenChange(false);
     } catch (error) {
-      setApiError(error instanceof Error ? error.message : "Unknown error occurred")
-      console.error("[DEBUG] Error during event creation:", error)
+      console.error('Error creating event:', error);
+      setApiError(error instanceof Error ? error.message : 'An unknown error occurred.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
+  };
+
+  const handleNextStep = () => {
+    // ... existing code ...
   }
 
   return (
