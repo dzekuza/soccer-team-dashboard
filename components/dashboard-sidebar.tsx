@@ -23,13 +23,14 @@ export function DashboardSidebar() {
     { name: "Fans", href: "/dashboard/fans", icon: Users },
     { name: "QR Scanner", href: "/dashboard/scanner", icon: Ticket },
     { name: "Export", href: "/dashboard/export", icon: Ticket },
+    { name: "Templates", href: "/dashboard/templates", icon: Settings },
   ]
 
   return (
     <div className="flex h-full max-h-screen flex-col gap-2 border-r border-main">
       <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="">My Team</span>
+          <span className="">FK Banga</span>
         </Link>
       </div>
       <div className="flex-1">
@@ -80,6 +81,7 @@ export function DashboardMobileMenu() {
     { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "Eksportas", href: "/dashboard/export", icon: Ticket },
+    { name: "Šablonai", href: "/dashboard/templates", icon: Settings },
     { name: "Atsijungti", action: async () => await supabase.auth.signOut(), icon: LogOut },
   ];
 

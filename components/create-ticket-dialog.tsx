@@ -78,41 +78,34 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
     setIsLoading(true)
 
     try {
-      const ticketId = uuidv4()
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
-      const qrCodeUrl = `${baseUrl}/api/validate-ticket/${ticketId}`
-      const { data: eventData, error: eventError } = await supabase
-        .from("events")
-        .select("team1_id, team2_id, title, description, date, time, location, cover_image_url")
-        .eq("id", selectedEventId)
-        .single()
-      if (eventError || !eventData) throw eventError || new Error("Event not found")
-      const { data, error } = await supabase.from("tickets").insert([
-        {
-          id: ticketId,
-          event_id: selectedEventId,
-          tier_id: selectedTierId,
-          purchaser_name: purchaserName,
-          purchaser_email: purchaserEmail,
-          is_validated: false,
-          qr_code_url: qrCodeUrl,
-        },
-      ])
-      if (error) {
-        console.error("Supabase error:", error)
-        alert("Supabase error: " + (error.message || JSON.stringify(error)))
-        throw error
+      const response = await fetch('/api/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId: selectedEventId,
+          tierId: selectedTierId,
+          purchaserName,
+          purchaserEmail,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create ticket');
       }
-      console.log("Supabase insert data:", data)
+
       onTicketCreated()
       setSelectedEventId("")
       setSelectedTierId("")
       setPurchaserName("")
       setPurchaserEmail("")
+
     } catch (error) {
       console.error("Failed to create ticket:", error)
-      if (error && typeof error === "object") {
-        alert("Failed to create ticket: " + JSON.stringify(error))
+      if (error instanceof Error) {
+        alert("Failed to create ticket: " + error.message);
+      } else {
+        alert("Failed to create ticket: An unknown error occurred");
       }
     } finally {
       setIsLoading(false)

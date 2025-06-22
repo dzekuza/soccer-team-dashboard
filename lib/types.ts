@@ -11,6 +11,9 @@ export interface Event {
   team1Id?: string
   team2Id?: string
   coverImageUrl?: string
+  team1?: Team
+  team2?: Team
+  pricingTiers?: PricingTier[]
 }
 
 export interface PricingTier {
@@ -56,11 +59,28 @@ export interface TicketWithDetails extends Ticket {
   tier: PricingTier
 }
 
+// Type for the simplified ticket list view
+export interface TicketListItem {
+  id: string;
+  purchaserName: string | null;
+  purchaserEmail: string | null;
+  isValidated: boolean;
+  createdAt: string;
+  event: {
+    title: string;
+    date: string;
+  };
+  tier: {
+    name: string;
+    price: number;
+  };
+}
+
 export interface EventStats {
-  totalEvents: number
-  totalTickets: number
-  validatedTickets: number
-  totalRevenue: number
+  totalTickets: number;
+  ticketsSold: number;
+  ticketsScanned: number;
+  revenue: number;
 }
 
 export interface Team {
@@ -84,3 +104,27 @@ export interface Subscription {
 }
 
 export type UserSubscription = Subscription;
+
+export interface RecentActivity {
+  type: 'event_created' | 'ticket_generated' | 'ticket_validated';
+  title: string;
+  timestamp: string;
+  details: string;
+}
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body_html: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Fan {
+  email: string;
+  name: string;
+  totalTickets: number;
+  moneySpent: number;
+  hasValidSubscription: boolean;
+}

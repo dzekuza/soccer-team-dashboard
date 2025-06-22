@@ -2,13 +2,13 @@ export const dynamic = 'force-dynamic'
 
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
-import { generateSubscriptionPDF } from "@/lib/pdf-generator";
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { notificationService } from "@/lib/notification-service";
+import { cookies } from 'next/headers';
+import { v4 as uuidv4 } from "uuid";
 
 export async function POST(req: Request) {
-  const supabase = createClient();
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
 
   try {
     const {
@@ -40,7 +40,9 @@ export async function POST(req: Request) {
       );
     }
     
-    // 1. Create initial subscription to get an ID
+    const qrCodeUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/validate-subscription/${uuidv4()}`;
+
+    // 1. Create subscription
     const { data: newSubscription, error: createError } = await supabase
       .from("subscriptions")
       .insert([
@@ -50,7 +52,8 @@ export async function POST(req: Request) {
           purchaser_email,
           valid_from: new Date(valid_from).toISOString(),
           valid_to: new Date(valid_to).toISOString(),
-          owner_id: user.id, // Use authenticated user's ID
+          owner_id: user.id,
+          qr_code_url: qrCodeUrl,
         },
       ])
       .select()
@@ -61,71 +64,10 @@ export async function POST(req: Request) {
       throw createError;
     }
     
-    // 2. Generate final QR code and PDF URLs
-    const qr_code_url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/validate-subscription/${newSubscription.id}`;
-    const pdf_file_name = `subscription-${newSubscription.id}.pdf`;
-    
-    // 3. Generate PDF
-    let pdfBytes;
-    try {
-      pdfBytes = await generateSubscriptionPDF({
-        ...newSubscription,
-        qr_code_url,
-      });
-    } catch (pdfError) {
-      console.error("Error generating PDF:", pdfError);
-      // We will proceed without a PDF if generation fails.
-    }
-    
-    // 4. Upload PDF to storage
-    if (pdfBytes) {
-      try {
-        const { error: uploadError } = await supabase.storage
-          .from("subscription-pdfs")
-          .upload(pdf_file_name, pdfBytes, {
-            contentType: "application/pdf",
-            upsert: true,
-          });
+    // 2. Send email notification (fire-and-forget)
+    notificationService.sendSubscriptionConfirmation(newSubscription.id);
 
-        if (uploadError) {
-          console.error("Error uploading PDF to storage:", uploadError);
-          // Don't throw, just log the error and continue.
-        }
-      } catch (uploadCatchError) {
-        console.error("Caught exception during PDF upload:", uploadCatchError);
-      }
-    }
-    
-    // 5. Update subscription with QR code URL
-    const { data: updatedSubscription, error: updateError } = await supabase
-      .from("subscriptions")
-      .update({ qr_code_url })
-      .eq("id", newSubscription.id)
-      .select()
-      .single();
-
-    if (updateError) throw updateError;
-    
-    // 6. Send email with PDF
-    if (pdfBytes) {
-      await resend.emails.send({
-        from: "noreply@soccer-team-dashboard.com",
-        to: purchaser_email,
-        subject: "Jūsų prenumeratos patvirtinimas",
-        html: `
-          <h1>Sveiki, ${purchaser_name}!</h1>
-          <p>Dėkojame, kad įsigijote prenumeratą. Prisegame jūsų PDF patvirtinimą.</p>
-        `,
-        attachments: [
-          {
-            filename: pdf_file_name,
-            content: Buffer.from(pdfBytes),
-          },
-        ],
-      });
-    }
-
-    return NextResponse.json(updatedSubscription || newSubscription);
+    return NextResponse.json(newSubscription);
   } catch (error) {
     const errorMessage =
       error instanceof Error ? error.message : "An unknown error occurred";
@@ -135,7 +77,8 @@ export async function POST(req: Request) {
 }
 
 export async function GET() {
-  const supabase = createClient();
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
   const { data, error } = await supabase
     .from("subscriptions")
     .select("id, purchaser_name, purchaser_surname, purchaser_email, valid_from, valid_to");

@@ -15,12 +15,14 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
+import { useToast } from "@/components/ui/use-toast"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [eventNameFilter, setEventNameFilter] = useState("")
-  const [scanStatus, setScanStatus] = useState<'all' | 'scanned' | 'not_scanned'>('all')
+  const [scanStatus, setScanStatus] = useState<"all" | "scanned" | "not_scanned">("all")
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchTickets()
@@ -84,9 +86,32 @@ export default function TicketsPage() {
     setIsCreateDialogOpen(false)
   }
 
+  const handleResendEmail = async (ticketId: string) => {
+    try {
+      const response = await fetch(`/api/tickets/${ticketId}/resend`, {
+        method: "POST",
+      })
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to resend email")
+      }
+      toast({
+        title: "Success",
+        description: "Ticket confirmation email has been resent.",
+      })
+    } catch (error) {
+      console.error("Failed to resend email:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleDownloadPDF = (ticket: TicketWithDetails) => {
-    window.open(`/api/tickets/${ticket.id}/download`, "_blank");
-  };
+    window.open(`/api/tickets/${ticket.id}/download`, "_blank")
+  }
 
   // Filter tickets by event name and scan status
   const filteredTickets = tickets.filter(ticket => {
@@ -122,7 +147,7 @@ export default function TicketsPage() {
         />
         <select
           value={scanStatus}
-          onChange={e => setScanStatus(e.target.value as 'all' | 'scanned' | 'not_scanned')}
+          onChange={e => setScanStatus(e.target.value as "all" | "scanned" | "not_scanned")}
           className="border border-gray-300 rounded px-3 py-2 w-full sm:w-48"
         >
           <option value="all">Visi bilietai</option>
@@ -192,6 +217,10 @@ export default function TicketsPage() {
                         >
                           <Download className="mr-2 h-4 w-4" />
                           <span>Atsisiųsti</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)}>
+                          <Mail className="mr-2 h-4 w-4" />
+                          <span>Siųsti iš naujo</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

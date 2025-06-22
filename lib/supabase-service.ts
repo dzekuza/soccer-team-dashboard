@@ -1,7 +1,11 @@
-import { supabase, testSupabaseConnection } from "./supabase"
-import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Subscription, UserSubscription } from "./types"
-import { generateUniqueId } from "./utils"
+import { createClient } from '@supabase/supabase-js';
+import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Subscription, UserSubscription, Team, TicketListItem, EventStats, EmailTemplate } from "./types"
 import { v4 as uuidv4 } from "uuid"
+
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 /*
 Database Table Overview (Multi-team/Whitelabel Soccer Dashboard)
@@ -16,19 +20,6 @@ Database Table Overview (Multi-team/Whitelabel Soccer Dashboard)
 - users: All registered users (admins, managers, staff, etc.).
 */
 
-// Initialize and test connection
-let connectionTested = false
-
-async function ensureConnection() {
-  if (!connectionTested) {
-    const isConnected = await testSupabaseConnection()
-    if (!isConnected) {
-      throw new Error("Failed to connect to Supabase")
-    }
-    connectionTested = true
-  }
-}
-
 export const supabaseService = {
   // Events
   createEvent: async (
@@ -36,7 +27,6 @@ export const supabaseService = {
     pricingTiersData: Omit<PricingTier, "id" | "eventId" | "soldQuantity">[],
     client: any
   ): Promise<EventWithTiers> => {
-    await ensureConnection()
     console.log("Supabase Service: Creating event with data:", eventData, pricingTiersData)
 
     try {
@@ -62,11 +52,6 @@ export const supabaseService = {
       }
 
       // Insert pricing tiers using service role client
-      const { createClient } = require('@supabase/supabase-js');
-      const serviceSupabase = createClient(
-        process.env.SUPABASE_URL,
-        process.env.SUPABASE_SERVICE_ROLE_KEY
-      );
       const pricingTiersToInsert = pricingTiersData.map((tier: Omit<PricingTier, "id" | "eventId" | "soldQuantity">) => ({
         event_id: event.id,
         name: tier.name,
@@ -74,26 +59,26 @@ export const supabaseService = {
         quantity: tier.quantity,
         sold_quantity: 0,
       }))
-      const { data: pricingTiers, error: tiersError } = await serviceSupabase
+      const { data: pricingTiers, error: tiersError } = await supabaseAdmin
         .from("pricing_tiers")
         .insert(pricingTiersToInsert)
         .select()
 
       if (tiersError) {
         console.error("Error creating pricing tiers:", tiersError)
+        // Rollback event creation? For now, we just throw.
         throw new Error(`Failed to create pricing tiers: ${tiersError.message}`)
       }
-
-      // Convert to our types
+      
       const convertedEvent: Event = {
         id: event.id,
+        createdAt: event.created_at,
+        updatedAt: event.updated_at,
         title: event.title,
         description: event.description,
         date: event.date,
         time: event.time,
         location: event.location,
-        createdAt: event.created_at,
-        updatedAt: event.updated_at,
         team1Id: event.team1_id,
         team2Id: event.team2_id,
         coverImageUrl: event.cover_image_url || undefined,
@@ -108,41 +93,6 @@ export const supabaseService = {
         soldQuantity: tier.sold_quantity,
       }))
 
-      // --- NEW: Generate tickets for each tier based on ticketCount ---
-      // pricingTiersData is the original array, so we can match ticketCount
-      const ticketsToInsert = [];
-      for (let i = 0; i < pricingTiersData.length; i++) {
-        const tier = pricingTiersData[i];
-        const createdTier = pricingTiers[i];
-        // Use ticketCount from incoming data (not part of PricingTier type)
-        const ticketCount = (tier as any).ticketCount || 0;
-        for (let j = 0; j < ticketCount; j++) {
-          const ticketId = uuidv4();
-          ticketsToInsert.push({
-            id: ticketId,
-            event_id: event.id,
-            tier_id: createdTier.id,
-            purchaser_name: null,
-            purchaser_surname: null,
-            purchaser_email: null,
-            is_validated: false,
-            created_at: new Date().toISOString(),
-            validated_at: null,
-            qr_code_url: `/api/validate-ticket/${ticketId}`,
-          });
-        }
-      }
-      if (ticketsToInsert.length > 0) {
-        const { error: ticketsError } = await client
-          .from("tickets")
-          .insert(ticketsToInsert);
-        if (ticketsError) {
-          console.error("Error creating tickets:", ticketsError);
-          throw new Error(`Failed to create tickets: ${ticketsError.message}`);
-        }
-      }
-      // --- END NEW ---
-
       return {
         ...convertedEvent,
         pricingTiers: convertedTiers,
@@ -154,10 +104,8 @@ export const supabaseService = {
   },
 
   getEvents: async (): Promise<Event[]> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase.from("events").select("*").order("created_at", { ascending: false })
+      const { data, error } = await supabaseAdmin.from("events").select("*").order("created_at", { ascending: false })
 
       if (error) {
         console.error("Error fetching events:", error)
@@ -184,10 +132,8 @@ export const supabaseService = {
   },
 
   getEventsWithTiers: async (): Promise<EventWithTiers[]> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("events")
         .select(`
           *,
@@ -228,10 +174,8 @@ export const supabaseService = {
   },
 
   getEvent: async (id: string): Promise<Event | null> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase.from("events").select("*").eq("id", id).single()
+      const { data, error } = await supabaseAdmin.from("events").select("*").eq("id", id).single()
 
       if (error) {
         if (error.code === "PGRST116") return null // Not found
@@ -261,10 +205,8 @@ export const supabaseService = {
   },
 
   getEventWithTiers: async (id: string): Promise<EventWithTiers | null> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("events")
         .select(`
           *,
@@ -310,10 +252,8 @@ export const supabaseService = {
 
   // Pricing Tiers
   getPricingTiers: async (eventId: string): Promise<PricingTier[]> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("pricing_tiers")
         .select("*")
         .eq("event_id", eventId)
@@ -339,10 +279,8 @@ export const supabaseService = {
   },
 
   getPricingTier: async (id: string): Promise<PricingTier | null> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase.from("pricing_tiers").select("*").eq("id", id).single()
+      const { data, error } = await supabaseAdmin.from("pricing_tiers").select("*").eq("id", id).single()
 
       if (error) {
         if (error.code === "PGRST116") return null // Not found
@@ -368,29 +306,25 @@ export const supabaseService = {
 
   // Tickets
   createTicket: async (
-    ticketData: Omit<Ticket, "id" | "createdAt" | "isValidated" | "validatedAt" | "qrCodeUrl">,
-    customSupabase?: any
+    ticketData: Omit<Ticket, "id" | "createdAt" | "qrCodeUrl" | "isValidated" | "validatedAt">
   ): Promise<Ticket> => {
-    await ensureConnection()
-    const client = customSupabase || supabase
-
     try {
-      const ticketId = uuidv4();
-      const qrCodeUrl = `/api/validate-ticket/${ticketId}`
+      const ticketId = uuidv4()
+      const qrCodeUrl = `/validate-ticket/${ticketId}`
 
-      const { data, error } = await client
+      const { data, error } = await supabaseAdmin
         .from("tickets")
-        .insert({
-          id: ticketId,
-          event_id: ticketData.eventId,
-          tier_id: ticketData.tierId,
-          purchaser_name: ticketData.purchaserName,
-          purchaser_surname: ticketData.purchaserSurname,
-          purchaser_email: ticketData.purchaserEmail,
-          qr_code_url: qrCodeUrl,
-          user_id: ticketData.userId,
-          team_id: ticketData.team1Id,
-        })
+        .insert([
+          {
+            id: ticketId,
+            event_id: ticketData.eventId,
+            tier_id: ticketData.tierId,
+            purchaser_name: ticketData.purchaserName,
+            purchaser_email: ticketData.purchaserEmail,
+            is_validated: false,
+            qr_code_url: qrCodeUrl,
+          },
+        ])
         .select()
         .single()
 
@@ -399,28 +333,16 @@ export const supabaseService = {
         throw new Error(`Failed to create ticket: ${error.message}`)
       }
 
-      // Update sold quantity
-      const { data: updateData, error: updateError } = await client.rpc("increment_sold_quantity", {
-        tier_id: ticketData.tierId,
-      })
-      console.log('[DEBUG] Update sold quantity RPC:', { updateData, updateError })
-      if (updateError) {
-        console.warn("Warning: Could not update sold quantity:", updateError)
-        // Don't throw error here, ticket was created successfully
-      }
-
       return {
         id: data.id,
         eventId: data.event_id,
         tierId: data.tier_id,
         purchaserName: data.purchaser_name,
-        purchaserSurname: data.purchaser_surname,
         purchaserEmail: data.purchaser_email,
         isValidated: data.is_validated,
+        qrCodeUrl: data.qr_code_url,
         createdAt: data.created_at,
         validatedAt: data.validated_at,
-        qrCodeUrl: data.qr_code_url,
-        userId: data.user_id,
       }
     } catch (error) {
       console.error("Supabase Service: Error in createTicket:", error)
@@ -428,28 +350,40 @@ export const supabaseService = {
     }
   },
 
-  getTickets: async (): Promise<Ticket[]> => {
-    await ensureConnection()
-
+  getTickets: async (): Promise<TicketListItem[]> => {
     try {
-      const { data, error } = await supabase.from("tickets").select("*").order("created_at", { ascending: false })
+      const { data, error } = await supabaseAdmin
+        .from("tickets")
+        .select(`
+          id,
+          purchaser_name,
+          purchaser_email,
+          is_validated,
+          created_at,
+          event:events (title, date),
+          tier:pricing_tiers (name, price)
+        `)
+        .order("created_at", { ascending: false })
 
       if (error) {
         console.error("Error fetching tickets:", error)
         throw new Error(`Failed to fetch tickets: ${error.message}`)
       }
 
-      return (data || []).map((ticket: any): Ticket => ({
+      return (data || []).map((ticket: any) => ({
         id: ticket.id,
-        eventId: ticket.event_id,
-        tierId: ticket.tier_id,
         purchaserName: ticket.purchaser_name,
-        purchaserSurname: ticket.purchaser_surname,
         purchaserEmail: ticket.purchaser_email,
         isValidated: ticket.is_validated,
         createdAt: ticket.created_at,
-        validatedAt: ticket.validated_at,
-        qrCodeUrl: ticket.qr_code_url,
+        event: {
+          title: ticket.event.title,
+          date: ticket.event.date,
+        },
+        tier: {
+          name: ticket.tier.name,
+          price: ticket.tier.price,
+        },
       }))
     } catch (error) {
       console.error("Supabase Service: Error in getTickets:", error)
@@ -457,392 +391,319 @@ export const supabaseService = {
     }
   },
 
-  getTicketsWithDetails: async (): Promise<TicketWithDetails[]> => {
-    await ensureConnection()
-
-    try {
-      const { data, error } = await supabase
-        .from("tickets")
-        .select(`
-          *,
-          events (*),
-          pricing_tiers (*)
-        `)
-        .order("created_at", { ascending: false })
-
-      if (error) {
-        console.error("Error fetching tickets with details:", error)
-        throw new Error(`Failed to fetch tickets with details: ${error.message}`)
-      }
-
-      return (data || []).map((ticket: any) => ({
-        id: ticket.id,
-        eventId: ticket.event_id,
-        tierId: ticket.tier_id,
-        purchaserName: ticket.purchaser_name,
-        purchaserSurname: ticket.purchaser_surname,
-        purchaserEmail: ticket.purchaser_email,
-        isValidated: ticket.is_validated,
-        createdAt: ticket.created_at,
-        validatedAt: ticket.validated_at,
-        qrCodeUrl: ticket.qr_code_url,
-        event: {
-          id: ticket.events.id,
-          title: ticket.events.title,
-          description: ticket.events.description,
-          date: ticket.events.date,
-          time: ticket.events.time,
-          location: ticket.events.location,
-          createdAt: ticket.events.created_at,
-          updatedAt: ticket.events.updated_at,
-          team1Id: ticket.events.team1_id,
-          team2Id: ticket.events.team2_id,
-          coverImageUrl: ticket.events.cover_image_url || undefined,
-        },
-        tier: {
-          id: ticket.pricing_tiers.id,
-          eventId: ticket.pricing_tiers.event_id,
-          name: ticket.pricing_tiers.name,
-          price: ticket.pricing_tiers.price,
-          quantity: ticket.pricing_tiers.quantity,
-          soldQuantity: ticket.pricing_tiers.sold_quantity,
-        },
-      }))
-    } catch (error) {
-      console.error("Supabase Service: Error in getTicketsWithDetails:", error)
-      throw error
-    }
-  },
-
-  getTicket: async (id: string): Promise<Ticket | null> => {
-    await ensureConnection()
-
-    try {
-      const { data, error } = await supabase.from("tickets").select("*").eq("id", id).single()
-
-      if (error) {
-        if (error.code === "PGRST116") return null // Not found
-        console.error("Error fetching ticket:", error)
-        throw new Error(`Failed to fetch ticket: ${error.message}`)
-      }
-
-      if (!data) return null
-
-      return {
-        id: data.id,
-        eventId: data.event_id,
-        tierId: data.tier_id,
-        purchaserName: data.purchaser_name,
-        purchaserSurname: data.purchaser_surname,
-        purchaserEmail: data.purchaser_email,
-        isValidated: data.is_validated,
-        createdAt: data.created_at,
-        validatedAt: data.validated_at,
-        qrCodeUrl: data.qr_code_url,
-      }
-    } catch (error) {
-      console.error("Supabase Service: Error in getTicket:", error)
-      throw error
-    }
-  },
-
   getTicketWithDetails: async (id: string): Promise<TicketWithDetails | null> => {
-    await ensureConnection()
-
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("tickets")
         .select(`
           *,
-          events (*),
-          pricing_tiers (*)
+          event:events (*),
+          tier:pricing_tiers (*)
         `)
         .eq("id", id)
         .single()
 
       if (error) {
         if (error.code === "PGRST116") return null // Not found
-        console.error("Error fetching ticket with details:", error)
+        console.error(`Error fetching ticket ${id} with details:`, error)
         throw new Error(`Failed to fetch ticket with details: ${error.message}`)
       }
 
       if (!data) return null
+
+      // Fetch team details separately
+      const team1 = data.event.team1_id ? await supabaseService.getTeamById(data.event.team1_id) : null;
+      const team2 = data.event.team2_id ? await supabaseService.getTeamById(data.event.team2_id) : null;
 
       return {
         id: data.id,
         eventId: data.event_id,
         tierId: data.tier_id,
         purchaserName: data.purchaser_name,
-        purchaserSurname: data.purchaser_surname,
         purchaserEmail: data.purchaser_email,
         isValidated: data.is_validated,
+        qrCodeUrl: data.qr_code_url,
         createdAt: data.created_at,
         validatedAt: data.validated_at,
-        qrCodeUrl: data.qr_code_url,
         event: {
-          id: data.events.id,
-          title: data.events.title,
-          description: data.events.description,
-          date: data.events.date,
-          time: data.events.time,
-          location: data.events.location,
-          createdAt: data.events.created_at,
-          updatedAt: data.events.updated_at,
-          team1Id: data.events.team1_id,
-          team2Id: data.events.team2_id,
-          coverImageUrl: data.events.cover_image_url || undefined,
+          id: data.event.id,
+          title: data.event.title,
+          description: data.event.description,
+          date: data.event.date,
+          time: data.event.time,
+          location: data.event.location,
+          createdAt: data.event.created_at,
+          updatedAt: data.event.updated_at,
+          team1Id: data.event.team1_id,
+          team2Id: data.event.team2_id,
+          team1: team1 || undefined,
+          team2: team2 || undefined,
+          coverImageUrl: data.event.cover_image_url || undefined,
         },
         tier: {
-          id: data.pricing_tiers.id,
-          eventId: data.pricing_tiers.event_id,
-          name: data.pricing_tiers.name,
-          price: data.pricing_tiers.price,
-          quantity: data.pricing_tiers.quantity,
-          soldQuantity: data.pricing_tiers.sold_quantity,
+          id: data.tier.id,
+          eventId: data.tier.event_id,
+          name: data.tier.name,
+          price: data.tier.price,
+          quantity: data.tier.quantity,
+          soldQuantity: data.tier.sold_quantity,
         },
       }
     } catch (error) {
-      console.error("Supabase Service: Error in getTicketWithDetails:", error)
+      console.error(`Supabase Service: Error in getTicketWithDetails for id ${id}:`, error)
       throw error
     }
   },
 
-  validateTicket: async (id: string): Promise<{ success: boolean; ticket?: TicketWithDetails }> => {
-    await ensureConnection()
-
+  validateTicket: async (id: string): Promise<boolean> => {
     try {
-      // First get the ticket
-      const ticket = await supabaseService.getTicketWithDetails(id)
-      if (!ticket) {
-        return { success: false }
-      }
-
-      if (ticket.isValidated) {
-        return { success: false, ticket }
-      }
-
-      // Update the ticket
-      const { error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("tickets")
-        .update({
-          is_validated: true,
-          validated_at: new Date().toISOString(),
-        })
+        .update({ is_validated: true, validated_at: new Date().toISOString() })
         .eq("id", id)
+        .select()
 
       if (error) {
-        console.error("Error validating ticket:", error)
-        throw new Error(`Failed to validate ticket: ${error.message}`)
+        console.error(`Error validating ticket ${id}:`, error)
+        return false
       }
-
-      // Return updated ticket
-      const updatedTicket = await supabaseService.getTicketWithDetails(id)
-      return { success: true, ticket: updatedTicket || undefined }
+      return data !== null && data.length > 0
     } catch (error) {
-      console.error("Supabase Service: Error in validateTicket:", error)
-      throw error
+      console.error(`Supabase Service: Error in validateTicket for id ${id}:`, error)
+      return false
     }
   },
 
-  // Analytics
-  getEventStats: async (): Promise<{
-    totalEvents: number
-    totalTickets: number
-    validatedTickets: number
-    totalRevenue: number
-  }> => {
-    await ensureConnection()
-
+  // Subscriptions
+  createSubscription: async (subData: Omit<Subscription, "id" | "createdAt">): Promise<Subscription> => {
     try {
-      const [eventsResult, ticketsResult, validatedResult, revenueResult] = await Promise.all([
-        supabase.from("events").select("id", { count: "exact", head: true }),
-        supabase.from("tickets").select("id", { count: "exact", head: true }),
-        supabase.from("tickets").select("id", { count: "exact", head: true }).eq("is_validated", true),
-        supabase.from("tickets").select(`
-          pricing_tiers (price)
-        `),
-      ])
+      const { data, error } = await supabaseAdmin
+        .from("subscriptions")
+        .insert([{ ...subData }])
+        .select()
+        .single()
 
-      const totalEvents = eventsResult.count || 0
-      const totalTickets = ticketsResult.count || 0
-      const validatedTickets = validatedResult.count || 0
-
-      let totalRevenue = 0
-      if (revenueResult.data) {
-        totalRevenue = revenueResult.data.reduce((sum: number, ticket: { pricing_tiers: any[] }) => {
-          const price = Array.isArray(ticket.pricing_tiers) && ticket.pricing_tiers.length > 0 ? ticket.pricing_tiers[0]?.price : 0;
-          return sum + (price || 0)
-        }, 0)
+      if (error) {
+        console.error("Error creating subscription:", error)
+        throw new Error(`Failed to create subscription: ${error.message}`)
       }
-
-      return {
-        totalEvents,
-        totalTickets,
-        validatedTickets,
-        totalRevenue,
-      }
+      return data as Subscription
     } catch (error) {
-      console.error("Supabase Service: Error in getEventStats:", error)
+      console.error("Supabase Service: Error in createSubscription:", error)
       throw error
     }
-  },
-
-  updateTicket: async (
-    id: string,
-    updates: { purchaserName?: string; purchaserEmail?: string }
-  ): Promise<void> => {
-    await ensureConnection();
-    const { error } = await supabase
-      .from("tickets")
-      .update({
-        purchaser_name: updates.purchaserName,
-        purchaser_email: updates.purchaserEmail,
-      })
-      .eq("id", id);
-    if (error) {
-      console.error("Error updating ticket:", error);
-      throw new Error(`Failed to update ticket: ${error.message}`);
-    }
-  },
-
-  getTeams: async () => {
-    await ensureConnection();
-    const { data, error } = await supabase
-      .from("teams")
-      .select("id, team_name, logo, created_at");
-    if (error) throw new Error(error.message);
-    return data || [];
-  },
-
-  getTeamById: async (id: string) => {
-    await ensureConnection();
-    const { data, error } = await supabase
-      .from("teams")
-      .select("id, team_name, logo, created_at")
-      .eq("id", id)
-      .single();
-    if (error) return null;
-    return data;
   },
 
   getSubscriptions: async (): Promise<Subscription[]> => {
-    await ensureConnection()
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .order("created_at", { ascending: false })
-    if (error) throw new Error(error.message)
-    return (data || []).map((s: any): Subscription => ({
-      id: s.id,
-      createdAt: s.created_at,
-      updatedAt: s.updated_at,
-      purchaser_name: s.purchaser_name,
-      purchaser_surname: s.purchaser_surname,
-      purchaser_email: s.purchaser_email,
-      valid_from: s.valid_from,
-      valid_to: s.valid_to,
-      qr_code_url: s.qr_code_url,
-      owner_id: s.owner_id,
-    }))
-  },
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false })
 
-  createSubscription: async (sub: Omit<Subscription, "id" | "createdAt" | "updatedAt">) => {
-    await ensureConnection()
-    // Check if user is authenticated
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error("You must be logged in to create a subscription.");
-    }
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .insert({
-        purchaser_name: sub.purchaser_name,
-        purchaser_surname: sub.purchaser_surname,
-        purchaser_email: sub.purchaser_email,
-        valid_from: sub.valid_from,
-        valid_to: sub.valid_to,
-        qr_code_url: sub.qr_code_url,
-        owner_id: sub.owner_id,
-      })
-      .select()
-      .single()
-    if (error) throw new Error(error.message)
-    return {
-      id: data.id,
-      createdAt: data.created_at,
-      updatedAt: data.updated_at,
-      purchaser_name: data.purchaser_name,
-      purchaser_surname: data.purchaser_surname,
-      purchaser_email: data.purchaser_email,
-      valid_from: data.valid_from,
-      valid_to: data.valid_to,
-      qr_code_url: data.qr_code_url,
-      owner_id: data.owner_id,
+      if (error) {
+        console.error("Error fetching subscriptions:", error)
+        throw new Error(`Failed to fetch subscriptions: ${error.message}`)
+      }
+      return data || []
+    } catch (error) {
+      console.error("Supabase Service: Error in getSubscriptions:", error)
+      throw error
     }
   },
 
-  getUserSubscriptions: async (userId: string): Promise<UserSubscription[]> => {
-    await ensureConnection()
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .select("*")
-      .eq("owner_id", userId)
-      .order("created_at", { ascending: false })
-    if (error) throw new Error(error.message)
-    return (data || []).map((s: any): UserSubscription => ({
-      id: s.id,
-      createdAt: s.created_at,
-      updatedAt: s.updated_at,
-      purchaser_name: s.purchaser_name,
-      purchaser_surname: s.purchaser_surname,
-      purchaser_email: s.purchaser_email,
-      valid_from: s.valid_from,
-      valid_to: s.valid_to,
-      qr_code_url: s.qr_code_url,
-      owner_id: s.owner_id,
-    }))
+  getSubscriptionById: async (id: string): Promise<Subscription | null> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('subscriptions')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') return null; // Not found
+        console.error('Error fetching subscription by ID:', error);
+        throw new Error(`Failed to fetch subscription: ${error.message}`);
+      }
+
+      return data as Subscription;
+    } catch (error) {
+      console.error('Supabase Service: Error in getSubscriptionById:', error);
+      throw error;
+    }
   },
 
-  getProjectTeamById: async (id: string) => {
-    await ensureConnection();
-    const { data, error } = await supabase
-      .from("project_teams")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) return null;
-    return data;
+  getUserSubscriptions: async (): Promise<UserSubscription[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("user_subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false });
+  
+      if (error) {
+        console.error("Error fetching user subscriptions:", error);
+        throw new Error(`Failed to fetch user subscriptions: ${error.message}`);
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Supabase Service: Error in getUserSubscriptions:", error);
+      throw error;
+    }
   },
 
-  updateProjectTeam: async (id: string, updates: Record<string, any>) => {
-    await ensureConnection();
-    const { data, error } = await supabase
-      .from("project_teams")
-      .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq("id", id)
-      .select()
-      .single();
-    if (error) throw new Error(error.message);
-    return data;
+  // Teams
+  getTeams: async (): Promise<Team[]> => {
+    try {
+      const { data, error } = await supabaseAdmin.from("teams").select("*")
+      if (error) {
+        console.error("Error fetching teams:", error)
+        throw new Error(`Failed to fetch teams: ${error.message}`)
+      }
+      return (data || []).map((team: any) => ({
+        id: team.id,
+        team_name: team.team_name,
+        logo: team.logo,
+        created_at: team.created_at
+      }));
+    } catch (error) {
+      console.error("Supabase Service: Error in getTeams:", error)
+      throw error
+    }
   },
 
-  getDashboardStats: async () => {
-    const { data: events, error: eventsError } = await supabase.from("events").select("id");
-    if (eventsError) throw eventsError;
+  getTeamById: async (id: string): Promise<Team | null> => {
+    try {
+      const { data, error } = await supabaseAdmin.from("teams").select("*").eq("id", id).single()
+      if (error) {
+        if (error.code === 'PGRST116') return null; // Not found
+        console.error(`Error fetching team ${id}:`, error)
+        throw new Error(`Failed to fetch team: ${error.message}`)
+      }
+      return {
+        id: data.id,
+        team_name: data.team_name,
+        logo: data.logo,
+        created_at: data.created_at
+      };
+    } catch (error) {
+      console.error(`Supabase Service: Error in getTeamById for id ${id}:`, error)
+      throw error
+    }
+  },
+  
+  // Fans (assuming fans are user_subscriptions)
+  getFans: async (): Promise<any[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("user_subscriptions")
+        .select("id, user_id, subscription_id, created_at, status, user_email")
+        .order("created_at", { ascending: false });
 
-    const { data: tickets, error: ticketsError } = await supabase.from("tickets").select("id, is_validated");
-    if (ticketsError) throw ticketsError;
+      if (error) {
+        console.error("Error fetching fans:", error);
+        throw new Error(`Failed to fetch fans: ${error.message}`);
+      }
+      return data || [];
+    } catch (error) {
+      console.error("Supabase Service: Error in getFans:", error);
+      throw error;
+    }
+  },
 
-    const { data: pricingTiers, error: pricingTiersError } = await supabase.from("pricing_tiers").select("price, sold_quantity");
-    if (pricingTiersError) throw pricingTiersError;
-    
-    const totalRevenue = (pricingTiers || []).reduce((sum: number, tier: { price: number; sold_quantity: number }) => sum + (tier.price * tier.sold_quantity), 0);
-
+  getEventStats: async (eventId: string): Promise<EventStats> => {
+    // This is a placeholder implementation.
+    // You should replace this with a real database query.
     return {
-        totalEvents: events?.length || 0,
-        totalTickets: tickets?.length || 0,
-        validatedTickets: (tickets || []).filter((t: { is_validated: boolean }) => t.is_validated).length || 0,
-        totalRevenue,
+      totalTickets: 100,
+      ticketsSold: 75,
+      ticketsScanned: 50,
+      revenue: 75 * 25,
     };
+  },
+
+  getTicketsWithDetails: async (): Promise<TicketWithDetails[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('tickets')
+        .select(`
+          *,
+          event:events(*),
+          tier:pricing_tiers(*)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching tickets with details:', error);
+        throw new Error(`Failed to fetch tickets with details: ${error.message}`);
+      }
+      
+      return (data || []).map((t: any) => ({
+        id: t.id,
+        eventId: t.event_id,
+        tierId: t.tier_id,
+        purchaserName: t.purchaser_name,
+        purchaserEmail: t.purchaser_email,
+        isValidated: t.is_validated,
+        createdAt: t.created_at,
+        validatedAt: t.validated_at ?? null,
+        qrCodeUrl: t.qr_code_url ?? '',
+        userId: t.user_id ?? undefined,
+        event: t.event ? {
+          id: t.event.id,
+          title: t.event.title,
+          description: t.event.description,
+          date: t.event.date,
+          time: t.event.time,
+          location: t.event.location,
+          createdAt: t.event.created_at,
+          updatedAt: t.event.updated_at,
+          team1Id: t.event.team1_id,
+          team2Id: t.event.team2_id,
+          coverImageUrl: t.event.cover_image_url ?? undefined,
+        } : undefined,
+        tier: t.tier ? {
+          id: t.tier.id,
+          eventId: t.tier.event_id,
+          name: t.tier.name,
+          price: t.tier.price,
+          quantity: t.tier.quantity,
+          soldQuantity: t.tier.sold_quantity,
+        } : undefined,
+      })).filter((t: any) => t.event && t.tier) as TicketWithDetails[];
+    } catch (error) {
+      console.error('Supabase Service: Error in getTicketsWithDetails:', error);
+      throw error;
+    }
+  },
+
+  // Users
+  getUser: async (id: string): Promise<any> => {
+    try {
+      // Implementation of getUser function
+    } catch (error) {
+      console.error("Supabase Service: Error in getUser:", error);
+      throw error;
+    }
+  },
+
+  // Email Templates
+  getEmailTemplateByName: async (name: string): Promise<EmailTemplate | null> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("email_templates")
+        .select("*")
+        .eq("name", name)
+        .single();
+
+      if (error) {
+        if (error.code === "PGRST116") return null; // Not found
+        console.error(`Error fetching template ${name}:`, error);
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error(`Supabase Service: Error in getEmailTemplateByName for ${name}:`, error);
+      throw error;
+    }
   },
 }

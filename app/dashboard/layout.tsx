@@ -10,11 +10,13 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <div className="group peer hidden md:block text-sidebar-foreground">
+        <div className="group peer hidden md:block text-sidebar-foreground fixed w-64 h-full">
           <DashboardSidebar />
         </div>
-        <main className="flex-1 px-4 sm:px-4 md:px-6 pb-20 md:pt-8 md:pb-8">
-          {children}
+        <main className="flex-1 md:pl-64">
+          <div className="px-4 sm:px-4 md:px-6 pb-20 md:pt-8 md:pb-8 h-screen overflow-y-auto">
+            {children}
+          </div>
         </main>
         <DashboardMobileMenu />
       </div>

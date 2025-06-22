@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
     // 2. Create 'pending' tickets in the database
     const ticketPromises = Array.from({ length: quantity }, () => 
       supabaseService.createTicket({
-        event_id: eventId,
-        tier_id: tierId,
-        purchaser_name: purchaserName,
-        purchaser_surname: purchaserSurname,
-        purchaser_email: purchaserEmail,
+        eventId: eventId,
+        tierId: tierId,
+        purchaserName: purchaserName,
+        purchaserSurname: purchaserSurname,
+        purchaserEmail: purchaserEmail,
         status: 'pending', // Tickets are pending until payment is confirmed
       })
     );
