@@ -26,7 +26,7 @@ import { Stepper } from "@/components/ui/stepper"
 interface PricingTier {
   name: string
   price: number
-  maxQuantity: number
+  quantity: number
 }
 
 interface CreateEventDialogProps {
@@ -44,7 +44,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     location: "",
   })
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([
-    { name: "General Admission", price: 25, maxQuantity: 100 },
+    { name: "General Admission", price: 25, quantity: 100 },
   ])
   const [isLoading, setIsLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -79,7 +79,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   }, [open]);
 
   const addPricingTier = () => {
-    setPricingTiers([...pricingTiers, { name: "", price: 0, maxQuantity: 0 }])
+    setPricingTiers([...pricingTiers, { name: "", price: 0, quantity: 0 }])
   }
 
   const removePricingTier = (index: number) => {
@@ -117,8 +117,8 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
         newErrors[`tier_${index}_price`] = "Price must be greater than 0"
         hasTierError = true
       }
-      if (typeof tier.maxQuantity !== "number" || isNaN(tier.maxQuantity) || tier.maxQuantity <= 0) {
-        newErrors[`tier_${index}_maxQuantity`] = "Quantity must be greater than 0"
+      if (typeof tier.quantity !== "number" || isNaN(tier.quantity) || tier.quantity <= 0) {
+        newErrors[`tier_${index}_quantity`] = "Quantity must be greater than 0"
         hasTierError = true
       }
     })
@@ -139,7 +139,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
       time: "",
       location: "",
     })
-    setPricingTiers([{ name: "General Admission", price: 25, maxQuantity: 100 }])
+    setPricingTiers([{ name: "General Admission", price: 25, quantity: 100 }])
     setErrors({})
     setApiError(null)
     setApiSuccess(null)
@@ -403,11 +403,11 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                       <Input
                         type="number"
                         min={0}
-                        value={tier.maxQuantity}
-                        onChange={e => updatePricingTier(idx, "maxQuantity", Number(e.target.value))}
+                        value={tier.quantity}
+                        onChange={e => updatePricingTier(idx, "quantity", Number(e.target.value))}
                         placeholder="Kiekis"
                       />
-                      {errors[`tier_${idx}_maxQuantity`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_maxQuantity`]}</div>}
+                      {errors[`tier_${idx}_quantity`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_quantity`]}</div>}
                     </div>
                     <Button type="button" variant="ghost" size="icon" onClick={() => removePricingTier(idx)}>
                       <Trash2 className="h-4 w-4" />

@@ -71,7 +71,7 @@ export const supabaseService = {
         event_id: event.id,
         name: tier.name,
         price: tier.price,
-        max_quantity: tier.maxQuantity,
+        quantity: tier.quantity,
         sold_quantity: 0,
       }))
       const { data: pricingTiers, error: tiersError } = await serviceSupabase
@@ -104,7 +104,7 @@ export const supabaseService = {
         eventId: tier.event_id,
         name: tier.name,
         price: tier.price,
-        maxQuantity: tier.max_quantity,
+        quantity: tier.quantity,
         soldQuantity: tier.sold_quantity,
       }))
 
@@ -215,7 +215,7 @@ export const supabaseService = {
           eventId: tier.event_id,
           name: tier.name,
           price: tier.price,
-          maxQuantity: tier.max_quantity,
+          quantity: tier.quantity,
           soldQuantity: tier.sold_quantity,
         })),
         coverImageUrl: event.cover_image_url || undefined,
@@ -296,7 +296,7 @@ export const supabaseService = {
           eventId: tier.event_id,
           name: tier.name,
           price: tier.price,
-          maxQuantity: tier.max_quantity,
+          quantity: tier.quantity,
           soldQuantity: tier.sold_quantity,
         })),
         coverImageUrl: data.cover_image_url || undefined,
@@ -328,7 +328,7 @@ export const supabaseService = {
         eventId: tier.event_id,
         name: tier.name,
         price: tier.price,
-        maxQuantity: tier.max_quantity,
+        quantity: tier.quantity,
         soldQuantity: tier.sold_quantity,
       }))
     } catch (error) {
@@ -356,7 +356,7 @@ export const supabaseService = {
         eventId: data.event_id,
         name: data.name,
         price: data.price,
-        maxQuantity: data.max_quantity,
+        quantity: data.quantity,
         soldQuantity: data.sold_quantity,
       }
     } catch (error) {
@@ -387,6 +387,7 @@ export const supabaseService = {
           purchaser_email: ticketData.purchaserEmail,
           qr_code_url: qrCodeUrl,
           user_id: ticketData.userId,
+          team_id: ticketData.team1Id,
         })
         .select()
         .single()
@@ -496,7 +497,7 @@ export const supabaseService = {
           eventId: ticket.pricing_tiers.event_id,
           name: ticket.pricing_tiers.name,
           price: ticket.pricing_tiers.price,
-          maxQuantity: ticket.pricing_tiers.max_quantity,
+          quantity: ticket.pricing_tiers.quantity,
           soldQuantity: ticket.pricing_tiers.sold_quantity,
         },
       }))
@@ -585,7 +586,7 @@ export const supabaseService = {
           eventId: data.pricing_tiers.event_id,
           name: data.pricing_tiers.name,
           price: data.pricing_tiers.price,
-          maxQuantity: data.pricing_tiers.max_quantity,
+          quantity: data.pricing_tiers.quantity,
           soldQuantity: data.pricing_tiers.sold_quantity,
         },
       }
@@ -722,15 +723,19 @@ export const supabaseService = {
     if (error) throw new Error(error.message)
     return (data || []).map((s) => ({
       id: s.id,
-      title: s.title,
-      description: s.description,
-      price: Number(s.price),
-      durationDays: s.duration_days,
       createdAt: s.created_at,
+      updatedAt: s.updated_at,
+      purchaser_name: s.purchaser_name,
+      purchaser_surname: s.purchaser_surname,
+      purchaser_email: s.purchaser_email,
+      valid_from: s.valid_from,
+      valid_to: s.valid_to,
+      qr_code_url: s.qr_code_url,
+      owner_id: s.owner_id,
     }))
   },
 
-  createSubscription: async (sub: Omit<Subscription, "id" | "createdAt">) => {
+  createSubscription: async (sub: Omit<Subscription, "id" | "createdAt" | "updatedAt">) => {
     await ensureConnection()
     // Check if user is authenticated
     const { data: { session } } = await supabase.auth.getSession();
@@ -740,85 +745,51 @@ export const supabaseService = {
     const { data, error } = await supabase
       .from("subscriptions")
       .insert({
-        title: sub.title,
-        description: sub.description,
-        price: sub.price,
-        duration_days: sub.durationDays,
+        purchaser_name: sub.purchaser_name,
+        purchaser_surname: sub.purchaser_surname,
+        purchaser_email: sub.purchaser_email,
+        valid_from: sub.valid_from,
+        valid_to: sub.valid_to,
+        qr_code_url: sub.qr_code_url,
+        owner_id: sub.owner_id,
       })
       .select()
       .single()
     if (error) throw new Error(error.message)
     return {
       id: data.id,
-      title: data.title,
-      description: data.description,
-      price: Number(data.price),
-      durationDays: data.duration_days,
       createdAt: data.created_at,
+      updatedAt: data.updated_at,
+      purchaser_name: data.purchaser_name,
+      purchaser_surname: data.purchaser_surname,
+      purchaser_email: data.purchaser_email,
+      valid_from: data.valid_from,
+      valid_to: data.valid_to,
+      qr_code_url: data.qr_code_url,
+      owner_id: data.owner_id,
     }
   },
 
   getUserSubscriptions: async (userId: string): Promise<UserSubscription[]> => {
     await ensureConnection()
     const { data, error } = await supabase
-      .from("user_subscriptions")
-      .select("*, subscriptions(*)")
-      .eq("user_id", userId)
+      .from("subscriptions")
+      .select("*")
+      .eq("owner_id", userId)
       .order("created_at", { ascending: false })
     if (error) throw new Error(error.message)
-    return (data || []).map((us) => ({
-      id: us.id,
-      userId: us.user_id,
-      subscriptionId: us.subscription_id,
-      purchaseDate: us.purchase_date,
-      expiresAt: us.expires_at,
-      assignedBy: us.assigned_by,
-      createdAt: us.created_at,
-      subscription: us.subscriptions
-        ? {
-            id: us.subscriptions.id,
-            title: us.subscriptions.title,
-            description: us.subscriptions.description,
-            price: Number(us.subscriptions.price),
-            durationDays: us.subscriptions.duration_days,
-            createdAt: us.subscriptions.created_at,
-          }
-        : undefined,
+    return (data || []).map((s) => ({
+      id: s.id,
+      createdAt: s.created_at,
+      updatedAt: s.updated_at,
+      purchaser_name: s.purchaser_name,
+      purchaser_surname: s.purchaser_surname,
+      purchaser_email: s.purchaser_email,
+      valid_from: s.valid_from,
+      valid_to: s.valid_to,
+      qr_code_url: s.qr_code_url,
+      owner_id: s.owner_id,
     }))
-  },
-
-  assignSubscriptionToUser: async (userId: string, subscriptionId: string, assignedBy?: string) => {
-    await ensureConnection()
-    const { data, error } = await supabase
-      .from("user_subscriptions")
-      .insert({
-        user_id: userId,
-        subscription_id: subscriptionId,
-        assigned_by: assignedBy || null,
-      })
-      .select()
-      .single()
-    if (error) throw new Error(error.message)
-    return data
-  },
-
-  getAllSubscriberEmails: async (): Promise<{ email: string, name?: string }[]> => {
-    await ensureConnection();
-    const { data, error } = await supabase
-      .from('user_subscriptions')
-      .select('user_id, users:user_id(email, name)')
-    if (error) throw new Error(error.message)
-    // Deduplicate by email
-    const emails = new Map<string, { email: string, name?: string }>()
-    for (const row of data || []) {
-      // users can be an object or undefined/null
-      const userObj = row.users && !Array.isArray(row.users) ? row.users : Array.isArray(row.users) ? row.users[0] : undefined;
-      const email = userObj?.email;
-      if (email && !emails.has(email)) {
-        emails.set(email, { email, name: userObj?.name });
-      }
-    }
-    return Array.from(emails.values())
   },
 
   getProjectTeamById: async (id: string) => {

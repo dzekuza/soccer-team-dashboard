@@ -69,54 +69,47 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!selectedEventId || !selectedTierId) {
+      alert("Please select an event and a pricing tier before creating a ticket.")
+      return
+    }
     setIsLoading(true)
 
     try {
-      const ticketId = uuidv4();
-      const qrCodeUrl = `/api/validate-ticket/${ticketId}`;
+      const ticketId = uuidv4()
+      const qrCodeUrl = `/api/validate-ticket/${ticketId}`
       const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select("team1_id, team2_id, title, description, date, time, location, cover_image_url")
         .eq("id", selectedEventId)
-        .single();
-      if (eventError || !eventData) throw eventError || new Error("Event not found");
-      const { team1_id, team2_id, title, description, date: eventDate, time, location, cover_image_url } = eventData;
-      const { data, error } = await supabase
-        .from("tickets")
-        .insert([
-          {
-            id: ticketId,
-            event_id: selectedEventId,
-            tier_id: selectedTierId,
-            purchaser_name: purchaserName,
-            purchaser_email: purchaserEmail,
-            is_validated: false,
-            qr_code_url: qrCodeUrl,
-            team1_id,
-            team2_id,
-            event_title: title,
-            event_description: description,
-            event_date: eventDate,
-            event_time: time,
-            event_location: location,
-            event_cover_image_url: cover_image_url,
-          },
-        ])
+        .single()
+      if (eventError || !eventData) throw eventError || new Error("Event not found")
+      const { data, error } = await supabase.from("tickets").insert([
+        {
+          id: ticketId,
+          event_id: selectedEventId,
+          tier_id: selectedTierId,
+          purchaser_name: purchaserName,
+          purchaser_email: purchaserEmail,
+          is_validated: false,
+          qr_code_url: qrCodeUrl,
+        },
+      ])
       if (error) {
-        console.error("Supabase error:", error);
-        alert("Supabase error: " + (error.message || JSON.stringify(error)));
-        throw error;
+        console.error("Supabase error:", error)
+        alert("Supabase error: " + (error.message || JSON.stringify(error)))
+        throw error
       }
-      console.log("Supabase insert data:", data);
+      console.log("Supabase insert data:", data)
       onTicketCreated()
       setSelectedEventId("")
       setSelectedTierId("")
       setPurchaserName("")
       setPurchaserEmail("")
     } catch (error) {
-      console.error("Failed to create ticket:", error);
+      console.error("Failed to create ticket:", error)
       if (error && typeof error === "object") {
-        alert("Failed to create ticket: " + JSON.stringify(error));
+        alert("Failed to create ticket: " + JSON.stringify(error))
       }
     } finally {
       setIsLoading(false)

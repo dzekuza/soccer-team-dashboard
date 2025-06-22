@@ -16,8 +16,6 @@ export default function TicketsPage() {
   const [eventNameFilter, setEventNameFilter] = useState("")
   const [scanStatus, setScanStatus] = useState<'all' | 'scanned' | 'not_scanned'>('all')
 
-  const SUPABASE_PUBLIC_URL = "https://ebdfqztiximsqdnvwkqu.supabase.co/storage/v1/object/public/ticket-pdfs";
-
   useEffect(() => {
     fetchTickets()
   }, [])
@@ -28,8 +26,8 @@ export default function TicketsPage() {
         .from("tickets")
         .select(`
           id, event_id, tier_id, purchaser_name, purchaser_email, is_validated, created_at,
-          event:events(*),
-          tier:pricing_tiers(*)
+          events(*),
+          pricing_tiers(*)
         `)
         .order("created_at", { ascending: false })
       if (error) throw error
@@ -46,26 +44,26 @@ export default function TicketsPage() {
           validatedAt: t.validated_at ?? null,
           qrCodeUrl: t.qr_code_url ?? '',
           userId: t.user_id ?? undefined,
-          event: t.event ? {
-            id: t.event.id,
-            title: t.event.title,
-            description: t.event.description,
-            date: t.event.date,
-            time: t.event.time,
-            location: t.event.location,
-            createdAt: t.event.created_at,
-            updatedAt: t.event.updated_at,
-            team1Id: t.event.team1_id,
-            team2Id: t.event.team2_id,
-            coverImageUrl: t.event.cover_image_url ?? undefined,
+          event: t.events ? {
+            id: t.events.id,
+            title: t.events.title,
+            description: t.events.description,
+            date: t.events.date,
+            time: t.events.time,
+            location: t.events.location,
+            createdAt: t.events.created_at,
+            updatedAt: t.events.updated_at,
+            team1Id: t.events.team1_id,
+            team2Id: t.events.team2_id,
+            coverImageUrl: t.events.cover_image_url ?? undefined,
           } : undefined,
-          tier: t.tier ? {
-            id: t.tier.id,
-            eventId: t.tier.event_id,
-            name: t.tier.name,
-            price: t.tier.price,
-            maxQuantity: t.tier.max_quantity,
-            soldQuantity: t.tier.sold_quantity,
+          tier: t.pricing_tiers ? {
+            id: t.pricing_tiers.id,
+            eventId: t.pricing_tiers.event_id,
+            name: t.pricing_tiers.name,
+            price: t.pricing_tiers.price,
+            quantity: t.pricing_tiers.quantity,
+            soldQuantity: t.pricing_tiers.sold_quantity,
           } : undefined,
         }))
         .filter((t: any) => t.event && t.tier)
@@ -81,8 +79,7 @@ export default function TicketsPage() {
   }
 
   const handleDownloadPDF = (ticket: TicketWithDetails) => {
-    const pdfUrl = `${SUPABASE_PUBLIC_URL}/ticket-${ticket.id}.pdf`;
-    window.open(pdfUrl, "_blank");
+    window.open(`/api/tickets/${ticket.id}/download`, "_blank");
   };
 
   // Filter tickets by event name and scan status

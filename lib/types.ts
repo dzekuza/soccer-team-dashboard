@@ -18,7 +18,7 @@ export interface PricingTier {
   eventId: string
   name: string
   price: number
-  maxQuantity: number
+  quantity: number
   soldQuantity: number
 }
 
@@ -71,21 +71,15 @@ export interface Team {
 
 export interface Subscription {
   id: string
-  title: string
-  description?: string
-  price: number
-  durationDays: number
   createdAt: string
+  updatedAt: string
+  purchaser_name: string | null
+  purchaser_surname: string | null
+  purchaser_email: string | null
+  valid_from: string
+  valid_to: string
+  qr_code_url: string | null
+  owner_id: string
 }
 
-export interface UserSubscription {
-  id: string
-  userId: string
-  subscriptionId: string
-  purchaseDate: string
-  expiresAt?: string
-  assignedBy?: string
-  createdAt: string
-  // Optionally, include joined subscription info
-  subscription?: Subscription
-}
+export type UserSubscription = Subscription;
