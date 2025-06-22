@@ -6,9 +6,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
-import { Download, Plus } from "lucide-react"
+import { Download, Plus, Mail, MoreHorizontal } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu"
 
 export default function TicketsPage() {
   const [tickets, setTickets] = useState<TicketWithDetails[]>([])
@@ -161,10 +167,34 @@ export default function TicketsPage() {
                 </Badge>
                   </TableCell>
                   <TableCell>
-                    <Button onClick={() => handleDownloadPDF(ticket)} variant="outline" size="sm">
-                <Download className="h-4 w-4 mr-2" />
-                      PDF
-              </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`/api/tickets/${ticket.id}/download`);
+                              const data = await response.json();
+                              if (data.downloadUrl) {
+                                window.open(data.downloadUrl, "_blank");
+                              } else {
+                                throw new Error(data.error || "Failed to get download link.");
+                              }
+                            } catch (error) {
+                              alert(error instanceof Error ? error.message : "Could not download ticket.");
+                            }
+                          }}
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          <span>Atsisiųsti</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))

@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase-server"
 import { supabaseService } from "@/lib/supabase-service"
 import { Resend } from "resend"
 import { generateTicketPDF } from "@/lib/pdf-generator"
-import type { Team, TicketWithDetails, EventWithTiers } from "@/lib/types"
+import type { Team, TicketWithDetails, EventWithTiers, PricingTier } from "@/lib/types"
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -17,39 +17,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { event_id, tier_id, purchaser_name, purchaser_surname, purchaser_email } = await request.json();
+    const { eventId, tierId, purchaserName, purchaserSurname, purchaserEmail } = await request.json();
 
-    if (!event_id || !tier_id || !purchaser_name || !purchaser_email) {
+    if (!eventId || !tierId || !purchaserName || !purchaserEmail) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const event = await supabaseService.getEventWithTiers(event_id) as EventWithTiers | null;
+    const event = await supabaseService.getEventWithTiers(eventId) as EventWithTiers | null;
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
     
-    const tier = event.pricing_tiers.find(t => t.id === tier_id);
+    const tier = event.pricingTiers.find((t: PricingTier) => t.id === tierId);
     if (!tier) {
       return NextResponse.json({ error: "Pricing tier not found" }, { status: 404 });
     }
     
     let team1: Team | undefined = undefined;
     let team2: Team | undefined = undefined;
-    if (event.team1_id) team1 = await supabaseService.getTeamById(event.team1_id) || undefined;
-    if (event.team2_id) team2 = await supabaseService.getTeamById(event.team2_id) || undefined;
+    if (event.team1Id) team1 = await supabaseService.getTeamById(event.team1Id) || undefined;
+    if (event.team2Id) team2 = await supabaseService.getTeamById(event.team2Id) || undefined;
     
     await createClient().from('fans').upsert({
-        name: purchaser_name,
-        surname: purchaser_surname,
-        email: purchaser_email
+        name: purchaserName,
+        surname: purchaserSurname,
+        email: purchaserEmail
     }, { onConflict: 'email' });
 
     const newTicket = await supabaseService.createTicket({
-      event_id,
-      tier_id,
-      purchaser_name,
-      purchaser_surname,
-      purchaser_email,
+      eventId,
+      tierId,
+      purchaserName,
+      purchaserSurname,
+      purchaserEmail,
       status: 'valid',
     });
 
@@ -57,15 +57,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 });
     }
 
-    const fullTicketDetails: TicketWithDetails = { ...newTicket, events: event, pricing_tiers: tier };
+    const fullTicketDetails: TicketWithDetails = { ...newTicket, event: event, tier: tier };
     const pdfBytes = await generateTicketPDF(fullTicketDetails, team1, team2);
     const fileName = `ticket-${fullTicketDetails.id}.pdf`;
 
-    if (fullTicketDetails.purchaser_email) {
+    if (fullTicketDetails.purchaserEmail) {
       await resend.emails.send({
         from: 'noreply@soccer-team-dashboard.com',
-        to: fullTicketDetails.purchaser_email,
-        subject: `Jūsų bilietas renginiui: ${fullTicketDetails.events.title}`,
+        to: fullTicketDetails.purchaserEmail,
+        subject: `Jūsų bilietas renginiui: ${fullTicketDetails.event.title}`,
         html: `<p>Dėkojame, kad pirkote! Jūsų bilietas prisegtas.</p>`,
         attachments: [{ filename: fileName, content: Buffer.from(pdfBytes) }]
       });
@@ -108,23 +108,23 @@ export async function PUT(request: NextRequest) {
     }
 
     const ticket = await supabaseService.getTicketWithDetails(ticket_id);
-    if (!ticket || !ticket.purchaser_email) {
+    if (!ticket || !ticket.purchaserEmail) {
       return NextResponse.json({ error: "Ticket not found or missing email" }, { status: 404 });
     }
 
-    const event = ticket.events;
+    const event = ticket.event;
     let team1: Team | undefined = undefined;
     let team2: Team | undefined = undefined;
-    if (event.team1_id) team1 = await supabaseService.getTeamById(event.team1_id) || undefined;
-    if (event.team2_id) team2 = await supabaseService.getTeamById(event.team2_id) || undefined;
+    if (event.team1Id) team1 = await supabaseService.getTeamById(event.team1Id) || undefined;
+    if (event.team2Id) team2 = await supabaseService.getTeamById(event.team2Id) || undefined;
     
     const pdfBytes = await generateTicketPDF(ticket, team1, team2);
     const fileName = `ticket-${ticket.id}.pdf`;
 
     await resend.emails.send({
       from: 'noreply@soccer-team-dashboard.com',
-      to: ticket.purchaser_email,
-      subject: `Jūsų bilietas renginiui: ${ticket.events.title}`,
+      to: ticket.purchaserEmail,
+      subject: `Jūsų bilietas renginiui: ${ticket.event.title}`,
       html: `<p>Dėkojame, kad pirkote! Jūsų bilietas prisegtas.</p>`,
       attachments: [{ filename: fileName, content: Buffer.from(pdfBytes) }]
     });

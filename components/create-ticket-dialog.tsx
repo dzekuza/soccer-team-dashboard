@@ -48,7 +48,8 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/events")
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+      const response = await fetch(`${baseUrl}/api/events`)
       const data = await response.json()
       setEvents(data)
     } catch (error) {
@@ -58,7 +59,8 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
   const fetchPricingTiers = async (eventId: string) => {
     try {
-      const response = await fetch(`/api/events/${eventId}/pricing-tiers`)
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+      const response = await fetch(`${baseUrl}/api/events/${eventId}/pricing-tiers`)
       const data = await response.json()
       setPricingTiers(data)
     } catch (error) {
@@ -77,7 +79,8 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
     try {
       const ticketId = uuidv4()
-      const qrCodeUrl = `/api/validate-ticket/${ticketId}`
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+      const qrCodeUrl = `${baseUrl}/api/validate-ticket/${ticketId}`
       const { data: eventData, error: eventError } = await supabase
         .from("events")
         .select("team1_id, team2_id, title, description, date, time, location, cover_image_url")

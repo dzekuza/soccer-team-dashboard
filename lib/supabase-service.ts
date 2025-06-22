@@ -67,7 +67,7 @@ export const supabaseService = {
         process.env.SUPABASE_URL,
         process.env.SUPABASE_SERVICE_ROLE_KEY
       );
-      const pricingTiersToInsert = pricingTiersData.map((tier: any) => ({
+      const pricingTiersToInsert = pricingTiersData.map((tier: Omit<PricingTier, "id" | "eventId" | "soldQuantity">) => ({
         event_id: event.id,
         name: tier.name,
         price: tier.price,
@@ -99,7 +99,7 @@ export const supabaseService = {
         coverImageUrl: event.cover_image_url || undefined,
       }
 
-      const convertedTiers: PricingTier[] = (pricingTiers || []).map((tier: any) => ({
+      const convertedTiers: PricingTier[] = (pricingTiers || []).map((tier: any): PricingTier => ({
         id: tier.id,
         eventId: tier.event_id,
         name: tier.name,
@@ -123,6 +123,7 @@ export const supabaseService = {
             event_id: event.id,
             tier_id: createdTier.id,
             purchaser_name: null,
+            purchaser_surname: null,
             purchaser_email: null,
             is_validated: false,
             created_at: new Date().toISOString(),
@@ -163,7 +164,7 @@ export const supabaseService = {
         throw new Error(`Failed to fetch events: ${error.message}`)
       }
 
-      return (data || []).map((event) => ({
+      return (data || []).map((event: any): Event => ({
         id: event.id,
         title: event.title,
         description: event.description,
@@ -199,7 +200,7 @@ export const supabaseService = {
         throw new Error(`Failed to fetch events with tiers: ${error.message}`)
       }
 
-      return (data || []).map((event) => ({
+      return (data || []).map((event: any): EventWithTiers => ({
         id: event.id,
         title: event.title,
         description: event.description,
@@ -210,7 +211,7 @@ export const supabaseService = {
         updatedAt: event.updated_at,
         team1Id: event.team1_id,
         team2Id: event.team2_id,
-        pricingTiers: (event.pricing_tiers || []).map((tier: any) => ({
+        pricingTiers: (event.pricing_tiers || []).map((tier: any): PricingTier => ({
           id: tier.id,
           eventId: tier.event_id,
           name: tier.name,
@@ -291,7 +292,7 @@ export const supabaseService = {
         updatedAt: data.updated_at,
         team1Id: data.team1_id,
         team2Id: data.team2_id,
-        pricingTiers: (data.pricing_tiers || []).map((tier: any) => ({
+        pricingTiers: (data.pricing_tiers || []).map((tier: any): PricingTier => ({
           id: tier.id,
           eventId: tier.event_id,
           name: tier.name,
@@ -323,7 +324,7 @@ export const supabaseService = {
         throw new Error(`Failed to fetch pricing tiers: ${error.message}`)
       }
 
-      return (data || []).map((tier) => ({
+      return (data || []).map((tier: any): PricingTier => ({
         id: tier.id,
         eventId: tier.event_id,
         name: tier.name,
@@ -384,6 +385,7 @@ export const supabaseService = {
           event_id: ticketData.eventId,
           tier_id: ticketData.tierId,
           purchaser_name: ticketData.purchaserName,
+          purchaser_surname: ticketData.purchaserSurname,
           purchaser_email: ticketData.purchaserEmail,
           qr_code_url: qrCodeUrl,
           user_id: ticketData.userId,
@@ -412,6 +414,7 @@ export const supabaseService = {
         eventId: data.event_id,
         tierId: data.tier_id,
         purchaserName: data.purchaser_name,
+        purchaserSurname: data.purchaser_surname,
         purchaserEmail: data.purchaser_email,
         isValidated: data.is_validated,
         createdAt: data.created_at,
@@ -436,11 +439,12 @@ export const supabaseService = {
         throw new Error(`Failed to fetch tickets: ${error.message}`)
       }
 
-      return (data || []).map((ticket) => ({
+      return (data || []).map((ticket: any): Ticket => ({
         id: ticket.id,
         eventId: ticket.event_id,
         tierId: ticket.tier_id,
         purchaserName: ticket.purchaser_name,
+        purchaserSurname: ticket.purchaser_surname,
         purchaserEmail: ticket.purchaser_email,
         isValidated: ticket.is_validated,
         createdAt: ticket.created_at,
@@ -471,11 +475,12 @@ export const supabaseService = {
         throw new Error(`Failed to fetch tickets with details: ${error.message}`)
       }
 
-      return (data || []).map((ticket) => ({
+      return (data || []).map((ticket: any) => ({
         id: ticket.id,
         eventId: ticket.event_id,
         tierId: ticket.tier_id,
         purchaserName: ticket.purchaser_name,
+        purchaserSurname: ticket.purchaser_surname,
         purchaserEmail: ticket.purchaser_email,
         isValidated: ticket.is_validated,
         createdAt: ticket.created_at,
@@ -490,6 +495,8 @@ export const supabaseService = {
           location: ticket.events.location,
           createdAt: ticket.events.created_at,
           updatedAt: ticket.events.updated_at,
+          team1Id: ticket.events.team1_id,
+          team2Id: ticket.events.team2_id,
           coverImageUrl: ticket.events.cover_image_url || undefined,
         },
         tier: {
@@ -526,6 +533,7 @@ export const supabaseService = {
         eventId: data.event_id,
         tierId: data.tier_id,
         purchaserName: data.purchaser_name,
+        purchaserSurname: data.purchaser_surname,
         purchaserEmail: data.purchaser_email,
         isValidated: data.is_validated,
         createdAt: data.created_at,
@@ -565,6 +573,7 @@ export const supabaseService = {
         eventId: data.event_id,
         tierId: data.tier_id,
         purchaserName: data.purchaser_name,
+        purchaserSurname: data.purchaser_surname,
         purchaserEmail: data.purchaser_email,
         isValidated: data.is_validated,
         createdAt: data.created_at,
@@ -579,6 +588,8 @@ export const supabaseService = {
           location: data.events.location,
           createdAt: data.events.created_at,
           updatedAt: data.events.updated_at,
+          team1Id: data.events.team1_id,
+          team2Id: data.events.team2_id,
           coverImageUrl: data.events.cover_image_url || undefined,
         },
         tier: {
@@ -658,7 +669,7 @@ export const supabaseService = {
 
       let totalRevenue = 0
       if (revenueResult.data) {
-        totalRevenue = revenueResult.data.reduce((sum, ticket: { pricing_tiers: any[] }) => {
+        totalRevenue = revenueResult.data.reduce((sum: number, ticket: { pricing_tiers: any[] }) => {
           const price = Array.isArray(ticket.pricing_tiers) && ticket.pricing_tiers.length > 0 ? ticket.pricing_tiers[0]?.price : 0;
           return sum + (price || 0)
         }, 0)
@@ -721,7 +732,7 @@ export const supabaseService = {
       .select("*")
       .order("created_at", { ascending: false })
     if (error) throw new Error(error.message)
-    return (data || []).map((s) => ({
+    return (data || []).map((s: any): Subscription => ({
       id: s.id,
       createdAt: s.created_at,
       updatedAt: s.updated_at,
@@ -778,7 +789,7 @@ export const supabaseService = {
       .eq("owner_id", userId)
       .order("created_at", { ascending: false })
     if (error) throw new Error(error.message)
-    return (data || []).map((s) => ({
+    return (data || []).map((s: any): UserSubscription => ({
       id: s.id,
       createdAt: s.created_at,
       updatedAt: s.updated_at,
@@ -813,5 +824,25 @@ export const supabaseService = {
       .single();
     if (error) throw new Error(error.message);
     return data;
+  },
+
+  getDashboardStats: async () => {
+    const { data: events, error: eventsError } = await supabase.from("events").select("id");
+    if (eventsError) throw eventsError;
+
+    const { data: tickets, error: ticketsError } = await supabase.from("tickets").select("id, is_validated");
+    if (ticketsError) throw ticketsError;
+
+    const { data: pricingTiers, error: pricingTiersError } = await supabase.from("pricing_tiers").select("price, sold_quantity");
+    if (pricingTiersError) throw pricingTiersError;
+    
+    const totalRevenue = (pricingTiers || []).reduce((sum: number, tier: { price: number; sold_quantity: number }) => sum + (tier.price * tier.sold_quantity), 0);
+
+    return {
+        totalEvents: events?.length || 0,
+        totalTickets: tickets?.length || 0,
+        validatedTickets: (tickets || []).filter((t: { is_validated: boolean }) => t.is_validated).length || 0,
+        totalRevenue,
+    };
   },
 }

@@ -27,6 +27,7 @@ export interface Ticket {
   eventId: string
   tierId: string
   purchaserName: string
+  purchaserSurname?: string
   purchaserEmail: string
   isValidated: boolean
   createdAt: string

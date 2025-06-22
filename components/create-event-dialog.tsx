@@ -25,6 +25,7 @@ import { Stepper } from "@/components/ui/stepper"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Calendar } from "./ui/calendar"
 import { format } from "date-fns"
+import type { PostgrestError } from "@supabase/supabase-js"
 
 interface PricingTier {
   name: string
@@ -72,7 +73,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     supabase
       .from("teams")
       .select("id, team_name, logo, created_at")
-      .then(({ data, error }) => {
+      .then(({ data, error }: { data: Team[] | null, error: PostgrestError | null }) => {
         if (error) {
           setTeams([]);
         } else {
@@ -212,7 +213,8 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     };
 
     try {
-      const response = await fetch('/api/events', {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
+      const response = await fetch(`${baseUrl}/api/events`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventPayload),

@@ -2,6 +2,7 @@ import { PDFDocument, rgb, StandardFonts, PDFFont } from 'pdf-lib'
 import qr from 'qrcode'
 import type { TicketWithDetails, Team } from './types'
 import { formatCurrency } from './utils'
+import fontkit from '@pdf-lib/fontkit'
 
 // Helper to fetch image as Uint8Array
 async function fetchImage(url: string | undefined): Promise<Uint8Array | null> {
@@ -38,6 +39,7 @@ function replaceUnsupportedChars(str: string | undefined): string {
     .replace(/Ą/g, 'A')
 }
 
+// Don't replace characters if we have a good font
 const SUPABASE_TEAM_LOGO_BASE_URL = 'https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/team-logo//';
 
 export async function generateTicketPDF(
@@ -49,6 +51,8 @@ export async function generateTicketPDF(
   console.log('Team 1:', team1);
   console.log('Team 2:', team2);
   const pdfDoc = await PDFDocument.create()
+  pdfDoc.registerFontkit(fontkit)
+
   const width = 595, height = 283 // ~A5 landscape
   const page = pdfDoc.addPage([width, height])
 
@@ -66,7 +70,8 @@ export async function generateTicketPDF(
   page.drawRectangle({ x: 0, y: 0, width: blueWidth, height, color: mainBg })
 
   // Orange section: use image if available, else solid color
-  const bgImageBytes = await fetchImage('/bg%20qr.jpg')
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  const bgImageBytes = await fetchImage(`${siteUrl}/bg%20qr.jpg`)
   if (bgImageBytes) {
     try {
       const bgImage = await pdfDoc.embedJpg(bgImageBytes)
@@ -80,8 +85,10 @@ export async function generateTicketPDF(
     page.drawRectangle({ x: blueWidth, y: 0, width: orangeWidth, height, color: orange })
   }
 
-  // Use built-in Helvetica font
-  const customFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+  // Embed a custom font that supports Lithuanian characters
+  const fontUrl = `${siteUrl}/fonts/DMSans-Regular.ttf`
+  const fontBytes = await fetchImage(fontUrl)
+  const customFont = await pdfDoc.embedFont(fontBytes || StandardFonts.Helvetica)
 
   // League logo (static or placeholder)
   const leagueLogoUrl = 'https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/team-logo//pic.logo-topsport-no-bg-1.png'
@@ -121,24 +128,16 @@ export async function generateTicketPDF(
       } catch {}
     }
   }
-  // Draw team1 name in bold, larger font, with white shadow for contrast
-  const team1Name = replaceUnsupportedChars(team1?.team_name ?? '')
-  const teamNameFontSize = 18
-  // Shadow
-  page.drawText(team1Name, {
-    x: 50 + 1,
-    y: groupY - 8 - 1,
-    size: teamNameFontSize,
-    font: customFont,
-    color: rgb(1,1,1),
-  })
+  // Draw team1 name
+  const team1Name = team1?.team_name ?? ''
+  const teamNameFontSize = 16
   // Main text
   page.drawText(team1Name, {
     x: 50,
     y: groupY - 8,
     size: teamNameFontSize,
     font: customFont,
-    color: mainBg,
+    color: white,
   })
 
   // === TEAM 2 ===
@@ -160,23 +159,15 @@ export async function generateTicketPDF(
       } catch {}
     }
   }
-  // Draw team2 name in bold, larger font, with white shadow for contrast
-  const team2Name = replaceUnsupportedChars(team2?.team_name ?? '')
-  // Shadow
-  page.drawText(team2Name, {
-    x: blueWidth - 120 + 1,
-    y: groupY - 8 - 1,
-    size: teamNameFontSize,
-    font: customFont,
-    color: rgb(1,1,1),
-  })
+  // Draw team2 name
+  const team2Name = team2?.team_name ?? ''
   // Main text
   page.drawText(team2Name, {
     x: blueWidth - 120,
     y: groupY - 8,
-    size: teamNameFontSize,
+    size: 16,
     font: customFont,
-    color: mainBg,
+    color: white,
   })
 
   // === "prieš" text ===
@@ -192,11 +183,11 @@ export async function generateTicketPDF(
   })
 
   // Event start (large orange)
-  page.drawText(`RUNGtyniu PRADzIA: ${ticket.events.time || ''}`, {
+  page.drawText(`RUNGTYNIU PRADZIA: ${ticket.event.time || ''}`, {
     x: 40, y: height/2 - 40, size: 22, font: customFont, color: orange,
   })
   // Date (gray)
-  page.drawText(ticket.events.date || '', {
+  page.drawText(ticket.event.date || '', {
     x: 40, y: height/2 - 65, size: 13, font: customFont, color: gray,
   })
 
@@ -208,15 +199,15 @@ export async function generateTicketPDF(
     x: 180, y: 40, size: 10, font: customFont, color: gray,
   })
   // Values
-  page.drawText((ticket.events.location || '').toUpperCase(), {
+  page.drawText(replaceUnsupportedChars((ticket.event.location || '').toUpperCase()), {
     x: 40, y: 20, size: 12, font: customFont, color: white,
   })
-  page.drawText((ticket.pricing_tiers.name || '').toUpperCase(), {
+  page.drawText(replaceUnsupportedChars((ticket.tier.name || '').toUpperCase()), {
     x: 180, y: 20, size: 12, font: customFont, color: white,
   })
 
   // QR code (centered in orange section)
-  const qrCodeUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/validate-ticket/${ticket.id}`;
+  const qrCodeUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/api/validate-ticket/${ticket.id}`;
   try {
     const qrCodeDataUrl = await qr.toDataURL(qrCodeUrl, { width: 180, margin: 1 })
     const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))

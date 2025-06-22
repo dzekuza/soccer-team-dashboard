@@ -28,38 +28,40 @@ export default function EventsPage() {
   const [view, setView] = useState<'grid' | 'calendar'>('grid')
 
   useEffect(() => {
-    fetchEvents()
-    fetchTeams()
+    const fetchData = async () => {
+      setIsLoading(true)
+      setError(null)
+      try {
+        const [eventsData, ticketsData, teamsData] = await Promise.all([
+          supabaseService.getEventsWithTiers(),
+          supabaseService.getTicketsWithDetails(),
+          supabaseService.getTeams(),
+        ])
+        setEvents(eventsData)
+        setTickets(ticketsData)
+        setTeams(teamsData)
+      } catch (error) {
+        setError("Nepavyko įkelti renginių. Bandykite vėliau.")
+        setTeams([]) // Ensure teams is an array on error
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchData()
   }, [])
 
   const fetchEvents = async () => {
-    setIsLoading(true)
-    setError(null)
+    // This function is now only used for refetching
     try {
-      const [eventsData, ticketsData] = await Promise.all([
-        supabaseService.getEventsWithTiers(),
-        supabaseService.getTicketsWithDetails(),
-      ])
+      const eventsData = await supabaseService.getEventsWithTiers()
       setEvents(eventsData)
-      setTickets(ticketsData)
     } catch (error) {
-      setError("Nepavyko įkelti renginių. Bandykite vėliau.")
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const fetchTeams = async () => {
-    try {
-      const data = await supabaseService.getTeams()
-      setTeams(data)
-    } catch {
-      setTeams([])
+      setError("Nepavyko atnaujinti renginių.")
     }
   }
 
   const handleEventCreated = () => {
-    fetchEvents()
+    fetchEvents() // Refetch events after creation
     setIsCreateDialogOpen(false)
   }
 
@@ -106,9 +108,9 @@ export default function EventsPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2">
             {events.filter(Boolean).map((event) => {
-              const team1 = getTeam(event.team1_id)
-              const team2 = getTeam(event.team2_id)
-              const eventTickets = tickets.filter(t => t.event_id === event.id)
+              const team1 = getTeam(event.team1Id)
+              const team2 = getTeam(event.team2Id)
+              const eventTickets = tickets.filter(t => t.eventId === event.id)
               const missingTeam = !team1 || !team2;
               return (
                 <Card key={event.id} className="flex flex-col">
@@ -163,9 +165,9 @@ export default function EventsPage() {
                       <div className="pt-2">
                         <p className="font-medium mb-1">Kainų lygiai:</p>
                         <div className="space-y-1">
-                          {event.pricing_tiers?.map((tier) => {
-                            const generatedCount = eventTickets.filter(t => t.tier_id === tier.id).length;
-                            const validatedCount = eventTickets.filter(t => t.tier_id === tier.id && t.status === 'validated').length;
+                          {event.pricingTiers?.map((tier) => {
+                            const generatedCount = eventTickets.filter(t => t.tierId === tier.id).length;
+                            const validatedCount = eventTickets.filter(t => t.tierId === tier.id && t.isValidated).length;
                             return (
                               <div key={tier.id} className="flex justify-between items-center text-xs">
                                 <div className="flex items-center">
