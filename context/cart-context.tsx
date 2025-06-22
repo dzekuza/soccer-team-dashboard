@@ -11,6 +11,8 @@ export interface CartItem {
     image: string;
     color: string;
     quantity: number;
+    eventId?: string;
+    eventTitle?: string;
 }
 
 interface CartContextType {

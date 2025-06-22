@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       },
     }
   )
-  
+
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -57,38 +57,18 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Missing event or pricingTiers data" }, { status: 400 });
     }
 
-    // 1. Insert the event
-    const { data: eventData, error: eventError } = await supabase
-      .from('events')
-      .insert(event)
-      .select()
-      .single();
+    // Call the RPC function to create the event and tiers atomically
+    const { data, error } = await supabase.rpc('create_event_with_tiers', {
+      event_data: event,
+      tiers_data: pricingTiers
+    });
 
-    if (eventError) {
-      console.error("Error creating event:", eventError);
-      throw eventError;
+    if (error) {
+      console.error("Error creating event with tiers:", error);
+      throw error;
     }
 
-    // 2. Insert the pricing tiers
-    const tiersToInsert = pricingTiers.map((tier: any) => ({
-      event_id: eventData.id,
-      name: tier.name,
-      price: tier.price,
-      quantity: tier.quantity
-    }));
-
-    const { error: tiersError } = await supabase
-      .from('pricing_tiers')
-      .insert(tiersToInsert);
-
-    if (tiersError) {
-      console.error("Error creating pricing tiers:", tiersError);
-      // Attempt to roll back the event creation if tiers fail
-      await supabase.from('events').delete().eq('id', eventData.id);
-      throw tiersError;
-    }
-
-    return NextResponse.json({ success: true, data: { ...eventData, pricingTiers: tiersToInsert} });
+    return NextResponse.json({ success: true, data });
 
   } catch (error) {
     console.error('Error in /api/events POST:', error)

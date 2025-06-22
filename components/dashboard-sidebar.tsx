@@ -2,13 +2,21 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon } from "lucide-react"
+import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck } from "lucide-react"
 import { createClient } from "@/lib/supabase-browser"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./ui/button"
 import { cn } from "@/lib/utils"
 import clsx from "clsx"
 import { useState } from "react"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { Menu } from 'lucide-react'
 
 export function DashboardSidebar() {
   const pathname = usePathname()
@@ -21,43 +29,73 @@ export function DashboardSidebar() {
     { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
     { name: "Subscriptions", href: "/dashboard/subscriptions", icon: Ticket },
     { name: "Fans", href: "/dashboard/fans", icon: Users },
-    { name: "QR Scanner", href: "/dashboard/scanner", icon: Ticket },
-    { name: "Export", href: "/dashboard/export", icon: Ticket },
+    { name: "QR Scanner", href: "/dashboard/scanner", icon: QrCode },
+    { name: "Export", href: "/dashboard/export", icon: Download },
     { name: "Templates", href: "/dashboard/templates", icon: Settings },
+    { name: "Marketing", href: "/dashboard/marketing", icon: Megaphone },
+    { name: "Players", href: "/dashboard/players", icon: Users },
+    { name: "My Matches", href: "/dashboard/matches", icon: BadgeCheck },
   ]
 
   return (
-    <div className="flex h-full max-h-screen flex-col gap-2 border-r border-main">
-      <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <span className="">FK Banga</span>
-        </Link>
-      </div>
-      <div className="flex-1">
-        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
-          {navItems.map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary ${pathname === item.href && "bg-muted text-primary"}`}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.name}
-            </Link>
-          ))}
-        </nav>
-      </div>
-      <div className="mt-auto p-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm">
-            <p className="font-medium">{user?.email}</p>
-          </div>
-          <button onClick={async () => await supabase.auth.signOut()} className="flex items-center text-gray-600 hover:text-gray-900">
-            <LogOut className="h-4 w-4" />
-          </button>
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:block w-64 p-4 border-r fixed h-full bg-sidebar">
+        <div className="flex items-center mb-8">
+          <Link href="/" className="text-2xl font-bold">
+            TeamUp
+          </Link>
         </div>
+        <nav>
+          <ul>
+            {navItems.map((item) => (
+              <li key={item.name}>
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "flex items-center p-2 rounded-md",
+                    pathname === item.href
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "hover:bg-sidebar-accent/50"
+                  )}
+                >
+                  <item.icon className="h-5 w-5 mr-3" />
+                  {item.name}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Mobile Menu */}
+      <div className="md:hidden p-4">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left">
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+            </SheetHeader>
+            <nav className="mt-8">
+              <ul>
+                {navItems.map((item) => (
+                  <li key={item.name}>
+                     <Link href={item.href} className={`flex items-center p-3 rounded-md ${pathname === item.href ? 'bg-gray-200' : 'hover:bg-gray-100'}`}>
+                      <item.icon className="h-5 w-5 mr-3" />
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          </SheetContent>
+        </Sheet>
       </div>
-    </div>
+    </>
   )
 }
 

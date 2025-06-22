@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +14,29 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import type { EmailTemplate } from "@/lib/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const templateVariables: Record<string, string[]> = {
+  ticket_confirmation: [
+    "{{event_title}}",
+    "{{event_date}}",
+    "{{event_time}}",
+    "{{event_location}}",
+    "{{purchaser_name}}",
+    "{{ticket_id}}",
+    "{{tier_name}}",
+    "{{tier_price}}",
+    "{{team1_name}}",
+    "{{team2_name}}",
+  ],
+  subscription_confirmation: [
+    "{{purchaser_name}}",
+    "{{start_date}}",
+    "{{end_date}}",
+    "{{validity_period}}",
+  ],
+};
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
@@ -23,6 +46,7 @@ export default function TemplatesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     fetchTemplates();
@@ -103,6 +127,27 @@ export default function TemplatesPage() {
     }
   };
 
+  const insertVariable = (variable: string) => {
+    const textarea = bodyTextareaRef.current;
+    if (!textarea || !selectedTemplate) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const newText = text.substring(0, start) + variable + text.substring(end);
+
+    setSelectedTemplate({
+      ...selectedTemplate,
+      body_html: newText,
+    });
+
+    // Focus and set cursor position after inserting
+    setTimeout(() => {
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+    }, 0);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -112,8 +157,26 @@ export default function TemplatesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-1">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        {/* Mobile View: Dropdown for template selection */}
+        <div className="md:hidden">
+          <Label>Pasirinkite šabloną</Label>
+          <Select onValueChange={handleSelectTemplate} value={selectedTemplate?.name}>
+            <SelectTrigger>
+              <SelectValue placeholder="Pasirinkite šabloną..." />
+            </SelectTrigger>
+            <SelectContent>
+              {templates.map((template) => (
+                <SelectItem key={template.id} value={template.name}>
+                  {template.name.replace(/_/g, " ")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Desktop View: Sidebar for template selection */}
+        <div className="hidden md:block md:col-span-1">
           <Card>
             <CardHeader>
               <CardTitle>Šablonai</CardTitle>
@@ -145,46 +208,110 @@ export default function TemplatesPage() {
         </div>
 
         <div className="md:col-span-3">
-          <Card>
-            <CardHeader>
-              <CardTitle>Redaktorius</CardTitle>
-              <CardDescription>
-                Redaguokite pasirinkto šablono turinį. Naudokite {"{{kintamasis}}"},
-                kad įterptumėte dinaminius duomenis.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {selectedTemplate ? (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="subject">Laiško antraštė</Label>
-                    <Input
-                      id="subject"
-                      name="subject"
-                      value={selectedTemplate.subject}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="body_html">Laiško turinys (HTML)</Label>
-                    <Textarea
-                      id="body_html"
-                      name="body_html"
-                      value={selectedTemplate.body_html}
-                      onChange={handleInputChange}
-                      rows={20}
-                      className="font-mono text-sm"
-                    />
-                  </div>
-                  <Button onClick={handleSaveChanges} disabled={isSaving}>
-                    {isSaving ? "Saugoma..." : "Išsaugoti pakeitimus"}
-                  </Button>
-                </>
-              ) : (
+          {isLoading && !selectedTemplate && (
+            <Card className="flex items-center justify-center h-64">
+                <p>Kraunasi šablonai...</p>
+            </Card>
+          )}
+          {selectedTemplate ? (
+            <Tabs defaultValue="editor">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <TabsList>
+                  <TabsTrigger value="editor">Redaktorius</TabsTrigger>
+                  <TabsTrigger value="preview">Peržiūra</TabsTrigger>
+                </TabsList>
+                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto">
+                  {isSaving ? "Saugoma..." : "Išsaugoti pakeitimus"}
+                </Button>
+              </div>
+              <TabsContent value="editor">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Šablono redagavimas</CardTitle>
+                    <CardDescription>
+                      Redaguokite pasirinkto šablono turinį.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="subject">Laiško antraštė</Label>
+                      <Input
+                        id="subject"
+                        name="subject"
+                        value={selectedTemplate.subject}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="body_html">Laiško turinys (HTML)</Label>
+                      <Textarea
+                        id="body_html"
+                        name="body_html"
+                        ref={bodyTextareaRef}
+                        value={selectedTemplate.body_html}
+                        onChange={handleInputChange}
+                        rows={15}
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label>Galimi kintamieji</Label>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(templateVariables[selectedTemplate.name] || []).map(
+                          (variable) => (
+                            <Button
+                              key={variable}
+                              variant="outline"
+                              size="sm"
+                              onClick={() => insertVariable(variable)}
+                              className="font-mono"
+                            >
+                              {variable}
+                            </Button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="preview">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Šablono peržiūra</CardTitle>
+                    <CardDescription>
+                      Taip atrodys jūsų el. laiškas.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Antraštė</Label>
+                        <p className="text-lg font-semibold p-2 bg-gray-100 rounded">
+                          {selectedTemplate.subject}
+                        </p>
+                      </div>
+                      <div>
+                        <Label>Turinys</Label>
+                        <div
+                          className="border rounded-md p-4 min-h-[400px]"
+                          dangerouslySetInnerHTML={{
+                            __html: selectedTemplate.body_html,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
                 <p>Pasirinkite šabloną, kurį norite redaguoti.</p>
-              )}
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

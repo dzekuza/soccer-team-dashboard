@@ -97,7 +97,43 @@ async function sendSubscriptionConfirmation(subscriptionId: string): Promise<voi
   }
 }
 
+interface BulkEmailPayload {
+  to: string[];
+  subject: string;
+  htmlBody?: string;
+  textBody?: string;
+}
+
+async function sendBulkEmail({ to, subject, htmlBody, textBody }: BulkEmailPayload): Promise<void> {
+  if (to.length === 0) {
+    return;
+  }
+  
+  try {
+    const payload: any = {
+      from: 'info@teamup.lt',
+      to: 'noreply@teamup.lt',
+      bcc: to,
+      subject: subject,
+    };
+
+    if (htmlBody) {
+      payload.html = htmlBody;
+    } else if (textBody) {
+      payload.text = textBody;
+    }
+
+    await resend.emails.send(payload);
+
+    console.log(`Bulk email sent successfully to ${to.length} recipients.`);
+  } catch (error) {
+    console.error("Error sending bulk email:", error);
+    throw error;
+  }
+}
+
 export const notificationService = {
   sendTicketConfirmation,
   sendSubscriptionConfirmation,
+  sendBulkEmail,
 }; 

@@ -50,9 +50,9 @@ export default function FansPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Fanai</h1>
-        <p className="text-gray-600">Jūsų komandos fanų ir pirkėjų apžvalga.</p>
+        <p className="text-muted-foreground">Jūsų komandos fanų ir pirkėjų apžvalga.</p>
       </div>
-      <div className="bg-white rounded shadow overflow-x-auto">
+      <div className="bg-card text-card-foreground rounded shadow overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -65,18 +65,18 @@ export default function FansPage() {
           <TableBody>
             {fans.length > 0 ? (
               fans
-                .sort((a, b) => b.moneySpent - a.moneySpent)
-                .map((fan) => (
-                  <TableRow key={fan.email}>
+                .sort((a: Fan, b: Fan) => b.money_spent - a.money_spent)
+                .map((fan: Fan, index: number) => (
+                  <TableRow key={`${fan.email}-${index}`}>
                     <TableCell>
                       <div className="font-medium">{fan.name}</div>
-                      <div className="text-sm text-gray-500">{fan.email}</div>
+                      <div className="text-sm text-muted-foreground">{fan.email}</div>
                     </TableCell>
-                    <TableCell className="text-center">{fan.totalTickets}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(fan.moneySpent)}</TableCell>
+                    <TableCell className="text-center">{fan.total_tickets}</TableCell>
+                    <TableCell className="text-right">{formatCurrency(fan.money_spent)}</TableCell>
                     <TableCell className="text-center">
-                      <Badge variant={fan.hasValidSubscription ? "default" : "secondary"}>
-                        {fan.hasValidSubscription ? "Aktyvi" : "Neaktyvi"}
+                      <Badge variant={fan.has_valid_subscription ? "default" : "secondary"}>
+                        {fan.has_valid_subscription ? "Aktyvi" : "Neaktyvi"}
                       </Badge>
                     </TableCell>
                   </TableRow>

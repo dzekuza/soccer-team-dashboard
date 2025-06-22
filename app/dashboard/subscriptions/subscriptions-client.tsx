@@ -63,56 +63,101 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
         </Button>
       </div>
 
-      <Card>
+      <Card className="bg-card text-card-foreground">
         <CardHeader>
           <CardTitle>Visos prenumeratos</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Pirkėjas</TableHead>
-                <TableHead>El. paštas</TableHead>
-                <TableHead>Galioja nuo</TableHead>
-                <TableHead>Galioja iki</TableHead>
-                <TableHead className="text-right">Veiksmai</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {subscriptions.length > 0 ? (
-                subscriptions.map((sub) => (
-                  <TableRow key={sub.id}>
-                    <TableCell>{sub.purchaser_name || "-"}</TableCell>
-                    <TableCell>{sub.purchaser_email || "-"}</TableCell>
-                    <TableCell>{new Date(sub.valid_from).toLocaleDateString()}</TableCell>
-                    <TableCell>{new Date(sub.valid_to).toLocaleDateString()}</TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleResendEmail(sub.id)}>
-                            <Mail className="mr-2 h-4 w-4" />
-                            <span>Siųsti iš naujo</span>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+          {/* Desktop Table */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Pirkėjas</TableHead>
+                  <TableHead>El. paštas</TableHead>
+                  <TableHead>Galioja nuo</TableHead>
+                  <TableHead>Galioja iki</TableHead>
+                  <TableHead className="text-right">Veiksmai</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {subscriptions.length > 0 ? (
+                  subscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell>{sub.purchaser_name || "-"}</TableCell>
+                      <TableCell>{sub.purchaser_email || "-"}</TableCell>
+                      <TableCell>{new Date(sub.valid_from).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(sub.valid_to).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Open menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleResendEmail(sub.id)}>
+                              <Mail className="mr-2 h-4 w-4" />
+                              <span>Siųsti iš naujo</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      Nėra prenumeratų.
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Nėra prenumeratų.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-4">
+            {subscriptions.length > 0 ? (
+              subscriptions.map((sub) => (
+                <Card key={sub.id} className="bg-background">
+                  <CardHeader>
+                    <CardTitle>{sub.purchaser_name || "Nenurodyta"}</CardTitle>
+                    <CardContent className="p-0 pt-2 text-sm text-muted-foreground">{sub.purchaser_email}</CardContent>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between">
+                      <strong>Galioja nuo:</strong>
+                      <span>{new Date(sub.valid_from).toLocaleDateString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <strong>Galioja iki:</strong>
+                      <span>{new Date(sub.valid_to).toLocaleDateString()}</span>
+                    </div>
+                  </CardContent>
+                  <div className="p-4 pt-0 flex justify-end">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Open menu</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleResendEmail(sub.id)}>
+                          <Mail className="mr-2 h-4 w-4" />
+                          <span>Siųsti iš naujo</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground">Nėra prenumeratų.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

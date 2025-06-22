@@ -9,7 +9,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { createClient } from "@/lib/supabase-browser";
+import { createBrowserClient } from '@supabase/ssr'
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // UTILITY: cn function for merging Tailwind classes
@@ -121,7 +121,6 @@ PasswordInput.displayName = "PasswordInput";
 function SignInForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
   
   const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -131,6 +130,19 @@ function SignInForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
     const formData = new FormData(event.currentTarget);
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const rememberMe = formData.get("rememberMe") === "on";
+
+    // Create a Supabase client with storage options based on "Remember Me"
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        auth: {
+          storage: rememberMe ? localStorage : undefined, // Use default (localStorage) or memory storage
+          persistSession: rememberMe,
+        },
+      }
+    );
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -154,6 +166,10 @@ function SignInForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
       <div className="grid gap-4">
         <div className="grid gap-2"><Label htmlFor="email">El. paštas</Label><Input id="email" name="email" type="email" placeholder="m@example.com" required autoComplete="email" /></div>
         <PasswordInput name="password" label="Slaptažodis" required autoComplete="current-password" placeholder="••••••••" />
+        <div className="flex items-center space-x-2">
+          <input type="checkbox" name="rememberMe" id="rememberMe" className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+          <Label htmlFor="rememberMe">Prisiminti mane</Label>
+        </div>
         <Button type="submit" variant="outline" className="mt-2" disabled={isLoading}>
           {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Jungiamasi...</> : 'Prisijungti'}
         </Button>
@@ -166,7 +182,10 @@ function SignInForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
 function SignUpForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const supabase = createClient();
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
   const handleSignUp = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();

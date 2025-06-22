@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState, useEffect } from "react"
+import { ChangeEvent, FormEvent, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -43,7 +42,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    date: "",
+    date: new Date(),
     time: "",
     location: "",
   })
@@ -87,7 +86,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   }
 
   const removePricingTier = (index: number) => {
-    setPricingTiers(pricingTiers.filter((_, i) => i !== index))
+    setPricingTiers(pricingTiers.filter((_, i: number) => i !== index))
   }
 
   const updatePricingTier = (index: number, field: keyof PricingTier, value: string | number) => {
@@ -112,7 +111,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
 
     // Enhanced pricing tiers validation
     let hasTierError = false
-    pricingTiers.forEach((tier, index) => {
+    pricingTiers.forEach((tier: PricingTier, index: number) => {
       if (!tier.name || !tier.name.trim()) {
         newErrors[`tier_${index}_name`] = "Tier name is required"
         hasTierError = true
@@ -139,7 +138,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setFormData({
       title: "",
       description: "",
-      date: "",
+      date: new Date(),
       time: "",
       location: "",
     })
@@ -154,7 +153,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setCoverImageUploading(false)
   }
 
-  const handleCoverImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCoverImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -187,7 +186,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setApiError(null);
     setApiSuccess(null);
@@ -202,7 +201,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
       event: {
         title: formData.title,
         description: formData.description,
-        date: formData.date,
+        date: format(formData.date, "yyyy-MM-dd"),
         time: formData.time,
         location: formData.location,
         team1_id: team1Id || null,
@@ -245,7 +244,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
   return (
     <Dialog
       open={open}
-      onOpenChange={(newOpen) => {
+      onOpenChange={(newOpen: boolean) => {
         if (!newOpen) {
           resetForm()
         }
@@ -292,7 +291,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                 <Label>Pavadinimas</Label>
                 <Input
                   value={formData.title}
-                  onChange={e => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Renginio pavadinimas"
                 />
                 {errors.title && <div className="text-red-500 text-xs mt-1">{errors.title}</div>}
@@ -301,7 +300,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                 <Label>Aprašymas</Label>
                 <Textarea
                   value={formData.description}
-                  onChange={e => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Trumpas renginio aprašymas"
                 />
                 {errors.description && <div className="text-red-500 text-xs mt-1">{errors.description}</div>}
@@ -312,22 +311,27 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
           {/* Step 2: Date and location */}
           {step === 1 && (
             <div className="space-y-4">
-              <div>
-                <Label>Data</Label>
-                <Input
-                  type="date"
-                  value={formData.date}
-                  onChange={e => setFormData({ ...formData, date: e.target.value })}
-                  placeholder="Renginio data"
-                />
-                {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
-              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">
+                    {format(formData.date, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                  <Calendar
+                    mode="single"
+                    selected={formData.date}
+                    onSelect={(d) => setFormData({ ...formData, date: d || new Date() })}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <div>
                 <Label>Laikas</Label>
                 <Input
                   type="time"
                   value={formData.time}
-                  onChange={e => setFormData({ ...formData, time: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, time: e.target.value })}
                   placeholder="Renginio laikas"
                 />
                 {errors.time && <div className="text-red-500 text-xs mt-1">{errors.time}</div>}
@@ -336,7 +340,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                 <Label>Vieta</Label>
                 <Input
                   value={formData.location}
-                  onChange={e => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, location: e.target.value })}
                   placeholder="Renginio vieta"
                 />
                 {errors.location && <div className="text-red-500 text-xs mt-1">{errors.location}</div>}
@@ -352,7 +356,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                   <Label>Komanda 1</Label>
                   <select
                     value={team1Id}
-                    onChange={e => setTeam1Id(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam1Id(e.target.value)}
                     className="w-full border rounded px-3 py-2"
                   >
                     <option value="">Pasirinkite komandą</option>
@@ -366,7 +370,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                   <Label>Komanda 2</Label>
                   <select
                     value={team2Id}
-                    onChange={e => setTeam2Id(e.target.value)}
+                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam2Id(e.target.value)}
                     className="w-full border rounded px-3 py-2"
                   >
                     <option value="">Pasirinkite komandą</option>
@@ -385,13 +389,13 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                   </Button>
                 </div>
                 {errors.pricingTiers && <div className="text-red-500 text-xs mb-2">{errors.pricingTiers}</div>}
-                {pricingTiers.map((tier, idx) => (
+                {pricingTiers.map((tier: PricingTier, idx: number) => (
                   <div key={idx} className="flex gap-2 items-end mb-2">
                     <div className="flex-1">
                       <Label>Pavadinimas</Label>
                       <Input
                         value={tier.name}
-                        onChange={e => updatePricingTier(idx, "name", e.target.value)}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => updatePricingTier(idx, "name", e.target.value)}
                         placeholder="Kategorijos pavadinimas"
                       />
                       {errors[`tier_${idx}_name`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_name`]}</div>}
@@ -402,7 +406,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                         type="number"
                         min={0}
                         value={tier.price}
-                        onChange={e => updatePricingTier(idx, "price", Number(e.target.value))}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => updatePricingTier(idx, "price", Number(e.target.value))}
                         placeholder="Kaina"
                       />
                       {errors[`tier_${idx}_price`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_price`]}</div>}
@@ -413,7 +417,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                         type="number"
                         min={0}
                         value={tier.quantity}
-                        onChange={e => updatePricingTier(idx, "quantity", Number(e.target.value))}
+                        onChange={(e: ChangeEvent<HTMLInputElement>) => updatePricingTier(idx, "quantity", Number(e.target.value))}
                         placeholder="Kiekis"
                       />
                       {errors[`tier_${idx}_quantity`] && <div className="text-red-500 text-xs mt-1">{errors[`tier_${idx}_quantity`]}</div>}

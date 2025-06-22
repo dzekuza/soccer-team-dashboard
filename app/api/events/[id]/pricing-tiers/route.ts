@@ -2,9 +2,11 @@ import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params: { id } }: { params: { id: string } }
 ) {
   const cookieStore = await cookies()
   const supabase = createServerClient(
@@ -23,7 +25,7 @@ export async function GET(
     const { data, error } = await supabase
       .from("pricing_tiers")
       .select("*")
-      .eq("event_id", params.id)
+      .eq("event_id", id)
 
     if (error) {
       throw error
@@ -31,7 +33,7 @@ export async function GET(
 
     return NextResponse.json(data)
   } catch (error) {
-    console.error(`Error fetching pricing tiers for event ${params.id}:`, error)
+    console.error(`Error fetching pricing tiers for event ${id}:`, error)
     const message = error instanceof Error ? error.message : "Unknown error"
     return NextResponse.json({ error: "Failed to fetch pricing tiers", details: message }, { status: 500 })
   }

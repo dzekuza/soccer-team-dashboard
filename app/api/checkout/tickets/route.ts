@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!eventId || !tierId || !quantity || !purchaserName || !purchaserEmail) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400, headers: CORS_HEADERS });
     }
 
     // 1. Fetch event and pricing tier details
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const tier = tiers.find(t => t.id === tierId);
 
     if (!event || !tier) {
-      return NextResponse.json({ error: "Event or pricing tier not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event or pricing tier not found" }, { status: 404, headers: CORS_HEADERS });
     }
 
     // 2. Create 'pending' tickets in the database

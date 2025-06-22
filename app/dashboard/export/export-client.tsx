@@ -143,7 +143,7 @@ export default function ExportClient({ initialEvents, initialTickets, initialSta
             <CardDescription>Numatomos visos pajamos</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">${stats.totalRevenue.toFixed(2)}</div>
+            <div className="text-3xl font-bold">${(stats.totalRevenue || 0).toFixed(2)}</div>
           </CardContent>
         </Card>
       </div>

@@ -3,6 +3,12 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, Search, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
+import type { Event, Team } from "@/lib/types"
+import {
+  CalendarIcon,
+  ClockIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline"
 
 const NavLink = ({ href, children, hasDropdown }: { href?: string; children: React.ReactNode; hasDropdown?: boolean }) => {
   const content = (
@@ -19,7 +25,81 @@ const NavLink = ({ href, children, hasDropdown }: { href?: string; children: Rea
   return content;
 };
 
-const EventHeader = () => {
+interface EventHeaderProps {
+  event: Event
+  team1: Team | null
+  team2: Team | null
+}
+
+export function EventHeader({ event, team1, team2 }: EventHeaderProps) {
+  const team1Logo = team1?.logo || "/placeholder-logo.svg"
+  const team2Logo = team2?.logo || "/placeholder-logo.svg"
+
+  return (
+    <div className="bg-[#070F40] py-12 px-4 md:px-8 text-white">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16 text-center">
+          <div className="flex items-center gap-4">
+            <Image
+              src={team1Logo}
+              alt={team1?.team_name || "Team 1"}
+              width={104}
+              height={104}
+              className="object-contain"
+            />
+            <div className="text-left">
+              <h2 className="text-3xl md:text-4xl font-bold">
+                {team1?.team_name}
+              </h2>
+              {/* <p className="text-sm opacity-70">7 vieta A lygoje</p> */}
+            </div>
+          </div>
+
+          <div className="text-5xl md:text-8xl font-extrabold">-</div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <h2 className="text-3xl md:text-4xl font-bold">
+                {team2?.team_name}
+              </h2>
+              {/* <p className="text-sm opacity-70">1 vieta A lygoje</p> */}
+            </div>
+            <Image
+              src={team2Logo}
+              alt={team2?.team_name || "Team 2"}
+              width={104}
+              height={104}
+              className="object-contain"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mt-8 text-lg">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="w-6 h-6 text-main-orange" />
+            <span>
+              {new Date(event.date).toLocaleDateString("lt-LT", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ClockIcon className="w-6 h-6 text-main-orange" />
+            <span>{event.time}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MapPinIcon className="w-6 h-6 text-main-orange" />
+            <span>{event.location}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const SiteHeader = () => {
   const { cart } = useCart();
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -58,4 +138,4 @@ const EventHeader = () => {
   );
 };
 
-export default EventHeader; 
+export default SiteHeader; 

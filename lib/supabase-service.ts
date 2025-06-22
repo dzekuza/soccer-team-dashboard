@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
-import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Subscription, UserSubscription, Team, TicketListItem, EventStats, EmailTemplate } from "./types"
+import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Subscription, UserSubscription, Team, TicketListItem, EventStats, EmailTemplate, Fan, Player, Match } from "./types"
 import { v4 as uuidv4 } from "uuid"
+import QRCode from "qrcode"
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
@@ -250,6 +251,67 @@ export const supabaseService = {
     }
   },
 
+  getTicketsWithDetails: async (): Promise<{ data: TicketWithDetails[] | null; error: Error | null }> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("tickets")
+        .select(`
+          id, event_id, tier_id, purchaser_name, purchaser_email, is_validated, created_at, validated_at, qr_code_url,
+          events(*),
+          pricing_tiers(*)
+        `)
+        .order("created_at", { ascending: false });
+  
+      if (error) {
+        throw error;
+      }
+      
+      // First, filter out any tickets that are missing the related event or tier data.
+      const validData = (data || []).filter((t: any) => t.events && t.pricing_tiers);
+
+      // Now, map the filtered data, which guarantees that events and pricing_tiers exist.
+      const mappedData: TicketWithDetails[] = validData.map((t: any) => ({
+        id: t.id,
+        eventId: t.event_id,
+        tierId: t.tier_id,
+        purchaserName: t.purchaser_name,
+        purchaserEmail: t.purchaser_email,
+        isValidated: t.is_validated,
+        createdAt: t.created_at,
+        validatedAt: t.validated_at ?? null,
+        qrCodeUrl: t.qr_code_url ?? '',
+        userId: t.user_id ?? undefined,
+        event: { // No need for a conditional check, as it's guaranteed by the filter
+          id: t.events.id,
+          title: t.events.title,
+          description: t.events.description,
+          date: t.events.date,
+          time: t.events.time,
+          location: t.events.location,
+          createdAt: t.events.created_at,
+          updatedAt: t.events.updated_at,
+          team1Id: t.events.team1_id,
+          team2Id: t.events.team2_id,
+          coverImageUrl: t.events.cover_image_url ?? undefined,
+        },
+        tier: { // No need for a conditional check
+          id: t.pricing_tiers.id,
+          eventId: t.pricing_tiers.event_id,
+          name: t.pricing_tiers.name,
+          price: t.pricing_tiers.price,
+          quantity: t.pricing_tiers.quantity,
+          soldQuantity: t.pricing_tiers.sold_quantity,
+        },
+      }));
+  
+      return { data: mappedData, error: null };
+  
+    } catch (error) {
+      console.error("Supabase Service Error in getTicketsWithDetails:", error);
+      return { data: null, error: error instanceof Error ? error : new Error("Unknown error") };
+    }
+  },
+
   // Pricing Tiers
   getPricingTiers: async (eventId: string): Promise<PricingTier[]> => {
     try {
@@ -310,21 +372,21 @@ export const supabaseService = {
   ): Promise<Ticket> => {
     try {
       const ticketId = uuidv4()
-      const qrCodeUrl = `/validate-ticket/${ticketId}`
+      const qrCodeUrl = await QRCode.toDataURL(ticketId)
 
       const { data, error } = await supabaseAdmin
         .from("tickets")
-        .insert([
-          {
-            id: ticketId,
-            event_id: ticketData.eventId,
-            tier_id: ticketData.tierId,
-            purchaser_name: ticketData.purchaserName,
-            purchaser_email: ticketData.purchaserEmail,
-            is_validated: false,
-            qr_code_url: qrCodeUrl,
-          },
-        ])
+        .insert({
+          id: ticketId,
+          event_id: ticketData.eventId,
+          tier_id: ticketData.tierId,
+          purchaser_name: ticketData.purchaserName,
+          purchaser_surname: ticketData.purchaserSurname || null,
+          purchaser_email: ticketData.purchaserEmail,
+          is_validated: false,
+          qr_code_url: qrCodeUrl,
+          user_id: ticketData.userId,
+        })
         .select()
         .single()
 
@@ -591,17 +653,14 @@ export const supabaseService = {
     }
   },
   
-  // Fans (assuming fans are user_subscriptions)
-  getFans: async (): Promise<any[]> => {
+  // Fans (aggregated data)
+  getFans: async (): Promise<Fan[]> => {
     try {
-      const { data, error } = await supabaseAdmin
-        .from("user_subscriptions")
-        .select("id, user_id, subscription_id, created_at, status, user_email")
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabaseAdmin.rpc('get_fans_aggregated');
 
       if (error) {
-        console.error("Error fetching fans:", error);
-        throw new Error(`Failed to fetch fans: ${error.message}`);
+        console.error("Error fetching aggregated fan data:", error);
+        throw new Error(`Failed to fetch aggregated fan data: ${error.message}`);
       }
       return data || [];
     } catch (error) {
@@ -610,69 +669,44 @@ export const supabaseService = {
     }
   },
 
-  getEventStats: async (eventId: string): Promise<EventStats> => {
-    // This is a placeholder implementation.
-    // You should replace this with a real database query.
-    return {
-      totalTickets: 100,
-      ticketsSold: 75,
-      ticketsScanned: 50,
-      revenue: 75 * 25,
-    };
-  },
-
-  getTicketsWithDetails: async (): Promise<TicketWithDetails[]> => {
+  getEventStats: async (): Promise<EventStats> => {
     try {
-      const { data, error } = await supabaseAdmin
-        .from('tickets')
-        .select(`
-          *,
-          event:events(*),
-          tier:pricing_tiers(*)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error fetching tickets with details:', error);
-        throw new Error(`Failed to fetch tickets with details: ${error.message}`);
-      }
+      const { data: eventsData, error: eventsError } = await supabaseAdmin
+        .from("events")
+        .select("id", { count: "exact" });
+      if (eventsError) throw new Error(`Failed to count events: ${eventsError.message}`);
+      const totalEvents = eventsData?.length || 0;
       
-      return (data || []).map((t: any) => ({
-        id: t.id,
-        eventId: t.event_id,
-        tierId: t.tier_id,
-        purchaserName: t.purchaser_name,
-        purchaserEmail: t.purchaser_email,
-        isValidated: t.is_validated,
-        createdAt: t.created_at,
-        validatedAt: t.validated_at ?? null,
-        qrCodeUrl: t.qr_code_url ?? '',
-        userId: t.user_id ?? undefined,
-        event: t.event ? {
-          id: t.event.id,
-          title: t.event.title,
-          description: t.event.description,
-          date: t.event.date,
-          time: t.event.time,
-          location: t.event.location,
-          createdAt: t.event.created_at,
-          updatedAt: t.event.updated_at,
-          team1Id: t.event.team1_id,
-          team2Id: t.event.team2_id,
-          coverImageUrl: t.event.cover_image_url ?? undefined,
-        } : undefined,
-        tier: t.tier ? {
-          id: t.tier.id,
-          eventId: t.tier.event_id,
-          name: t.tier.name,
-          price: t.tier.price,
-          quantity: t.tier.quantity,
-          soldQuantity: t.tier.sold_quantity,
-        } : undefined,
-      })).filter((t: any) => t.event && t.tier) as TicketWithDetails[];
+      const { data: ticketsData, error: ticketsError } = await supabaseAdmin
+        .from("tickets")
+        .select("is_validated, tier_id, pricing_tiers (price)");
+      if (ticketsError) throw new Error(`Failed to fetch tickets for stats: ${ticketsError.message}`);
+
+      const totalTickets = ticketsData?.length || 0;
+      const validatedTickets = ticketsData?.filter(t => t.is_validated).length || 0;
+      const totalRevenue = ticketsData?.reduce((acc, ticket) => {
+        const tier = Array.isArray(ticket.pricing_tiers) ? ticket.pricing_tiers[0] : ticket.pricing_tiers;
+        return acc + (tier?.price || 0);
+      }, 0) || 0;
+
+      return {
+        totalEvents,
+        totalTickets,
+        validatedTickets,
+        ticketsScanned: validatedTickets,
+        totalRevenue,
+        revenue: totalRevenue,
+      };
     } catch (error) {
-      console.error('Supabase Service: Error in getTicketsWithDetails:', error);
-      throw error;
+      console.error("Supabase Service: Error in getEventStats:", error);
+      return {
+        totalEvents: 0,
+        totalTickets: 0,
+        validatedTickets: 0,
+        ticketsScanned: 0,
+        totalRevenue: 0,
+        revenue: 0,
+      };
     }
   },
 
@@ -704,6 +738,37 @@ export const supabaseService = {
     } catch (error) {
       console.error(`Supabase Service: Error in getEmailTemplateByName for ${name}:`, error);
       throw error;
+    }
+  },
+
+  // Players
+  getPlayers: async (teamKey?: "BANGA A" | "BANGA B" | "BANGA M" | "all"): Promise<{ data: Player[] | null; error: Error | null; }> => {
+    try {
+      let query = supabaseAdmin.from("banga_playerss").select("*");
+
+      if (teamKey && teamKey !== "all") {
+        query = query.eq("team_key", teamKey);
+      }
+
+      const { data, error } = await query.order("name_last", { ascending: true });
+
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error("Error fetching players:", error);
+      return { data: null, error: error as Error };
+    }
+  },
+
+  // Matches
+  getMatches: async (): Promise<{ data: Match[] | null; error: Error | null; }> => {
+    try {
+      const { data, error } = await supabaseAdmin.from("fixtures_all_new").select("*").order("match_date", { ascending: false });
+      if (error) throw error;
+      return { data, error: null };
+    } catch (error) {
+      console.error("Error fetching matches:", error);
+      return { data: null, error: error as Error };
     }
   },
 }

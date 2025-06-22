@@ -1,114 +1,145 @@
 export const dynamic = 'force-dynamic'
 
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
 import { type NextRequest, NextResponse } from "next/server"
-import { createClient } from "@/lib/supabase-server"
 import { supabaseService } from "@/lib/supabase-service"
 import { notificationService } from "@/lib/notification-service"
-import type { Team, TicketWithDetails, EventWithTiers, PricingTier } from "@/lib/types"
 
 export async function POST(request: NextRequest) {
-  const supabase = createClient()
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    },
+  )
+
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { eventId, tierId, purchaserName, purchaserSurname, purchaserEmail } = await request.json();
+    const { eventId, tierId, purchaserName, purchaserEmail } =
+      await request.json()
 
     if (!eventId || !tierId || !purchaserName || !purchaserEmail) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 },
+      )
     }
 
-    const event = await supabaseService.getEventWithTiers(eventId) as EventWithTiers | null;
-    if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    const tier = await supabaseService.getPricingTier(tierId)
+    if (!tier || tier.quantity <= tier.soldQuantity) {
+      return NextResponse.json(
+        { error: "Tier sold out or not available" },
+        { status: 400 },
+      )
     }
-    
-    const tier = event.pricingTiers.find((t: PricingTier) => t.id === tierId);
-    if (!tier) {
-      return NextResponse.json({ error: "Pricing tier not found" }, { status: 404 });
-    }
-    
-    let team1: Team | undefined = undefined;
-    let team2: Team | undefined = undefined;
-    if (event.team1Id) team1 = await supabaseService.getTeamById(event.team1Id) || undefined;
-    if (event.team2Id) team2 = await supabaseService.getTeamById(event.team2Id) || undefined;
-    
-    await createClient().from('fans').upsert({
-        name: purchaserName,
-        surname: purchaserSurname,
-        email: purchaserEmail
-    }, { onConflict: 'email' });
 
     const newTicket = await supabaseService.createTicket({
       eventId,
       tierId,
       purchaserName,
-      purchaserSurname,
       purchaserEmail,
-    });
+      userId: user.id,
+    })
 
-    if (!newTicket) {
-      return NextResponse.json({ error: "Failed to create ticket" }, { status: 500 });
-    }
+    notificationService.sendTicketConfirmation(newTicket.id)
 
-    // Fire-and-forget email sending
-    notificationService.sendTicketConfirmation(newTicket.id);
-
-    return NextResponse.json({ ticket: newTicket });
-  } catch (error: any) {
-    console.error('Error creating ticket:', error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    return NextResponse.json(newTicket)
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error"
+    console.error("Error creating ticket:", message)
+    return NextResponse.json(
+      { error: "Failed to create ticket", details: message },
+      { status: 500 },
+    )
   }
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = createClient()
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    },
+  )
+
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const { data, error } = await supabaseService.getTicketsWithDetails();
+
+    if (error) {
+      throw error;
     }
-    const tickets = await supabaseService.getTickets();
-    return NextResponse.json({ tickets });
-  } catch (error: any) {
-    console.error('Error fetching tickets:', error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error("Error fetching tickets:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json({ error: "Failed to fetch tickets", details: message }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
-  const supabase = createClient()
+  const cookieStore = await cookies()
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    },
+  )
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { ticket_id } = await request.json();
+    const { ticket_id } = await request.json()
 
     if (!ticket_id) {
-      return NextResponse.json({ error: "Missing ticket_id" }, { status: 400 });
+      return NextResponse.json({ error: "Missing ticket_id" }, { status: 400 })
     }
 
-    const ticket = await supabaseService.getTicketWithDetails(ticket_id);
+    const ticket = await supabaseService.getTicketWithDetails(ticket_id)
     if (!ticket || !ticket.purchaserEmail) {
-      return NextResponse.json({ error: "Ticket not found or missing email" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Ticket not found or missing email" },
+        { status: 404 },
+      )
     }
 
-    const event = ticket.event;
-    let team1: Team | undefined = undefined;
-    let team2: Team | undefined = undefined;
-    if (event.team1Id) team1 = await supabaseService.getTeamById(event.team1Id) || undefined;
-    if (event.team2Id) team2 = await supabaseService.getTeamById(event.team2Id) || undefined;
-    
-    // Fire-and-forget email sending
-    notificationService.sendTicketConfirmation(ticket_id);
+    notificationService.sendTicketConfirmation(ticket_id)
 
-    return NextResponse.json({ message: "Ticket email resent successfully." });
+    return NextResponse.json({ message: "Ticket email resent successfully." })
   } catch (error: any) {
-    console.error('Error resending ticket:', error);
-    return NextResponse.json({ error: error.message || "Internal server error" }, { status: 500 });
+    console.error("Error resending ticket:", error)
+    return NextResponse.json(
+      { error: error.message || "Internal server error" },
+      { status: 500 },
+    )
   }
 }

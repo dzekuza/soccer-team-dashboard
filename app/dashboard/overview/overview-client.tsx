@@ -54,22 +54,12 @@ export default function OverviewClient({
       <div className="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Iš viso renginių</CardTitle>
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalEvents || 0}</div>
-            <p className="text-xs text-muted-foreground">Sukurti aktyvūs renginiai</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Iš viso bilietų</CardTitle>
             <Ticket className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalTickets || 0}</div>
-            <p className="text-xs text-muted-foreground">{stats.validatedTickets || 0} patvirtinta ({Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%)</p>
+            <p className="text-xs text-muted-foreground">{stats.ticketsScanned || 0} patvirtinta ({Math.round((stats.ticketsScanned / stats.totalTickets) * 100) || 0}%)</p>
           </CardContent>
         </Card>
         <Card>
@@ -78,7 +68,7 @@ export default function OverviewClient({
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue || 0)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.revenue || 0)}</div>
             <p className="text-xs text-muted-foreground">Iš bilietų pardavimų</p>
           </CardContent>
         </Card>
@@ -89,7 +79,7 @@ export default function OverviewClient({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round((stats.validatedTickets / stats.totalTickets) * 100) || 0}%
+              {Math.round((stats.ticketsScanned / stats.totalTickets) * 100) || 0}%
             </div>
             <p className="text-xs text-muted-foreground">Bilietai patvirtinti</p>
           </CardContent>
@@ -97,7 +87,7 @@ export default function OverviewClient({
       </div>
       {/* Recent Events and Activity */}
       <div className="grid gap-4 md:gap-6 md:grid-cols-2">
-        <Card>
+        <Card className="bg-card text-card-foreground">
           <CardHeader>
             <CardTitle>Naujausi bilietai</CardTitle>
             <CardDescription>Naujausi sugeneruoti bilietai</CardDescription>
@@ -105,23 +95,23 @@ export default function OverviewClient({
           <CardContent className="space-y-4">
             {recentTickets.length > 0 ? (
               recentTickets.map((ticket) => (
-                <div key={ticket.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div key={ticket.id} className="flex items-center justify-between p-3 border rounded-lg bg-background">
                   <div>
                     <h4 className="font-medium">{ticket.event.title}</h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {ticket.event.date} at {ticket.event.time}
                     </p>
-                    <p className="text-sm text-gray-500">{ticket.purchaserName}</p>
+                    <p className="text-sm text-muted-foreground">{ticket.purchaserName}</p>
                   </div>
                   <Badge variant="outline">{ticket.isValidated ? 'Patvirtintas' : 'Generuotas'}</Badge>
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">Dar nėra sukurtų bilietų</p>
+              <p className="text-muted-foreground text-center py-4">Dar nėra sukurtų bilietų</p>
             )}
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-card text-card-foreground">
           <CardHeader>
             <CardTitle>Naujausia veikla</CardTitle>
             <CardDescription>Naujausia sistemos veikla</CardDescription>
@@ -141,8 +131,8 @@ export default function OverviewClient({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium">{activity.title}</p>
-                    <p className="text-sm text-gray-600">{activity.details}</p>
-                    <p className="text-xs text-gray-500 flex items-center mt-1">
+                    <p className="text-sm text-muted-foreground">{activity.details}</p>
+                    <p className="text-xs text-muted-foreground flex items-center mt-1">
                       <Clock className="h-3 w-3 mr-1" />
                       {formatDate(activity.timestamp)}
                     </p>
@@ -150,7 +140,7 @@ export default function OverviewClient({
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 text-center py-4">Nėra naujausios veiklos</p>
+              <p className="text-muted-foreground text-center py-4">Nėra naujausios veiklos</p>
             )}
           </CardContent>
         </Card>

@@ -1,11 +1,14 @@
+import { createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 import { supabaseService } from "@/lib/supabase-service"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params: { id } }: { params: { id: string } },
 ) {
-  const { id } = params
   if (!id) {
     return NextResponse.json({ error: "Event ID is required" }, { status: 400 })
   }
@@ -17,11 +20,11 @@ export async function GET(
     }
     
     // Fetch teams separately
-    const team1 = event.team1_id
-      ? await supabaseService.getTeamById(event.team1_id)
+    const team1 = event.team1Id
+      ? await supabaseService.getTeamById(event.team1Id)
       : null
-    const team2 = event.team2_id
-      ? await supabaseService.getTeamById(event.team2_id)
+    const team2 = event.team2Id
+      ? await supabaseService.getTeamById(event.team2Id)
       : null
 
     return NextResponse.json({ event, team1, team2 })

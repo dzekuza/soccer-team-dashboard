@@ -6,16 +6,14 @@ export default async function EventsPage() {
   noStore();
   try {
     const eventsData = supabaseService.getEventsWithTiers();
-    const ticketsData = supabaseService.getTicketsWithDetails();
     const teamsData = supabaseService.getTeams();
 
-    const [events, tickets, teams] = await Promise.all([
+    const [events, teams] = await Promise.all([
       eventsData,
-      ticketsData,
       teamsData,
     ]);
 
-    return <EventsClient initialEvents={events} initialTickets={tickets} initialTeams={teams} />;
+    return <EventsClient initialEvents={events} initialTeams={teams} />;
   } catch (error) {
     console.error(error);
     return (

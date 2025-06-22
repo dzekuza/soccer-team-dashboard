@@ -128,7 +128,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
                 <SelectValue placeholder="Pasirinkite renginį" />
               </SelectTrigger>
               <SelectContent>
-                {events.map((event) => (
+                {events.map((event: Event) => (
                   <SelectItem key={event.id} value={event.id}>
                     {event.title} - {event.date}
                   </SelectItem>
@@ -145,7 +145,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
                   <SelectValue placeholder="Pasirinkite kainų lygį" />
                 </SelectTrigger>
                 <SelectContent>
-                  {pricingTiers.map((tier) => (
+                  {pricingTiers.map((tier: any) => (
                     <SelectItem key={tier.id} value={tier.id}>
                       {tier.name} - {tier.price} €
                     </SelectItem>
@@ -157,7 +157,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
 
           <div className="space-y-2">
             <Label htmlFor="name">Pirkėjo vardas</Label>
-            <Input id="name" value={purchaserName} onChange={(e) => setPurchaserName(e.target.value)} required />
+            <Input id="name" value={purchaserName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPurchaserName(e.target.value)} required />
           </div>
 
           <div className="space-y-2">
@@ -166,7 +166,7 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
               id="email"
               type="email"
               value={purchaserEmail}
-              onChange={(e) => setPurchaserEmail(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPurchaserEmail(e.target.value)}
               required
             />
           </div>
