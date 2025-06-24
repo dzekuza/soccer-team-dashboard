@@ -27,7 +27,7 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
     if (ticket.event.team1Id) team1 = await supabaseService.getTeamById(ticket.event.team1Id);
     if (ticket.event.team2Id) team2 = await supabaseService.getTeamById(ticket.event.team2Id);
 
-    const pdfBytes = await generateTicketPDF(ticket, team1 || undefined, team2 || undefined);
+    const pdfBytes = await generateTicketPDF({ ...ticket, qrCodeUrl: ticket.id }, team1 || undefined, team2 || undefined);
     const fileName = `ticket-${ticket.id}.pdf`;
 
     const eventDate = new Date(ticket.event.date).toLocaleDateString('lt-LT');
@@ -81,7 +81,7 @@ async function sendSubscriptionConfirmation(subscriptionId: string): Promise<voi
       purchaser_name: subscription.purchaser_name,
       purchaser_surname: subscription.purchaser_surname,
       purchaser_email: subscription.purchaser_email,
-      qr_code_url: subscription.qr_code_url,
+      qr_code_url: subscription.id,
       valid_from: subscription.valid_from,
       valid_to: subscription.valid_to,
     };

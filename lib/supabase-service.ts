@@ -372,7 +372,9 @@ export const supabaseService = {
   ): Promise<Ticket> => {
     try {
       const ticketId = uuidv4()
-      const qrCodeUrl = await QRCode.toDataURL(ticketId)
+      // QR code is just the ticket ID
+      const qrCodeValue = ticketId
+      const qrCodeUrl = await QRCode.toDataURL(qrCodeValue)
 
       const { data, error } = await supabaseAdmin
         .from("tickets")

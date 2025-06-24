@@ -207,9 +207,9 @@ export async function generateTicketPDF(
   })
 
   // QR code (centered in orange section)
-  const qrCodeUrl = `https://phvjdfqxzitzohiskwwo.supabase.co/api/validate-ticket/${ticket.id}`;
+  const qrCodeValue = ticket.id;
   try {
-    const qrCodeDataUrl = await qr.toDataURL(qrCodeUrl, { width: 180, margin: 1 })
+    const qrCodeDataUrl = await qr.toDataURL(qrCodeValue, { width: 180, margin: 1 })
     const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
     const qrImage = await pdfDoc.embedPng(qrImageBytes)
     page.drawImage(qrImage, {
@@ -243,7 +243,8 @@ export async function generateSubscriptionPDF(subscription: {
   const font = await doc.embedFont(StandardFonts.Helvetica);
 
   // QR Code
-  const qrImage = await qr.toDataURL(subscription.qr_code_url, {
+  const qrCodeValue = subscription.qr_code_url || subscription.id;
+  const qrImage = await qr.toDataURL(qrCodeValue, {
     errorCorrectionLevel: "H",
     type: "image/png",
     width: 150,

@@ -47,7 +47,9 @@ export function CreateSubscriptionDialog({
 
     try {
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "";
-        const qrCodeUrl = `${baseUrl}/api/validate-subscription/${uuidv4()}`;
+        // Use only the subscription ID for the QR code value
+        const subscriptionId = uuidv4();
+        const qrCodeValue = subscriptionId;
 
         const response = await fetch(`${baseUrl}/api/subscriptions`, {
             method: 'POST',
@@ -58,8 +60,9 @@ export function CreateSubscriptionDialog({
                 purchaser_email: purchaserEmail,
                 valid_from: validFrom,
                 valid_to: validTo,
-                qr_code_url: qrCodeUrl,
+                qr_code_url: qrCodeValue,
                 owner_id: user.id,
+                id: subscriptionId,
             }),
         });
         

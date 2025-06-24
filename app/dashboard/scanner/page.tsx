@@ -33,30 +33,24 @@ export default function ScannerPage() {
     setLastScan(null)
 
     try {
-      // Accept QR code as just an ID or a full URL
+      // Accept QR code as just an ID (UUID)
       let ticketId: string | null = null
       let subId: string | null = null
-      try {
-        const url = new URL(data, window.location.origin)
-        const path = url.pathname
-        if (path.startsWith("/api/validate-ticket/")) {
-          ticketId = path.split("/api/validate-ticket/")[1]
-        } else if (path.startsWith("/api/validate-subscription/")) {
-          subId = path.split("/api/validate-subscription/")[1]
-        }
-      } catch {
-        // Not a URL, treat as ID
-        if (data.length === 36) {
-          ticketId = data
-        } else if (data.length === 32 || data.length === 36) {
-          subId = data
-        }
+      // UUID v4 regex
+      const uuidV4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      if (uuidV4Regex.test(data)) {
+        // Could be ticket or subscription
+        ticketId = data
+        subId = data
       }
       let result: ScanResult | null = null
+      // Try ticket first
       if (ticketId) {
         result = await handleTicketValidation(ticketId)
-      } else if (subId) {
-        result = await handleSubscriptionValidation(subId)
+        if (result.status === "error" && result.message.includes("not found")) {
+          // Try as subscription if not found as ticket
+          result = await handleSubscriptionValidation(subId!)
+        }
       } else {
         result = {
           status: "error",
