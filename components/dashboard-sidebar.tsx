@@ -183,7 +183,7 @@ export function DashboardMobileMenu() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-main border-t border-main-border shadow px-2 py-1 justify-between">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-main border-t border-main-border shadow px-2 py-1 justify-between" style={{backgroundColor: '#0A165B'}}>
         {navigation.map((item) => (
           <Link
             key={item.name}

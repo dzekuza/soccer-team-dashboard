@@ -50,6 +50,7 @@
     "pdf-lib": "^1.17.1",
     "qr-scanner": "latest",
     "qrcode": "latest",
+    "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-big-calendar": "^1.19.3",
     "react-day-picker": "8.10.1",

@@ -15,6 +15,14 @@ type ScanResult = {
   details?: TicketWithDetails | Subscription
 }
 
+function isTicket(details: any): details is TicketWithDetails {
+  return details && typeof details === 'object' && 'event' in details && 'tier' in details;
+}
+
+function isSubscription(details: any): details is Subscription {
+  return details && typeof details === 'object' && 'valid_from' in details && 'valid_to' in details;
+}
+
 export default function ScannerPage() {
   const [lastScan, setLastScan] = useState<ScanResult | null>(null)
   const [isScanning, setIsScanning] = useState(true)
@@ -25,15 +33,30 @@ export default function ScannerPage() {
     setLastScan(null)
 
     try {
-      // Allow both full URLs and relative paths starting with "/"
-      const url = new URL(data, window.location.origin)
-      const path = url.pathname
+      // Accept QR code as just an ID or a full URL
+      let ticketId: string | null = null
+      let subId: string | null = null
+      try {
+        const url = new URL(data, window.location.origin)
+        const path = url.pathname
+        if (path.startsWith("/api/validate-ticket/")) {
+          ticketId = path.split("/api/validate-ticket/")[1]
+        } else if (path.startsWith("/api/validate-subscription/")) {
+          subId = path.split("/api/validate-subscription/")[1]
+        }
+      } catch {
+        // Not a URL, treat as ID
+        if (data.length === 36) {
+          ticketId = data
+        } else if (data.length === 32 || data.length === 36) {
+          subId = data
+        }
+      }
       let result: ScanResult | null = null
-
-      if (path.startsWith("/api/validate-ticket/")) {
-        result = await handleTicketValidation(path)
-      } else if (path.startsWith("/api/validate-subscription/")) {
-        result = await handleSubscriptionValidation(path)
+      if (ticketId) {
+        result = await handleTicketValidation(ticketId)
+      } else if (subId) {
+        result = await handleSubscriptionValidation(subId)
       } else {
         result = {
           status: "error",
@@ -48,18 +71,15 @@ export default function ScannerPage() {
       })
       console.error(err)
     }
-
     setTimeout(() => setIsScanning(true), 3000)
   }
 
-  const handleTicketValidation = async (path: string): Promise<ScanResult> => {
-    const response = await fetch(path)
+  const handleTicketValidation = async (ticketId: string): Promise<ScanResult> => {
+    const response = await fetch(`/api/validate-ticket/${ticketId}`)
     const result = await response.json()
-
     if (!response.ok) {
       return { status: "error", message: result.error || "Bilieto patikrinti nepavyko." }
     }
-    
     if (!result.success) {
       return {
         status: "warning",
@@ -67,7 +87,6 @@ export default function ScannerPage() {
         details: result.ticket,
       }
     }
-
     return {
       status: "success",
       message: "Bilietas sėkmingai patvirtintas!",
@@ -75,24 +94,20 @@ export default function ScannerPage() {
     }
   }
 
-  const handleSubscriptionValidation = async (path: string): Promise<ScanResult> => {
-    const response = await fetch(path)
-    const result = await response.json() 
-
+  const handleSubscriptionValidation = async (subId: string): Promise<ScanResult> => {
+    const response = await fetch(`/api/validate-subscription/${subId}`)
+    const result = await response.json()
     if (!response.ok) {
       if (response.status === 410) {
         return { status: "warning", message: result.message || "Prenumerata nebegalioja.", details: result }
       }
       return { status: "error", message: result.error || "Prenumeratos patikrinti nepavyko." }
     }
-    
     if (result.status === 'active') {
       return { status: "success", message: "Prenumerata galioja.", details: result }
     }
-
     return { status: "error", message: "Įvyko nežinoma klaida tikrinant prenumeratą.", details: result }
   }
-
 
   const renderScanResult = () => {
     if (!lastScan) return null
@@ -119,8 +134,8 @@ export default function ScannerPage() {
     }
 
     const details = lastScan.details
-    const isTicket = details && "events" in details && "pricing_tiers" in details
-    const isSubscription = details && "valid_from" in details
+    const isTicketType = isTicket(details)
+    const isSubscriptionType = isSubscription(details)
 
     return (
       <Alert variant={alertVariant} className="mt-4">
@@ -131,14 +146,14 @@ export default function ScannerPage() {
             <AlertDescription>{lastScan.message}</AlertDescription>
             {details && (
               <div className="mt-2 text-sm text-foreground">
-                {isTicket && (
+                {isTicketType && (
                   <>
-                    <p><strong>Renginys:</strong> {details.events.title}</p>
-                    <p><strong>Bilietas:</strong> {details.pricing_tiers.name}</p>
-                    <p><strong>Pirkėjas:</strong> {details.purchaser_name} ({details.purchaser_email})</p>
+                    <p><strong>Renginys:</strong> {details.event.title}</p>
+                    <p><strong>Bilietas:</strong> {details.tier.name}</p>
+                    <p><strong>Pirkėjas:</strong> {details.purchaserName} ({details.purchaserEmail})</p>
                   </>
                 )}
-                {isSubscription && (
+                {isSubscriptionType && (
                   <>
                     <p><strong>Prenumerata:</strong> {details.purchaser_name} {details.purchaser_surname}</p>
                     <p><strong>El. paštas:</strong> {details.purchaser_email}</p>

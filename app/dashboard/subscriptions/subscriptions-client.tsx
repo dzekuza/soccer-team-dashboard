@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { QrCode } from "lucide-react"
+import { QRCodeCanvas } from 'qrcode.react'
 
 interface SubscriptionsClientProps {
   initialSubscriptions: Subscription[];
@@ -174,7 +174,7 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
                 <div><strong>Galioja nuo:</strong> {new Date(previewSub.valid_from).toLocaleDateString()}</div>
                 <div><strong>Galioja iki:</strong> {new Date(previewSub.valid_to).toLocaleDateString()}</div>
               </div>
-              <img src={previewSub.qr_code_url || ''} alt="QR code" className="w-48 h-48 mx-auto" />
+              <QRCodeCanvas value={previewSub.qr_code_url || previewSub.id} size={192} className="mx-auto" />
               <div className="text-xs text-gray-500 mt-2">{previewSub.id}</div>
             </>
           )}

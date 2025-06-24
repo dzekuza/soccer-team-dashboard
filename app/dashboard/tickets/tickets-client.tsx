@@ -17,6 +17,7 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { TicketPreview } from "@/components/ticket-preview"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { QRCodeCanvas } from 'qrcode.react'
 
 interface TicketsClientProps {
     initialTickets: TicketWithDetails[];
@@ -200,13 +201,13 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
       {/* QR Code Modal */}
       <Dialog open={!!qrTicket} onOpenChange={() => setQrTicket(null)}>
         <DialogContent className="flex flex-col items-center max-w-xs">
-          {qrTicket && (
+          {qrTicket ? (
             <>
               <h2 className="text-lg font-bold mb-2">QR kodas</h2>
-              <img src={qrTicket.qrCodeUrl} alt="QR code" className="w-48 h-48 mx-auto" />
+              <QRCodeCanvas value={qrTicket.qrCodeUrl ?? qrTicket.id} size={192} className="mx-auto" />
               <div className="text-xs text-gray-500 mt-2">{qrTicket.id}</div>
             </>
-          )}
+          ) : null}
         </DialogContent>
       </Dialog>
 
