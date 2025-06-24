@@ -164,7 +164,7 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
 
       {/* Subscription Preview Modal */}
       <Dialog open={!!previewSub} onOpenChange={() => setPreviewSub(null)}>
-        <DialogContent className="max-w-lg flex flex-col items-center">
+        <DialogContent key={previewSub?.id} className="max-w-lg flex flex-col items-center">
           {previewSub && (
             <>
               <h2 className="text-lg font-bold mb-2">Prenumeratos peržiūra</h2>

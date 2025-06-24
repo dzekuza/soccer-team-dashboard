@@ -194,13 +194,13 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
 
       {/* Ticket Preview Modal */}
       <Dialog open={!!previewTicket} onOpenChange={() => setPreviewTicket(null)}>
-        <DialogContent className="max-w-lg">
+        <DialogContent key={previewTicket?.id} className="max-w-lg">
           {previewTicket && <TicketPreview ticket={previewTicket} onDownload={() => handleDownloadPDF(previewTicket)} />}
         </DialogContent>
       </Dialog>
       {/* QR Code Modal */}
       <Dialog open={!!qrTicket} onOpenChange={() => setQrTicket(null)}>
-        <DialogContent className="flex flex-col items-center max-w-xs">
+        <DialogContent key={qrTicket?.id} className="flex flex-col items-center max-w-xs">
           {qrTicket ? (
             <>
               <h2 className="text-lg font-bold mb-2">QR kodas</h2>
