@@ -194,7 +194,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
 
       {/* Ticket Preview Modal */}
       <Dialog open={!!previewTicket} onOpenChange={() => setPreviewTicket(null)}>
-        <DialogContent key={previewTicket?.id} className="max-w-lg">
+        <DialogContent className="max-w-lg">
           {previewTicket && <TicketPreview ticket={previewTicket} onDownload={() => handleDownloadPDF(previewTicket)} />}
         </DialogContent>
       </Dialog>

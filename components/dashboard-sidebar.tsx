@@ -169,7 +169,7 @@ export function DashboardMobileMenu() {
     { name: "Suvestinė", href: "/dashboard/overview", icon: BarChart2 },
     { name: "Renginiai", href: "/dashboard/events", icon: Calendar },
     { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
-    { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: Ticket },
+    { name: "QR skait.", href: "/dashboard/scanner", icon: QrCode },
   ];
 
   // Actions for modal
@@ -206,7 +206,7 @@ export function DashboardMobileMenu() {
       {/* Modal for extra actions, only on mobile */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black/40" onClick={() => setModalOpen(false)}>
-          <div className="w-full bg-main-div-bg rounded-t-lg p-4 shadow-lg" onClick={e => e.stopPropagation()}>
+          <div className="w-full rounded-t-lg p-4 shadow-lg" style={{ background: 'rgba(7, 15, 64, 0.70)' }} onClick={e => e.stopPropagation()}>
             <div className="flex flex-col gap-2">
               {modalActions.map((item) =>
                 item.href ? (

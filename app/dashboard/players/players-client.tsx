@@ -15,6 +15,7 @@ import {
 import { useToast } from "@/components/ui/use-toast"
 import { Input } from "@/components/ui/input"
 import Image from "next/image"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface PlayersClientProps {
   initialPlayers: Player[]
@@ -25,13 +26,22 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
+  const [positionFilter, setPositionFilter] = useState<string>("")
+  const [teamKeyFilter, setTeamKeyFilter] = useState<string>("")
   const { toast } = useToast()
 
+  // Extract unique positions and team_keys from players
+  const positions = useMemo(() => Array.from(new Set(players.map(p => p.position).filter(Boolean))), [players])
+  const teamKeys = useMemo(() => Array.from(new Set(players.map(p => p.team_key).filter(Boolean))), [players])
+
   const filteredPlayers = useMemo(() => {
-    return players.filter(player =>
-      player.name?.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  }, [players, searchTerm])
+    return players.filter(player => {
+      const matchesSearch = player.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesPosition = positionFilter ? player.position === positionFilter : true
+      const matchesTeamKey = teamKeyFilter ? player.team_key === teamKeyFilter : true
+      return matchesSearch && matchesPosition && matchesTeamKey
+    })
+  }, [players, searchTerm, positionFilter, teamKeyFilter])
 
   async function fetchPlayers() {
     try {
@@ -87,20 +97,38 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Players</h1>
-          <p className="text-muted-foreground">Manage your team's players.</p>
-        </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full">
           <Input
-            placeholder="Search players..."
+            placeholder="Ieškoti žaidėjo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full sm:w-auto"
           />
+          <Select value={positionFilter} onValueChange={setPositionFilter}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Pozicija" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Visos pozicijos</SelectItem>
+              {(positions ?? []).filter((pos): pos is string => typeof pos === 'string' && pos.trim() !== '').map((pos: string) => (
+                <SelectItem key={pos} value={pos}>{pos}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={teamKeyFilter} onValueChange={setTeamKeyFilter}>
+            <SelectTrigger className="w-full sm:w-40">
+              <SelectValue placeholder="Komanda" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Visos komandos</SelectItem>
+              {(teamKeys ?? []).filter(key => !!key).map((key) => (
+                <SelectItem key={String(key)} value={String(key)}>{String(key)}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={handleCreate}>
             <Plus className="h-4 w-4 mr-2" />
-            Add Player
+            Pridėti žaidėją
           </Button>
         </div>
       </div>
@@ -129,15 +157,17 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
-              <div className="relative h-48 w-full">
-                <Image
-                  src={player.image_url || "/placeholder-user.jpg"}
-                  alt={player.name || "Player image"}
-                  layout="fill"
-                  objectFit="cover"
-                  className="bg-muted"
-                />
-              </div>
+              {player.image_url && (
+                <div className="relative h-48 w-full">
+                  <Image
+                    src={player.image_url}
+                    alt={player.name || "Player image"}
+                    layout="fill"
+                    objectFit="cover"
+                    className="bg-muted"
+                  />
+                </div>
+              )}
               <div className="p-4">
                 <h3 className="text-lg font-bold">{player.name}</h3>
                 <p className="text-muted-foreground">#{player.number} • {player.position}</p>
