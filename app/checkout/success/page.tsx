@@ -30,8 +30,21 @@ function CheckoutSuccessContent() {
       return;
     }
 
-    // No need to fetch, just show success message
-    setIsLoading(false);
+    // Fetch tickets for this session
+    const fetchTickets = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/tickets?session_id=${sessionId}`);
+        if (!res.ok) throw new Error("Nepavyko gauti bilietų");
+        const data = await res.json();
+        setTickets(data.tickets || []);
+      } catch (err) {
+        setError("Nepavyko gauti bilietų");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTickets();
   }, [searchParams, router]);
 
   const handleDownloadTickets = async () => {
@@ -70,7 +83,7 @@ function CheckoutSuccessContent() {
               className="px-6 py-3 btn-main rounded font-semibold text-lg w-full"
               onClick={handleDownloadTickets}
             >
-              Atsisiųsti bilietus
+              Atsisiųsti bilietą
             </button>
           </div>
         )}

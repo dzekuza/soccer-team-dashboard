@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { QrCode } from "lucide-react"
 
 interface SubscriptionsClientProps {
   initialSubscriptions: Subscription[];
@@ -23,6 +25,7 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
   const [subscriptions, setSubscriptions] = useState<Subscription[]>(initialSubscriptions)
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const { toast } = useToast()
+  const [previewSub, setPreviewSub] = useState<Subscription | null>(null)
 
   const handleSubscriptionCreated = () => {
     // A simple way to refresh data is to reload the page,
@@ -97,6 +100,9 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setPreviewSub(sub)}>
+                              <span>Peržiūrėti</span>
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleResendEmail(sub.id)}>
                               <Mail className="mr-2 h-4 w-4" />
                               <span>Siųsti iš naujo</span>
@@ -135,23 +141,12 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
                       <strong>Galioja iki:</strong>
                       <span>{new Date(sub.valid_to).toLocaleDateString()}</span>
                     </div>
+                    <div className="flex gap-2 mt-2">
+                      <Button size="sm" variant="outline" onClick={() => setPreviewSub(sub)}>
+                        Peržiūrėti
+                      </Button>
+                    </div>
                   </CardContent>
-                  <div className="p-4 pt-0 flex justify-end">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleResendEmail(sub.id)}>
-                          <Mail className="mr-2 h-4 w-4" />
-                          <span>Siųsti iš naujo</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
                 </Card>
               ))
             ) : (
@@ -166,6 +161,25 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
         onOpenChange={setIsCreateOpen}
         onSubscriptionCreated={handleSubscriptionCreated}
       />
+
+      {/* Subscription Preview Modal */}
+      <Dialog open={!!previewSub} onOpenChange={() => setPreviewSub(null)}>
+        <DialogContent className="max-w-lg flex flex-col items-center">
+          {previewSub && (
+            <>
+              <h2 className="text-lg font-bold mb-2">Prenumeratos peržiūra</h2>
+              <div className="mb-4">
+                <div><strong>Pirkėjas:</strong> {previewSub.purchaser_name}</div>
+                <div><strong>El. paštas:</strong> {previewSub.purchaser_email}</div>
+                <div><strong>Galioja nuo:</strong> {new Date(previewSub.valid_from).toLocaleDateString()}</div>
+                <div><strong>Galioja iki:</strong> {new Date(previewSub.valid_to).toLocaleDateString()}</div>
+              </div>
+              <img src={previewSub.qr_code_url || ''} alt="QR code" className="w-48 h-48 mx-auto" />
+              <div className="text-xs text-gray-500 mt-2">{previewSub.id}</div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 

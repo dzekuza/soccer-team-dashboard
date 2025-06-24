@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
+import { notificationService } from "@/lib/notification-service";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -42,27 +43,31 @@ export async function POST(req: NextRequest) {
       if (session.mode === "payment" && eventId && tierId && quantity) {
         // Handle one-time payment for tickets
         const numQuantity = parseInt(quantity, 10);
-        const ticketPromises = Array.from({ length: numQuantity }, () => 
-          supabaseAdmin.from('tickets').insert({
-            event_id: eventId,
-            tier_id: tierId,
-            purchaser_name: purchaserName,
-            purchaser_surname: purchaserSurname,
-            purchaser_email: purchaserEmail,
-            status: 'valid'
-          })
+        const ticketInsertResults = await Promise.allSettled(
+          Array.from({ length: numQuantity }, () =>
+            supabaseAdmin.from('tickets').insert({
+              event_id: eventId,
+              tier_id: tierId,
+              purchaser_name: purchaserName,
+              purchaser_surname: purchaserSurname,
+              purchaser_email: purchaserEmail,
+              status: 'valid'
+            }).select('id').single()
+          )
         );
 
-        const results = await Promise.allSettled(ticketPromises);
-
-        results.forEach((result, index) => {
-          if (result.status === 'rejected') {
+        for (const [index, result] of ticketInsertResults.entries()) {
+          if (result.status === 'fulfilled' && result.value.data && result.value.data.id) {
+            try {
+              await notificationService.sendTicketConfirmation(result.value.data.id);
+            } catch (err) {
+              console.error(`Failed to send confirmation for ticket #${index + 1}:`, err);
+            }
+          } else if (result.status === 'rejected') {
             console.error(`Failed to create ticket #${index + 1} for event ${eventId}.`, result.reason);
           }
-        });
-        
-        console.log(`${numQuantity} ticket(s) created for event ${eventId} via Stripe webhook.`);
-
+        }
+        console.log(`${numQuantity} ticket(s) created and confirmation sent for event ${eventId} via Stripe webhook.`);
       } 
       /*
       else if (session.mode === 'subscription' && session.subscription) {

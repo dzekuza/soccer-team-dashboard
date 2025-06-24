@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
-import { Download, Plus, Mail, MoreHorizontal } from "lucide-react"
+import { Download, Plus, Mail, MoreHorizontal, QrCode } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { 
   DropdownMenu, 
@@ -15,6 +15,8 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/components/ui/use-toast"
+import { TicketPreview } from "@/components/ticket-preview"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
 
 interface TicketsClientProps {
     initialTickets: TicketWithDetails[];
@@ -26,6 +28,8 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
   const [eventNameFilter, setEventNameFilter] = useState("")
   const [scanStatus, setScanStatus] = useState<"all" | "scanned" | "not_scanned">("all")
   const { toast } = useToast()
+  const [previewTicket, setPreviewTicket] = useState<TicketWithDetails | null>(null)
+  const [qrTicket, setQrTicket] = useState<TicketWithDetails | null>(null)
 
   async function fetchTickets() {
     try {
@@ -148,6 +152,13 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => setPreviewTicket(ticket)}>
+                          <span>Peržiūrėti</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => setQrTicket(ticket)}>
+                          <QrCode className="mr-2 h-4 w-4" />
+                          <span>Peržiūrėti QR</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={async () => {
                             try {
@@ -180,6 +191,25 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
         </Table>
       </div>
 
+      {/* Ticket Preview Modal */}
+      <Dialog open={!!previewTicket} onOpenChange={() => setPreviewTicket(null)}>
+        <DialogContent className="max-w-lg">
+          {previewTicket && <TicketPreview ticket={previewTicket} onDownload={() => handleDownloadPDF(previewTicket)} />}
+        </DialogContent>
+      </Dialog>
+      {/* QR Code Modal */}
+      <Dialog open={!!qrTicket} onOpenChange={() => setQrTicket(null)}>
+        <DialogContent className="flex flex-col items-center max-w-xs">
+          {qrTicket && (
+            <>
+              <h2 className="text-lg font-bold mb-2">QR kodas</h2>
+              <img src={qrTicket.qrCodeUrl} alt="QR code" className="w-48 h-48 mx-auto" />
+              <div className="text-xs text-gray-500 mt-2">{qrTicket.id}</div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <div className="md:hidden space-y-4">
         {filteredTickets.length === 0 ? (
           <div className="text-center py-8 text-gray-500">Nėra bilietų pagal pasirinktus filtrus</div>
@@ -203,47 +233,22 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                   <span className="font-medium">Kaina:</span>
                   <span>{ticket.tier.price} €</span>
                 </div>
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between">
                   <span className="font-medium">Statusas:</span>
-                  <Badge variant={ticket.isValidated ? "default" : "success"}>
-                    {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
-                  </Badge>
+                  <span>{ticket.isValidated ? "Patvirtintas" : "Galiojantis"}</span>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <Button size="sm" variant="outline" onClick={() => setPreviewTicket(ticket)}>
+                    Peržiūrėti
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setQrTicket(ticket)}>
+                    <QrCode className="h-4 w-4 mr-1" /> QR
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(ticket)}>
+                    <Download className="h-4 w-4 mr-1" /> PDF
+                  </Button>
                 </div>
               </CardContent>
-              <div className="p-4 pt-0 flex justify-end">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Open menu</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(`/api/tickets/${ticket.id}/download`);
-                          const data = await response.json();
-                          if (data.downloadUrl) {
-                            window.open(data.downloadUrl, "_blank");
-                          } else {
-                            throw new Error(data.error || "Failed to get download link.");
-                          }
-                        } catch (error) {
-                          alert(error instanceof Error ? error.message : "Could not download ticket.");
-                        }
-                      }}
-                    >
-                      <Download className="mr-2 h-4 w-4" />
-                      <span>Atsisiųsti</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)}>
-                      <Mail className="mr-2 h-4 w-4" />
-                      <span>Siųsti iš naujo</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
             </Card>
           ))
         )}
