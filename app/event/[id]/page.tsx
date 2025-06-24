@@ -30,7 +30,7 @@ interface EventData {
 }
 
 const steps = [
-  { id: "01", name: "Varžybos", icon: CheckCircleIcon },
+  { id: "01", name: "Apie varžybąs", icon: CheckCircleIcon },
   { id: "02", name: "Bilietai", icon: CreditCardIcon },
   { id: "03", name: "Duomenys", icon: UserIcon },
 ]
@@ -202,7 +202,7 @@ export default function EventPage() {
             <nav aria-label="Progress">
               <ol
                 role="list"
-                className="border border-main-border rounded-md divide-y divide-main-border md:flex md:divide-y-0"
+                className="border border-main-border rounded-md divide-y divide-main-border md:flex md:divide-y-0 bg-[#0A2065]"
               >
                 {steps.map((step, stepIdx) => (
                   <li key={step.name} className="relative md:flex-1 md:flex">
@@ -258,7 +258,7 @@ export default function EventPage() {
                         >
                           <path
                             d="M0.5 0H20.5L8.5 40L20.5 80H0.5V0Z"
-                            fill="currentColor"
+                            fill="#0A165B"
                           />
                         </svg>
                       </div>

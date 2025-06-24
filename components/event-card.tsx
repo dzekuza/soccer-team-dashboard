@@ -5,7 +5,7 @@ import Image from "next/image"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AlertTriangle, Calendar, Clock, MapPin, Share2, Ticket, Trash2 } from "lucide-react"
+import { AlertTriangle, Calendar, Clock, MapPin, Share2, Ticket, Trash2, Eye } from "lucide-react"
 import type { EventWithTiers, TicketWithDetails, Team } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
@@ -53,9 +53,9 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
         <div className="flex items-center justify-around text-center">
           <div className="flex flex-col items-center gap-2">
             {team1 ? (
-              <Image src={team1.logo || '/placeholder-logo.svg'} alt={team1.team_name} width={48} height={48} className="rounded-full bg-background p-1" />
+              <Image src={team1.logo || '/placeholder-logo.svg'} alt={team1.team_name} width={48} height={48} />
             ) : (
-              <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-full">
+              <div className="w-12 h-12 flex items-center justify-center bg-muted">
                 <AlertTriangle className="text-muted-foreground" />
               </div>
             )}
@@ -64,9 +64,9 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
           <span className="text-muted-foreground font-bold">VS</span>
           <div className="flex flex-col items-center gap-2">
             {team2 ? (
-              <Image src={team2.logo || '/placeholder-logo.svg'} alt={team2.team_name} width={48} height={48} className="rounded-full bg-background p-1" />
+              <Image src={team2.logo || '/placeholder-logo.svg'} alt={team2.team_name} width={48} height={48} />
             ) : (
-              <div className="w-12 h-12 flex items-center justify-center bg-muted rounded-full">
+              <div className="w-12 h-12 flex items-center justify-center bg-muted">
                 <AlertTriangle className="text-muted-foreground" />
               </div>
             )}
@@ -124,6 +124,15 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
               onClick={() => (window.location.href = `/dashboard/tickets?eventId=${event.id}`)}
             >
               <Ticket className="w-4 h-4 mr-2" /> Bilietai
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              asChild
+            >
+              <Link href={`/event/${event.id}`}>
+                <Eye className="w-4 h-4 mr-2" /> Peržiūrėti
+              </Link>
             </Button>
             <Button
               variant="destructive"

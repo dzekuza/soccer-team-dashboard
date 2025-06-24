@@ -91,12 +91,12 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
           placeholder="Filtruoti pagal renginio pavadinimą"
           value={eventNameFilter}
           onChange={e => setEventNameFilter(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 w-full sm:w-64"
+          className="w-full sm:w-64 h-12 rounded-[16px] border border-[#5F5F71] bg-[#0A2065] px-5 py-3 text-base text-white placeholder:text-[#B6C1E2] focus:border-[#F15601] focus:bg-[#0A2065] outline-none transition-all"
         />
         <select
           value={scanStatus}
           onChange={e => setScanStatus(e.target.value as "all" | "scanned" | "not_scanned")}
-          className="border border-gray-300 rounded px-3 py-2 w-full sm:w-48"
+          className="w-full sm:w-48 h-12 rounded-[16px] border border-[#5F5F71] bg-[#0A2065] px-5 py-3 text-base text-white focus:border-[#F15601] focus:bg-[#0A2065] outline-none transition-all"
         >
           <option value="all">Visi bilietai</option>
           <option value="scanned">Tik nuskenuoti</option>

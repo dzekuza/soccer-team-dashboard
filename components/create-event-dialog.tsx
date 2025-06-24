@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { ChangeEvent, FormEvent, useState, useEffect } from "react"
+import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -25,6 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
 import { Calendar } from "./ui/calendar"
 import { format } from "date-fns"
 import type { PostgrestError } from "@supabase/supabase-js"
+import { cn } from "@/lib/utils"
 
 interface PricingTier {
   name: string
@@ -66,6 +67,8 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     "Kainos ir nuolaidos"
   ]
   const [coverImageUrl, setCoverImageUrl] = useState<string>("")
+  const dropRef = useRef<HTMLDivElement>(null)
+  const [isDragActive, setIsDragActive] = useState(false)
 
   useEffect(() => {
     if (!open) return;
@@ -153,29 +156,41 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     setCoverImageUploading(false)
   }
 
-  const handleCoverImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragActive(false)
+    const file = e.dataTransfer.files?.[0]
+    if (file) {
+      await handleCoverImageFile(file)
+    }
+  }
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragActive(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setIsDragActive(false)
+  }
+
+  const handleCoverImageFile = async (file: File) => {
     setApiError(null)
     setCoverImageFile(file)
     setCoverImageUploading(true)
-
     try {
       const fileExt = file.name.split('.').pop()
       const fileName = `event-cover-${Date.now()}.${fileExt}`
-
       const { data, error } = await supabase.storage
         .from('covers')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
         })
-
       if (error) {
         throw error
       }
-
       const { data: urlData } = supabase.storage.from('covers').getPublicUrl(fileName)
       setCoverImageUrl(urlData.publicUrl)
     } catch (error) {
@@ -184,6 +199,12 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     } finally {
       setCoverImageUploading(false)
     }
+  }
+
+  const handleCoverImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    await handleCoverImageFile(file)
   }
 
   const handleSubmit = async (e: FormEvent) => {
@@ -279,13 +300,26 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
             <div className="space-y-4">
               <div>
                 <Label>Viršelio nuotrauka</Label>
-                <Input type="file" accept="image/*" onChange={handleCoverImageChange} />
-                {coverImageUploading && <div className="text-sm text-gray-500 mt-1">Įkeliama...</div>}
-                {coverImageUrl && (
-                  <div className="mt-2">
-                    <Image src={coverImageUrl} alt="Cover" width={200} height={120} className="rounded" />
-                  </div>
-                )}
+                <div
+                  ref={dropRef}
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  className={cn(
+                    "border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors",
+                    isDragActive ? "border-main-orange bg-main-div-bg/70" : "border-main-border bg-main-div-bg"
+                  )}
+                >
+                  <span className="block text-sm text-gray-400 mb-2">Nuvilkite paveikslėlį čia arba pasirinkite failą</span>
+                  <Input type="file" accept="image/*" onChange={handleCoverImageChange} className="hidden" id="cover-upload-input" />
+                  <label htmlFor="cover-upload-input" className="btn-main px-3 py-1 rounded cursor-pointer inline-block">Pasirinkti failą</label>
+                  {coverImageUploading && <div className="text-sm text-gray-500 mt-1">Įkeliama...</div>}
+                  {coverImageUrl && (
+                    <div className="mt-2 flex justify-center">
+                      <Image src={coverImageUrl} alt="Cover" width={200} height={120} className="rounded" />
+                    </div>
+                  )}
+                </div>
               </div>
               <div>
                 <Label>Pavadinimas</Label>
@@ -311,21 +345,19 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
           {/* Step 2: Date and location */}
           {step === 1 && (
             <div className="space-y-4">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline">
-                    {format(formData.date, "PPP")}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                  <Calendar
-                    mode="single"
-                    selected={formData.date}
-                    onSelect={(d) => setFormData({ ...formData, date: d || new Date() })}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
+              <div>
+                <Label>Data</Label>
+                <Input
+                  type="date"
+                  value={formData.date instanceof Date ? formData.date.toISOString().split('T')[0] : new Date(formData.date).toISOString().split('T')[0]}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const value = e.target.value
+                    setFormData({ ...formData, date: new Date(value) })
+                  }}
+                  placeholder="Renginio data"
+                />
+                {errors.date && <div className="text-red-500 text-xs mt-1">{errors.date}</div>}
+              </div>
               <div>
                 <Label>Laikas</Label>
                 <Input
@@ -357,7 +389,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                   <select
                     value={team1Id}
                     onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam1Id(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors"
                   >
                     <option value="">Pasirinkite komandą</option>
                     {Array.isArray(teams) && teams.map(team => (
@@ -371,7 +403,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
                   <select
                     value={team2Id}
                     onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam2Id(e.target.value)}
-                    className="w-full border rounded px-3 py-2"
+                    className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors"
                   >
                     <option value="">Pasirinkite komandą</option>
                     {Array.isArray(teams) && teams.map(team => (

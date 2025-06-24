@@ -3,7 +3,7 @@ import type { Event, PricingTier, Ticket, EventWithTiers, TicketWithDetails, Sub
 import { v4 as uuidv4 } from "uuid"
 import QRCode from "qrcode"
 
-const supabaseAdmin = createClient(
+export const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );

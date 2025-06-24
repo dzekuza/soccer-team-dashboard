@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck } from "lucide-react"
+import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp } from "lucide-react"
 import { createClient } from "@/lib/supabase-browser"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./ui/button"
@@ -33,9 +33,11 @@ export function DashboardSidebar() {
     { name: "Export", href: "/dashboard/export", icon: Download },
     { name: "Templates", href: "/dashboard/templates", icon: Settings },
     { name: "Marketing", href: "/dashboard/marketing", icon: Megaphone },
-    { name: "Players", href: "/dashboard/players", icon: Users },
-    { name: "My Matches", href: "/dashboard/matches", icon: BadgeCheck },
   ]
+
+  // Dropdown state for My Team
+  const [myTeamOpen, setMyTeamOpen] = useState(false)
+  const isMyTeamActive = ["/dashboard/players", "/dashboard/matches"].includes(pathname)
 
   return (
     <>
@@ -64,6 +66,34 @@ export function DashboardSidebar() {
                 </Link>
               </li>
             ))}
+            {/* My Team Dropdown */}
+            <li>
+              <button
+                className={cn(
+                  "flex items-center w-full p-2 rounded-md transition",
+                  isMyTeamActive || myTeamOpen ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/50"
+                )}
+                onClick={() => setMyTeamOpen((v) => !v)}
+                aria-expanded={myTeamOpen}
+              >
+                <Users className="h-5 w-5 mr-3" />
+                My Team
+                {myTeamOpen ? <ChevronUp className="ml-auto h-4 w-4" /> : <ChevronDown className="ml-auto h-4 w-4" />}
+              </button>
+              {(myTeamOpen || isMyTeamActive) && (
+                <ul className="ml-8 mt-1 space-y-1">
+                  <li>
+                    <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Players</Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Matches</Link>
+                  </li>
+                  <li>
+                    <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Standings</Link>
+                  </li>
+                </ul>
+              )}
+            </li>
           </ul>
         </nav>
       </aside>
@@ -90,6 +120,34 @@ export function DashboardSidebar() {
                     </Link>
                   </li>
                 ))}
+                {/* My Team Dropdown for mobile */}
+                <li>
+                  <button
+                    className={cn(
+                      "flex items-center w-full p-3 rounded-md transition",
+                      isMyTeamActive || myTeamOpen ? "bg-gray-200" : "hover:bg-gray-100"
+                    )}
+                    onClick={() => setMyTeamOpen((v) => !v)}
+                    aria-expanded={myTeamOpen}
+                  >
+                    <Users className="h-5 w-5 mr-3" />
+                    My Team
+                    {myTeamOpen ? <ChevronUp className="ml-auto h-4 w-4" /> : <ChevronDown className="ml-auto h-4 w-4" />}
+                  </button>
+                  {(myTeamOpen || isMyTeamActive) && (
+                    <ul className="ml-8 mt-1 space-y-1">
+                      <li>
+                        <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-gray-200" : "hover:bg-gray-100")}>Players</Link>
+                      </li>
+                      <li>
+                        <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-gray-200" : "hover:bg-gray-100")}>Matches</Link>
+                      </li>
+                      <li>
+                        <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-gray-200" : "hover:bg-gray-100")}>Standings</Link>
+                      </li>
+                    </ul>
+                  )}
+                </li>
               </ul>
             </nav>
           </SheetContent>
