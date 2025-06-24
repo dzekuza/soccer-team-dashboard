@@ -57,23 +57,25 @@ function CheckoutSuccessContent() {
   };
 
   return (
-    <div className="container max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
-      <h1 className="text-3xl font-bold mb-4 text-green-700">Payment Successful!</h1>
-      <p className="mb-4">Thank you for your purchase. Your payment was successful.</p>
-      <p className="mb-4">Your ticket(s) will be emailed to you shortly, or you can now access them below.</p>
-      {isLoading && <p className="text-gray-500">Loading your tickets...</p>}
-      {error && <p className="text-red-600">{error}</p>}
-      {tickets.length > 0 && (
-        <div className="mt-6">
-          <button
-            className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-semibold text-lg"
-            onClick={handleDownloadTickets}
-          >
-            Download Tickets
-          </button>
-        </div>
-      )}
-      <a href="/" className="inline-block mt-8 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">Back to Home</a>
+    <div className="min-h-screen bg-main flex items-center justify-center">
+      <div className="w-full max-w-lg mx-auto p-8 rounded-xl shadow-lg bg-white/95 text-center border border-main-border">
+        <h1 className="text-3xl font-bold mb-4 text-main-orange">Mokėjimas sėkmingas!</h1>
+        <p className="mb-4 text-gray-800">Ačiū už pirkimą. Jūsų mokėjimas buvo sėkmingas.</p>
+        <p className="mb-4 text-gray-700">Bilietai bus išsiųsti el. paštu arba galite juos atsisiųsti žemiau.</p>
+        {isLoading && <p className="text-gray-500">Įkeliami bilietai...</p>}
+        {error && <p className="text-red-600">{error}</p>}
+        {tickets.length > 0 && (
+          <div className="mt-6">
+            <button
+              className="px-6 py-3 btn-main rounded font-semibold text-lg w-full"
+              onClick={handleDownloadTickets}
+            >
+              Atsisiųsti bilietus
+            </button>
+          </div>
+        )}
+        <a href="/" className="inline-block mt-8 px-6 py-2 btn-main rounded font-semibold">Grįžti į pradžią</a>
+      </div>
     </div>
   );
 }

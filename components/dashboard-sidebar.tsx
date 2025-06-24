@@ -183,12 +183,12 @@ export function DashboardMobileMenu() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-white border-t border-gray-200 shadow px-2 py-1 justify-between">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden bg-main border-t border-main-border shadow px-2 py-1 justify-between">
         {navigation.map((item) => (
           <Link
             key={item.name}
             href={item.href}
-            className={`flex flex-col items-center flex-1 py-2 px-1 gap-0.5 text-xs text-gray-600 hover:text-blue-600 transition ${pathname === item.href && "text-blue-600 font-medium"}`}
+            className={`flex flex-col items-center flex-1 py-2 px-1 gap-0.5 text-xs text-white hover:text-main-orange transition ${pathname === item.href ? "text-main-orange font-bold" : ""}`}
           >
             <item.icon className="h-6 w-6 mb-0.5" />
             <span className="leading-none text-[11px]">{item.name}</span>
@@ -196,7 +196,7 @@ export function DashboardMobileMenu() {
         ))}
         <button
           onClick={() => setModalOpen(true)}
-          className="flex flex-col items-center flex-1 py-2 px-1 text-xs text-gray-600 hover:text-blue-600 transition"
+          className="flex flex-col items-center flex-1 py-2 px-1 text-xs text-white hover:text-main-orange transition"
           aria-label="Profilis"
         >
           <UserIcon className="h-6 w-6 mb-0.5" />
@@ -206,14 +206,14 @@ export function DashboardMobileMenu() {
       {/* Modal for extra actions, only on mobile */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-end md:hidden bg-black/40" onClick={() => setModalOpen(false)}>
-          <div className="w-full bg-white rounded-t-lg p-4 shadow-lg" onClick={e => e.stopPropagation()}>
+          <div className="w-full bg-main-div-bg rounded-t-lg p-4 shadow-lg" onClick={e => e.stopPropagation()}>
             <div className="flex flex-col gap-2">
               {modalActions.map((item) =>
                 item.href ? (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-gray-100 text-gray-700 text-base"
+                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-main hover:text-main-orange text-white text-base transition"
                     onClick={() => setModalOpen(false)}
                   >
                     <item.icon className="h-5 w-5" />
@@ -226,7 +226,7 @@ export function DashboardMobileMenu() {
                       if (item.action) await item.action();
                       setModalOpen(false);
                     }}
-                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-gray-100 text-gray-700 text-base w-full text-left"
+                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-main hover:text-main-orange text-white text-base w-full text-left transition"
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.name}</span>
@@ -234,7 +234,7 @@ export function DashboardMobileMenu() {
                 )
               )}
             </div>
-            <button className="mt-4 w-full py-2 text-blue-600 font-semibold" onClick={() => setModalOpen(false)}>
+            <button className="mt-4 w-full py-2 btn-main font-semibold rounded" onClick={() => setModalOpen(false)}>
               Uždaryti
             </button>
           </div>
