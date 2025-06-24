@@ -44,27 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Event or pricing tier not found" }, { status: 404, headers: CORS_HEADERS });
     }
 
-    // 2. Create 'pending' tickets in the database
-    const ticketPromises = Array.from({ length: quantity }, () => 
-      supabaseService.createTicket({
-        eventId: eventId,
-        tierId: tierId,
-        purchaserName: purchaserName,
-        purchaserSurname: purchaserSurname,
-        purchaserEmail: purchaserEmail,
-        status: 'pending', // Tickets are pending until payment is confirmed
-      })
-    );
-
-    const createdTickets = await Promise.all(ticketPromises);
-    const pendingTicketIds = createdTickets.map(t => t?.id).filter(id => id);
-
-    if (pendingTicketIds.length !== quantity) {
-      // In a real app, you'd want to delete the tickets that were created before failing.
-      throw new Error('Failed to create all pending tickets.');
-    }
-
-    // 3. Create a Stripe checkout session
+    // 2. Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{
@@ -82,9 +62,14 @@ export async function POST(request: NextRequest) {
       success_url: `${request.headers.get('origin')}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.headers.get('origin')}/event/${eventId}`,
       metadata: {
-        'ticket_ids': JSON.stringify(pendingTicketIds),
-        'purchaser_email': purchaserEmail,
+        eventId,
+        tierId,
+        quantity,
+        purchaserName,
+        purchaserSurname,
+        purchaserEmail,
       },
+      customer_email: purchaserEmail,
       // Expire the session after 1 hour
       expires_at: Math.floor(Date.now() / 1000) + 3600, 
     });

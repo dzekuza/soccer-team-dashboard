@@ -30,11 +30,22 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
     const pdfBytes = await generateTicketPDF(ticket, team1 || undefined, team2 || undefined);
     const fileName = `ticket-${ticket.id}.pdf`;
 
+    const eventDate = new Date(ticket.event.date).toLocaleDateString('lt-LT');
+
+    const emailBody = template.body_html
+      .replace(/{{purchaser_name}}/g, ticket.purchaserName)
+      .replace(/{{event_title}}/g, ticket.event.title)
+      .replace(/{{event_date}}/g, eventDate)
+      .replace(/{{event_time}}/g, ticket.event.time)
+      .replace(/{{event_location}}/g, ticket.event.location);
+
+    const emailSubject = template.subject.replace(/{{event_title}}/g, ticket.event.title);
+
     await resend.emails.send({
       from: 'info@teamup.lt',
       to: ticket.purchaserEmail,
-      subject: template.subject,
-      html: template.body_html,
+      subject: emailSubject,
+      html: emailBody,
       attachments: [{ filename: fileName, content: Buffer.from(pdfBytes) }]
     });
 

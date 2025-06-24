@@ -1,5 +1,6 @@
 {
-  "agentCanUpdateSnapshot": true,
+  "snapshot": "snapshot-20250622-51d0890d-c333-45e2-8285-c75ab9020d5f",
   "install": "npm install",
-  "start": "npm run dev"
+  "start": "npm run dev",
+  "terminals": []
 }

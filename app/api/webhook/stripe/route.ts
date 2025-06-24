@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
-import { type Database } from "@/lib/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 // Initialize Supabase with the service role key for admin-level access
-const supabaseAdmin = createClient<Database>(
+const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
@@ -31,26 +30,44 @@ export async function POST(req: NextRequest) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      const { user_id, event_id, tier_id, subscription_id } = session.metadata || {};
+      const { 
+        eventId, 
+        tierId, 
+        quantity, 
+        purchaserName, 
+        purchaserSurname, 
+        purchaserEmail 
+      } = session.metadata || {};
 
-      if (session.mode === "payment" && user_id && event_id && tier_id) {
-        // Handle one-time payment for a ticket
-        const { error: ticketError } = await supabaseAdmin.from('tickets').insert({
-          event_id: event_id,
-          tier_id: tier_id,
-          user_id: user_id,
-          purchaser_name: session.customer_details?.name,
-          purchaser_email: session.customer_details?.email,
-          status: 'valid'
+      if (session.mode === "payment" && eventId && tierId && quantity) {
+        // Handle one-time payment for tickets
+        const numQuantity = parseInt(quantity, 10);
+        const ticketPromises = Array.from({ length: numQuantity }, () => 
+          supabaseAdmin.from('tickets').insert({
+            event_id: eventId,
+            tier_id: tierId,
+            purchaser_name: purchaserName,
+            purchaser_surname: purchaserSurname,
+            purchaser_email: purchaserEmail,
+            status: 'valid'
+          })
+        );
+
+        const results = await Promise.allSettled(ticketPromises);
+
+        results.forEach((result, index) => {
+          if (result.status === 'rejected') {
+            console.error(`Failed to create ticket #${index + 1} for event ${eventId}.`, result.reason);
+          }
         });
+        
+        console.log(`${numQuantity} ticket(s) created for event ${eventId} via Stripe webhook.`);
 
-        if (ticketError) {
-          console.error(`Failed to create ticket for user ${user_id} after Stripe payment.`, ticketError);
-        } else {
-          console.log(`Ticket created for user ${user_id} via Stripe webhook.`);
-        }
-      } else if (session.mode === 'subscription' && user_id && session.subscription && subscription_id) {
+      } 
+      /*
+      else if (session.mode === 'subscription' && session.subscription) {
         // Handle a new subscription
+        const { user_id, subscription_id } = session.metadata || {};
         const subscription = await stripe.subscriptions.retrieve(session.subscription.toString());
         const { error: subError } = await supabaseAdmin.from('user_subscriptions').insert({
             user_id: user_id,
@@ -65,6 +82,7 @@ export async function POST(req: NextRequest) {
              console.log(`Subscription created for user ${user_id} via Stripe webhook.`);
         }
       }
+      */
     }
   } catch(e) {
       console.error("Error processing webhook event:", e);

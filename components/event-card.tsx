@@ -86,13 +86,15 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
           <Calendar className="w-4 h-4 mr-2" /> 
           <span>{new Date(event.date).toLocaleDateString('lt-LT', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
         </div>
-        <div className="flex items-center text-muted-foreground">
-          <Clock className="w-4 h-4 mr-2" />
-          <span>{event.time}</span>
-        </div>
-        <div className="flex items-center text-muted-foreground">
-          <MapPin className="w-4 h-4 mr-2" />
-          <span>{event.location}</span>
+        <div className="flex justify-between text-muted-foreground">
+          <div className="flex items-center">
+            <Clock className="w-4 h-4 mr-2" />
+            <span>{event.time}</span>
+          </div>
+          <div className="flex items-center">
+            <MapPin className="w-4 h-4 mr-2" />
+            <span>{event.location}</span>
+          </div>
         </div>
         <div>
           <div className="flex justify-between items-center mb-1">

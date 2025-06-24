@@ -152,7 +152,7 @@ export default function TemplatesPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">El. pašto šablonai</h1>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Keiskite ir redaguokite siunčiamų laiškų turinį.
         </p>
       </div>
@@ -177,7 +177,7 @@ export default function TemplatesPage() {
 
         {/* Desktop View: Sidebar for template selection */}
         <div className="hidden md:block md:col-span-1">
-          <Card>
+          <Card className="bg-card">
             <CardHeader>
               <CardTitle>Šablonai</CardTitle>
             </CardHeader>
@@ -191,7 +191,7 @@ export default function TemplatesPage() {
                       <Button
                         variant={
                           selectedTemplate?.name === template.name
-                            ? "secondary"
+                            ? "default"
                             : "ghost"
                         }
                         className="w-full justify-start"
@@ -209,7 +209,7 @@ export default function TemplatesPage() {
 
         <div className="md:col-span-3">
           {isLoading && !selectedTemplate && (
-            <Card className="flex items-center justify-center h-64">
+            <Card className="flex items-center justify-center h-64 bg-card">
                 <p>Kraunasi šablonai...</p>
             </Card>
           )}
@@ -220,12 +220,12 @@ export default function TemplatesPage() {
                   <TabsTrigger value="editor">Redaktorius</TabsTrigger>
                   <TabsTrigger value="preview">Peržiūra</TabsTrigger>
                 </TabsList>
-                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto">
+                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto" variant="default">
                   {isSaving ? "Saugoma..." : "Išsaugoti pakeitimus"}
                 </Button>
               </div>
               <TabsContent value="editor">
-                <Card>
+                <Card className="bg-card">
                   <CardHeader>
                     <CardTitle>Šablono redagavimas</CardTitle>
                     <CardDescription>

@@ -174,7 +174,7 @@ export interface Match {
 }
 
 export interface Player {
-  id: string;
+  id: number;
   number: string | null;
   name?: string | null;
   profile_url?: string | null;

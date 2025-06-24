@@ -135,7 +135,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                   <TableCell>{ticket.tier.name}</TableCell>
                   <TableCell>{ticket.tier.price} €</TableCell>
                   <TableCell>
-                    <Badge variant={ticket.isValidated ? "default" : "secondary"}>
+                    <Badge variant={ticket.isValidated ? "default" : "success"}>
                       {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
                     </Badge>
                   </TableCell>
@@ -205,7 +205,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="font-medium">Statusas:</span>
-                  <Badge variant={ticket.isValidated ? "default" : "secondary"}>
+                  <Badge variant={ticket.isValidated ? "default" : "success"}>
                     {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
                   </Badge>
                 </div>

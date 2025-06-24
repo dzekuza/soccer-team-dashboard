@@ -2,8 +2,7 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { CreateMatchDialog } from "@/components/create-match-dialog"
-import { EditMatchDialog } from "@/components/edit-match-dialog"
+import { MatchDialog } from "@/components/match-dialog"
 import type { Match } from "@/lib/types"
 import { Plus, MoreHorizontal } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
@@ -21,8 +20,7 @@ interface MatchesClientProps {
 
 export function MatchesClient({ initialMatches }: MatchesClientProps) {
   const [matches, setMatches] = useState<Match[]>(initialMatches)
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null)
   const { toast } = useToast()
 
@@ -38,19 +36,19 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
     }
   }
 
-  const handleMatchCreated = () => {
+  const handleMatchSaved = () => {
     fetchMatches()
-    setIsCreateDialogOpen(false)
-  }
-
-  const handleMatchUpdated = () => {
-    fetchMatches()
-    setIsEditDialogOpen(false)
+    setIsDialogOpen(false)
   }
   
+  const handleCreate = () => {
+    setSelectedMatch(null);
+    setIsDialogOpen(true);
+  };
+
   const handleEdit = (match: Match) => {
     setSelectedMatch(match);
-    setIsEditDialogOpen(true);
+    setIsDialogOpen(true);
   };
 
   const handleDelete = async (fingerprint: string) => {
@@ -80,7 +78,7 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
           <h1 className="text-3xl font-bold">My Matches</h1>
           <p className="text-gray-600">Manage and view your team's matches.</p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
+        <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
           Create Match
         </Button>
@@ -114,10 +112,9 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
                   </DropdownMenu>
                 </div>
                 <div className="text-sm text-muted-foreground mt-2">
-                  <p><strong>Date:</strong> {match.match_date} at {match.match_time}</p>
-                  <p><strong>Venue:</strong> {match.venue}</p>
-                  <p><strong>Score:</strong> {match.team1_score} - {match.team2_score}</p>
-                  <p><strong>Status:</strong> {match.status}</p>
+                  <p>{match.match_date} at {match.match_time}</p>
+                  <p>{match.venue}</p>
+                  <p>Status: <span className="font-semibold">{match.status}</span></p>
                 </div>
               </div>
             ))
@@ -125,7 +122,7 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
         </div>
 
         {/* Desktop View - Table */}
-        <div className="hidden md:block overflow-x-auto">
+        <div className="hidden md:block">
           <Table>
             <TableHeader>
               <TableRow>
@@ -180,20 +177,12 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
         </div>
       </div>
 
-      <CreateMatchDialog
-        open={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
-        onMatchCreated={handleMatchCreated}
+      <MatchDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onMatchSaved={handleMatchSaved}
+        match={selectedMatch}
       />
-      
-      {selectedMatch && (
-        <EditMatchDialog
-          open={isEditDialogOpen}
-          onOpenChange={setIsEditDialogOpen}
-          onMatchUpdated={handleMatchUpdated}
-          match={selectedMatch}
-        />
-      )}
     </div>
   )
 } 
