@@ -32,68 +32,27 @@ interface EventHeaderProps {
 }
 
 export function EventHeader({ event, team1, team2 }: EventHeaderProps) {
-  const team1Logo = team1?.logo || "/placeholder-logo.svg"
-  const team2Logo = team2?.logo || "/placeholder-logo.svg"
-
   return (
-    <div className="bg-[#070F40] py-12 px-4 md:px-8 text-white">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-center items-center gap-8 md:gap-16 text-center">
-          <div className="flex items-center gap-4">
-            <Image
-              src={team1Logo}
-              alt={team1?.team_name || "Team 1"}
-              width={104}
-              height={104}
-              className="object-contain"
-            />
-            <div className="text-left">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                {team1?.team_name}
-              </h2>
-              {/* <p className="text-sm opacity-70">7 vieta A lygoje</p> */}
-            </div>
-          </div>
-
-          <div className="text-5xl md:text-8xl font-extrabold">-</div>
-
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <h2 className="text-3xl md:text-4xl font-bold">
-                {team2?.team_name}
-              </h2>
-              {/* <p className="text-sm opacity-70">1 vieta A lygoje</p> */}
-            </div>
-            <Image
-              src={team2Logo}
-              alt={team2?.team_name || "Team 2"}
-              width={104}
-              height={104}
-              className="object-contain"
-            />
-          </div>
+    <div className="w-full flex flex-col items-center justify-center bg-[rgba(7,15,64,0.70)] border border-[rgba(95,95,113,0.31)] py-8 px-4 mb-4" style={{ borderRadius: 0 }}>
+      <div className="flex flex-row items-center justify-center gap-8 mb-4">
+        {/* Team 1 */}
+        <div className="flex flex-col items-center min-w-[100px]">
+          <img src={team1?.logo || '/placeholder-logo.svg'} alt={team1?.team_name || 'Komanda 1'} className="object-contain w-20 h-20 mb-2" />
+          <div className="text-white text-xl font-bold leading-tight">{team1?.team_name || 'Komanda 1'}</div>
         </div>
-
-        <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 mt-8 text-lg">
-          <div className="flex items-center gap-2">
-            <CalendarIcon className="w-6 h-6 text-main-orange" />
-            <span>
-              {new Date(event.date).toLocaleDateString("lt-LT", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <ClockIcon className="w-6 h-6 text-main-orange" />
-            <span>{event.time}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <MapPinIcon className="w-6 h-6 text-main-orange" />
-            <span>{event.location}</span>
-          </div>
+        {/* VS */}
+        <div className="flex flex-col items-center justify-center">
+          <div className="text-5xl font-extrabold text-white">VS</div>
         </div>
+        {/* Team 2 */}
+        <div className="flex flex-col items-center min-w-[100px]">
+          <img src={team2?.logo || '/placeholder-logo.svg'} alt={team2?.team_name || 'Komanda 2'} className="object-contain w-20 h-20 mb-2" />
+          <div className="text-white text-xl font-bold leading-tight">{team2?.team_name || 'Komanda 2'}</div>
+        </div>
+      </div>
+      <div className="flex flex-col items-center gap-1">
+        <div className="text-white text-base font-semibold">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
+        <div className="text-white/80 text-sm">{event.location}</div>
       </div>
     </div>
   )

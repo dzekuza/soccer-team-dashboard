@@ -18,6 +18,8 @@ import {
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { loadStripe } from "@stripe/stripe-js"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import Link from "next/link"
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -197,217 +199,51 @@ export default function EventPage() {
       <EventHeader event={event} team1={team1} team2={team2} />
 
       <main className="container mx-auto px-4 py-8 md:py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            <nav aria-label="Progress">
-              <ol
-                role="list"
-                className="border border-main-border rounded-md divide-y divide-main-border md:flex md:divide-y-0 bg-[#0A2065]"
-              >
-                {steps.map((step, stepIdx) => (
-                  <li key={step.name} className="relative md:flex-1 md:flex">
-                    <button
-                      onClick={() => setCurrentStep(step.id)}
-                      className={cn(
-                        "group flex items-center w-full",
-                        step.id === currentStep ? "text-main-orange" : ""
-                      )}
-                      aria-current={step.id === currentStep ? "step" : undefined}
-                    >
-                      <span className="px-6 py-4 flex items-center text-sm font-medium">
-                        <span
-                          className={cn(
-                            "flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full",
-                            step.id === currentStep
-                              ? "bg-main-orange"
-                              : "bg-main-div-bg border-2 border-main-border"
-                          )}
-                        >
-                          <step.icon
-                            className={cn(
-                              "w-6 h-6",
-                              step.id === currentStep
-                                ? "text-white"
-                                : "text-gray-400"
-                            )}
-                            aria-hidden="true"
-                          />
-                        </span>
-                        <span
-                          className={cn(
-                            "ml-4 text-sm font-medium",
-                            step.id === currentStep
-                              ? "text-white"
-                              : "text-gray-300"
-                          )}
-                        >
-                          {step.name}
-                        </span>
-                      </span>
-                    </button>
-                    {stepIdx !== steps.length - 1 ? (
-                      <div
-                        className="hidden md:block absolute top-0 right-0 h-full w-5"
-                        aria-hidden="true"
-                      >
-                        <svg
-                          className="h-full w-full text-main-border"
-                          viewBox="0 0 22 80"
-                          fill="none"
-                          preserveAspectRatio="none"
-                        >
-                          <path
-                            d="M0.5 0H20.5L8.5 40L20.5 80H0.5V0Z"
-                            fill="#0A165B"
-                          />
-                        </svg>
-                      </div>
-                    ) : null}
-                  </li>
-                ))}
-              </ol>
-            </nav>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="w-full flex justify-center mb-6 bg-transparent">
+            <TabsTrigger value="overview" className="flex-1">Apžvalga</TabsTrigger>
+            <TabsTrigger value="tickets" className="flex-1">Bilietų informacija</TabsTrigger>
+          </TabsList>
 
-            {currentStep === "01" && (
-              <Card className="bg-main-div-bg border-main-border">
-                <CardHeader>
-                  <CardTitle className="text-white">Apie Renginį</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-300 whitespace-pre-wrap">
-                    {event.description}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {currentStep === "02" && (
-              <Card className="bg-main-div-bg border-main-border">
-                <CardHeader>
-                  <CardTitle className="text-white">
-                    Pasirinkite bilieto tipą
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {event.pricingTiers?.map(tier => (
-                      <button
-                        key={tier.id}
-                        onClick={() => setSelectedTier(tier)}
-                        className={cn(
-                          "div-main text-left p-6 rounded-lg border-2",
-                          selectedTier?.id === tier.id
-                            ? "border-main-orange"
-                            : "border-main-border"
-                        )}
-                      >
-                        <h3 className="text-xl font-bold">{tier.name}</h3>
-                        <p className="text-2xl font-semibold mt-2">
-                          {tier.price} €
-                        </p>
-                        <p className="text-sm text-gray-400 mt-1">
-                          {tier.description || ""}
-                        </p>
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-             {currentStep === "03" && (
-              <Card className="bg-main-div-bg border-main-border">
-                <CardHeader>
-                  <CardTitle className="text-white">Jūsų Duomenys</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="firstName" className="text-white">
-                          Vardas
-                        </Label>
-                        <Input
-                          id="firstName"
-                          name="firstName"
-                          value={formData.firstName}
-                          onChange={handleInputChange}
-                          className="bg-[#070f40] border-main-border text-white"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="lastName" className="text-white">
-                          Pavardė
-                        </Label>
-                        <Input
-                          id="lastName"
-                          name="lastName"
-                          value={formData.lastName}
-                          onChange={handleInputChange}
-                          className="bg-[#070f40] border-main-border text-white"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-white">
-                        El. paštas
-                      </Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="bg-[#070f40] border-main-border text-white"
-                      />
-                    </div>
-                  </form>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          <div className="w-full lg:col-span-1 space-y-6">
+          <TabsContent value="overview">
             <Card className="bg-main-div-bg border-main-border">
               <CardHeader>
-                <CardTitle className="text-white">Užsakymo suvestinė</CardTitle>
+                <CardTitle className="text-white">Apie Renginį</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {selectedTier ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-300">Bilieto tipas</span>
-                      <span className="font-semibold">{selectedTier.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-300">Kaina</span>
-                      <span className="font-semibold">
-                        {selectedTier.price} €
-                      </span>
-                    </div>
-                    <hr className="border-main-border" />
-                    <div className="flex justify-between text-xl">
-                      <span className="font-bold">Iš viso</span>
-                      <span className="font-bold">
-                        {selectedTier.price} €
-                      </span>
-                    </div>
-                    <Button
-                      onClick={handlePurchase}
-                      className="w-full btn-main"
-                      size="lg"
-                    >
-                      Pirkti bilietą
-                    </Button>
-                  </>
-                ) : (
-                  <p className="text-gray-400 text-center">
-                    Pasirinkite bilietą.
-                  </p>
-                )}
+              <CardContent>
+                <p className="text-gray-300 whitespace-pre-wrap">
+                  {event.description}
+                </p>
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
+
+          <TabsContent value="tickets">
+            <Card className="bg-main-div-bg border-main-border flex flex-col items-center justify-center py-12">
+              <div className="flex flex-col items-center gap-4 mb-8">
+                <div className="text-2xl font-bold text-white">{event.title}</div>
+                <div className="flex flex-row items-center gap-6">
+                  <img src={team1?.logo || '/placeholder-logo.svg'} alt={team1?.team_name || 'Komanda 1'} className="object-contain w-20 h-20" />
+                  <span className="text-3xl font-extrabold text-white">VS</span>
+                  <img src={team2?.logo || '/placeholder-logo.svg'} alt={team2?.team_name || 'Komanda 2'} className="object-contain w-20 h-20" />
+                </div>
+                <div className="flex flex-row items-center gap-8 mt-4">
+                  <div className="flex flex-col items-center">
+                    <span className="text-lg font-semibold text-white">{team1?.team_name || 'Komanda 1'}</span>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <span className="text-lg font-semibold text-white">{team2?.team_name || 'Komanda 2'}</span>
+                  </div>
+                </div>
+                <div className="text-white text-xl mt-4">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
+                <div className="text-white/80 text-lg">{event.location}</div>
+              </div>
+              <Link href={`/event/${event.id}/tickets`} passHref legacyBehavior>
+                <Button className="btn-main text-lg font-bold w-full max-w-xs mt-8">Pasirinkti bilietus</Button>
+              </Link>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   )

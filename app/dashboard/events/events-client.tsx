@@ -391,8 +391,53 @@ export default function EventsClient({
     return Object.values(groupedEvents);
   }, [events]);
 
+  // Find the next upcoming event (or most recent if all are past)
+  const now = new Date();
+  const sortedEvents = [...events].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const featuredEvent = sortedEvents.find(e => new Date(e.date) >= now) || sortedEvents[0];
+
+  let team1, team2;
+  if (featuredEvent) {
+    team1 = teams.find(t => t.id === featuredEvent.team1Id);
+    team2 = teams.find(t => t.id === featuredEvent.team2Id);
+  }
+
   return (
     <div className="space-y-6">
+      {/* Event Header Section */}
+      {featuredEvent && (
+        <div className="w-full flex flex-col items-center justify-center rounded-lg bg-[rgba(7,15,64,0.70)] border border-[rgba(95,95,113,0.31)] py-8 px-4 mb-4">
+          <div className="text-white text-lg font-medium uppercase tracking-tight mb-2 text-center">
+            {featuredEvent.title || 'Rungtynės'}
+          </div>
+          <div className="flex flex-row items-center justify-center gap-8 mb-4">
+            {/* Team 1 */}
+            <div className="flex flex-col items-center min-w-[100px]">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-2 overflow-hidden">
+                <img src={team1?.logo || '/placeholder-logo.svg'} alt={team1?.team_name || 'Komanda 1'} className="object-contain w-16 h-16" />
+              </div>
+              <div className="text-white text-xl font-bold leading-tight">{team1?.team_name || 'Komanda 1'}</div>
+              <div className="text-white/70 text-xs mt-1">{/* Pozicija */}– vieta A lygoje</div>
+            </div>
+            {/* VS */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="text-5xl font-extrabold text-white">VS</div>
+            </div>
+            {/* Team 2 */}
+            <div className="flex flex-col items-center min-w-[100px]">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-2 overflow-hidden">
+                <img src={team2?.logo || '/placeholder-logo.svg'} alt={team2?.team_name || 'Komanda 2'} className="object-contain w-16 h-16" />
+              </div>
+              <div className="text-white text-xl font-bold leading-tight">{team2?.team_name || 'Komanda 2'}</div>
+              <div className="text-white/70 text-xs mt-1">{/* Pozicija */}– vieta A lygoje</div>
+            </div>
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <div className="text-white text-base font-semibold">{featuredEvent.date} {featuredEvent.time && <span className="ml-2">{featuredEvent.time}</span>}</div>
+            <div className="text-white/80 text-sm">{featuredEvent.location}</div>
+          </div>
+        </div>
+      )}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Renginiai</h1>
