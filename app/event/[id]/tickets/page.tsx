@@ -271,8 +271,23 @@ export default function TicketsPage() {
               <form onSubmit={handleCardPayment} className="mt-6">
                 <div className="bg-[#10194A] p-6 rounded-md border border-[#232B5D]">
                   <div className="text-white font-bold mb-2">Įveskite kortelės duomenis</div>
-                  <div className="bg-[#232B5D] h-12 flex items-center px-4">
-                    <CardElement options={{ style: { base: { color: '#fff', fontSize: '18px' } } }} />
+                  <div className="bg-[#232B5D] h-16 flex items-center px-4">
+                    <CardElement options={{
+                      style: {
+                        base: {
+                          color: '#fff',
+                          fontSize: '18px',
+                          fontFamily: 'inherit',
+                          backgroundColor: 'transparent',
+                          '::placeholder': {
+                            color: '#B0B8D9',
+                          },
+                        },
+                        invalid: {
+                          color: '#ff5252',
+                        },
+                      },
+                    }} />
                   </div>
                   {paymentError && <div className="text-red-500 mt-2">{paymentError}</div>}
                   <Button className="btn-main text-lg font-bold w-full mt-4" type="submit" disabled={!canSubmit || processing}>{processing ? 'Vykdoma...' : 'Confirm Payment'}</Button>
