@@ -35,8 +35,12 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
 
   const handleResendEmail = async (subscriptionId: string) => {
     try {
-      const response = await fetch(`/api/subscriptions/${subscriptionId}/resend`, {
+      const response = await fetch(`/api/subscriptions/resend`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subscriptionId }),
       })
       const result = await response.json()
       if (!response.ok) {

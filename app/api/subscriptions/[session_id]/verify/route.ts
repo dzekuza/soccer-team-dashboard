@@ -12,17 +12,17 @@ const supabaseAdmin = createClient(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: { session_id: string } }
 ) {
   try {
-    const { sessionId } = params;
+    const { session_id } = params;
 
-    if (!sessionId) {
+    if (!session_id) {
       return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
     }
 
     // Retrieve the checkout session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    const session = await stripe.checkout.sessions.retrieve(session_id);
 
     if (!session) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
@@ -35,7 +35,7 @@ export async function POST(
 
     // Get subscription details from our database
     const { data: subscription, error } = await supabaseAdmin
-      .from('user_subscriptions')
+      .from('subscriptions')
       .select('*')
       .eq('stripe_subscription_id', session.subscription)
       .single();
@@ -46,10 +46,11 @@ export async function POST(
 
     return NextResponse.json({
       id: subscription.id,
-      status: subscription.status,
-      customer_email: subscription.customer_email,
-      start_date: subscription.start_date,
-      end_date: subscription.end_date,
+      status: subscription.subscription_status,
+      customer_email: subscription.purchaser_email,
+      start_date: subscription.valid_from,
+      end_date: subscription.valid_to,
+      purchaser_name: subscription.purchaser_name,
     });
 
   } catch (error: any) {

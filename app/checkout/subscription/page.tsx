@@ -72,56 +72,56 @@ export default function SubscriptionCheckoutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f6f8fb] flex items-center justify-center font-sans">
-      <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden p-8">
-        <h1 className="text-2xl font-bold text-[#1a1f36] mb-6">Choose a Subscription</h1>
+    <div className="min-h-screen bg-[#0A165B] flex items-center justify-center font-sans">
+      <div className="w-full max-w-2xl bg-[#0A165B]/50 border border-gray-700 rounded-xl shadow-lg overflow-hidden p-8">
+        <h1 className="text-2xl font-bold text-white mb-6">Pasirinkite prenumeratą</h1>
         <form className="flex flex-col gap-6" onSubmit={handleCheckout}>
           <div>
-            <label className="block text-[#697386] text-sm font-medium mb-1">Select Plan</label>
+            <label className="block text-gray-300 text-sm font-medium mb-1">Pasirinkite planą</label>
             <select
-              className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-md border border-gray-600 bg-[#0A2065] text-white focus:outline-none focus:ring-2 focus:ring-[#F15601]"
               value={selectedPlanId}
               onChange={(e) => setSelectedPlanId(e.target.value)}
               required
             >
-              <option value="">-- Choose a subscription plan --</option>
+              <option value="">-- Pasirinkite prenumeratos planą --</option>
               {plans.map((plan) => (
                 <option key={plan.id} value={plan.id}>
-                  {plan.title} ({plan.duration_days} days) - {formatCurrency(plan.price)}
+                  {plan.title} ({plan.duration_days} dienų) - {formatCurrency(plan.price)}
                 </option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-[#697386] text-sm font-medium mb-1">Your Email</label>
+            <label className="block text-gray-300 text-sm font-medium mb-1">Jūsų el. paštas</label>
             <input
               type="email"
-              className="w-full p-3 rounded-md border border-gray-200 bg-white text-[#1a1f36] focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-3 rounded-md border border-gray-600 bg-[#0A2065] text-white focus:outline-none focus:ring-2 focus:ring-[#F15601]"
               value={userEmail}
               onChange={(e) => setUserEmail(e.target.value)}
               required
             />
           </div>
           {selectedPlan && (
-            <div className="bg-[#f6f8fb] p-4 rounded border border-gray-200">
-              <h2 className="text-lg font-semibold mb-1">{selectedPlan.title}</h2>
-              <p className="text-sm text-[#697386] mb-2">{selectedPlan.description}</p>
+            <div className="bg-[#0A2065] p-4 rounded border border-gray-600">
+              <h2 className="text-lg font-semibold mb-1 text-white">{selectedPlan.title}</h2>
+              <p className="text-sm text-gray-300 mb-2">{selectedPlan.description}</p>
               <div className="flex items-center gap-4">
-                <span className="text-[#1a1f36] font-medium">Duration:</span>
-                <span>{selectedPlan.duration_days} days</span>
-                <span className="text-[#1a1f36] font-medium ml-6">Price:</span>
-                <span className="text-2xl font-bold">{formatCurrency(selectedPlan.price)}</span>
+                <span className="text-white font-medium">Trukmė:</span>
+                <span className="text-gray-300">{selectedPlan.duration_days} dienų</span>
+                <span className="text-white font-medium ml-6">Kaina:</span>
+                <span className="text-2xl font-bold text-[#F15601]">{formatCurrency(selectedPlan.price)}</span>
               </div>
             </div>
           )}
           <button
             type="submit"
-            className="w-full py-4 mt-2 bg-[#1a1f36] text-white text-lg font-semibold rounded-md shadow hover:bg-[#232946] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-4 mt-2 bg-[#F15601] text-white text-lg font-semibold rounded-md shadow hover:bg-[#E04501] transition disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={loading || !selectedPlanId || !userEmail}
           >
-            {loading ? "Redirecting to Stripe..." : selectedPlan ? `Subscribe for ${formatCurrency(selectedPlan.price)}` : "Subscribe"}
+            {loading ? "Nukreipiama į Stripe..." : selectedPlan ? `Prenumeruoti už ${formatCurrency(selectedPlan.price)}` : "Prenumeruoti"}
           </button>
-          {error && <div className="text-red-600 mt-2">{error}</div>}
+          {error && <div className="text-red-400 mt-2">{error}</div>}
         </form>
       </div>
     </div>

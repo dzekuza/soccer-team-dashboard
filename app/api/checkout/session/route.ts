@@ -26,6 +26,20 @@ export async function POST(request: NextRequest) {
       };
     });
 
+    // Extract event and tier information from cart items
+    const firstItem = cartItems[0];
+    const eventId = firstItem.eventId;
+    const tierId = firstItem.id; // Assuming the item ID is the tier ID
+    const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+    console.log('🛒 Creating checkout session with metadata:', {
+      eventId,
+      tierId,
+      quantity: totalQuantity,
+      purchaserName,
+      purchaserEmail
+    });
+
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -35,15 +49,19 @@ export async function POST(request: NextRequest) {
       success_url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/checkout`,
       metadata: {
-        cart: JSON.stringify(cartItems.map(item => ({ id: item.id, quantity: item.quantity }))),
+        eventId,
+        tierId,
+        quantity: totalQuantity.toString(),
+        purchaserName,
         purchaserEmail,
-        purchaserName
+        cart: JSON.stringify(cartItems.map(item => ({ id: item.id, quantity: item.quantity })))
       },
     })
 
+    console.log('✅ Checkout session created:', session.id);
     return NextResponse.json({ url: session.url })
   } catch (error) {
-    console.error("Stripe Checkout session error:", error)
+    console.error("❌ Stripe Checkout session error:", error)
     return NextResponse.json({ error: "Failed to create Stripe session" }, { status: 500 })
   }
 } 

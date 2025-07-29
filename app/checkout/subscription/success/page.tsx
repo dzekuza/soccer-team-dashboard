@@ -4,6 +4,7 @@ import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { CheckCircle, Calendar, Mail, User } from "lucide-react";
 
 interface SubscriptionDetails {
   id: string;
@@ -11,6 +12,7 @@ interface SubscriptionDetails {
   customer_email: string;
   start_date: string;
   end_date: string;
+  purchaser_name?: string;
 }
 
 function SubscriptionSuccessContent() {
@@ -27,21 +29,21 @@ function SubscriptionSuccessContent() {
       return;
     }
 
-    // Verify the session and get subscription details
     const verifySession = async () => {
       try {
         const response = await fetch(`/api/subscriptions/${sessionId}/verify`, {
-          method: 'POST',
+          method: "POST",
         });
 
         if (!response.ok) {
-          throw new Error('Failed to verify subscription session');
+          throw new Error("Failed to verify session");
         }
 
         const data = await response.json();
         setSubscriptionDetails(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to verify subscription');
+        setError("Failed to verify subscription session");
+        console.error("Error verifying session:", err);
       } finally {
         setLoading(false);
       }
@@ -52,79 +54,107 @@ function SubscriptionSuccessContent() {
 
   if (loading) {
     return (
-      <div className="container max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p>Verifying your subscription...</p>
+      <div className="flex items-center justify-center min-h-screen bg-[#0A165B]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#F15601] mx-auto"></div>
+          <p className="mt-4 text-lg text-white">Verifying your subscription...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
-        <h1 className="text-3xl font-bold mb-4 text-red-600">Verification Failed</h1>
-        <p className="mb-4 text-gray-600">{error}</p>
-        <Link href="/checkout/subscription">
-          <Button className="bg-blue-600 hover:bg-blue-700">
-            Try Again
+      <div className="flex items-center justify-center min-h-screen bg-[#0A165B]">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold mb-4 text-white">Verification Failed</h1>
+          <p className="text-gray-300 mb-6">{error}</p>
+          <Button asChild className="bg-[#F15601] hover:bg-[#E04501] text-white">
+            <Link href="/dashboard">Go to Dashboard</Link>
           </Button>
-        </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!subscriptionDetails) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#0A165B]">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-yellow-500 text-6xl mb-4">❓</div>
+          <h1 className="text-2xl font-bold mb-4 text-white">Subscription Not Found</h1>
+          <p className="text-gray-300 mb-6">
+            We couldn't find your subscription details. This might take a few minutes to process.
+          </p>
+          <Button asChild className="bg-[#F15601] hover:bg-[#E04501] text-white">
+            <Link href="/dashboard">Go to Dashboard</Link>
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
-      <div className="mb-6">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h1 className="text-3xl font-bold mb-4 text-green-700">Subscription Successful!</h1>
-        <p className="mb-6 text-gray-600">Thank you for subscribing. Your payment was successful and your subscription is now active.</p>
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-[#0A165B]">
+      <div className="max-w-md w-full mx-auto p-6">
+        <div className="bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg p-8">
+          <div className="text-center">
+            <div className="text-green-500 text-6xl mb-4">✅</div>
+            <h1 className="text-3xl font-bold mb-4 text-white">Prenumerata sėkminga!</h1>
+            <p className="text-gray-300 mb-6">
+              Ačiū už prenumeratą. Jūsų prenumerata dabar aktyvi.
+            </p>
+          </div>
 
-      {subscriptionDetails && (
-        <div className="bg-gray-50 p-6 rounded-lg mb-6 text-left">
-          <h2 className="text-lg font-semibold mb-4">Subscription Details</h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">Status:</span>
-              <span className="font-medium text-green-600 capitalize">{subscriptionDetails.status}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Email:</span>
-              <span className="font-medium">{subscriptionDetails.customer_email}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Start Date:</span>
-              <span className="font-medium">{new Date(subscriptionDetails.start_date).toLocaleDateString()}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">End Date:</span>
-              <span className="font-medium">{new Date(subscriptionDetails.end_date).toLocaleDateString()}</span>
+          <div className="space-y-4 mb-6">
+            <div className="border-t border-gray-700 pt-4">
+              <h2 className="font-semibold mb-4 text-white">Prenumeratos informacija</h2>
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3">
+                  <User className="h-4 w-4 text-[#F15601]" />
+                  <div className="flex-1">
+                    <span className="text-gray-400 text-sm">Statusas:</span>
+                    <span className="ml-2 font-medium text-white capitalize">{subscriptionDetails.status}</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-4 w-4 text-[#F15601]" />
+                  <div className="flex-1">
+                    <span className="text-gray-400 text-sm">El. paštas:</span>
+                    <span className="ml-2 font-medium text-white">{subscriptionDetails.customer_email}</span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-4 w-4 text-[#F15601]" />
+                  <div className="flex-1">
+                    <span className="text-gray-400 text-sm">Pradžios data:</span>
+                    <span className="ml-2 font-medium text-white">
+                      {new Date(subscriptionDetails.start_date).toLocaleDateString('lt-LT')}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <Calendar className="h-4 w-4 text-[#F15601]" />
+                  <div className="flex-1">
+                    <span className="text-gray-400 text-sm">Pabaigos data:</span>
+                    <span className="ml-2 font-medium text-white">
+                      {new Date(subscriptionDetails.end_date).toLocaleDateString('lt-LT')}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
 
-      <div className="space-y-4">
-        <p className="text-sm text-gray-500">You will receive a confirmation email shortly with your subscription details.</p>
-        {sessionId && (
-          <p className="text-xs text-gray-400">Session ID: {sessionId}</p>
-        )}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/dashboard/subscriptions">
-            <Button className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700">
-              Go to Subscriptions Dashboard
+          <div className="flex flex-col space-y-3">
+            <Button asChild className="w-full bg-[#F15601] hover:bg-[#E04501] text-white">
+              <Link href="/dashboard">Grįžti į pradžią</Link>
             </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button variant="outline" className="w-full sm:w-auto">
-              Go to Dashboard
+            <Button variant="outline" asChild className="w-full border-gray-600 text-white hover:bg-[#0A2065]">
+              <Link href="/dashboard/subscriptions">Peržiūrėti prenumeratas</Link>
             </Button>
-          </Link>
+          </div>
         </div>
       </div>
     </div>
@@ -133,12 +163,7 @@ function SubscriptionSuccessContent() {
 
 export default function SubscriptionSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="container max-w-lg mx-auto p-8 mt-16 bg-white rounded shadow text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-        <p>Loading...</p>
-      </div>
-    }>
+    <Suspense fallback={<div>Loading...</div>}>
       <SubscriptionSuccessContent />
     </Suspense>
   );

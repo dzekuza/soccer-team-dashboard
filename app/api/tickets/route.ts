@@ -83,13 +83,39 @@ export async function GET(request: NextRequest) {
   )
 
   try {
-    const { data, error } = await supabaseService.getTicketsWithDetails();
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get('session_id');
 
-    if (error) {
-      throw error;
+    if (sessionId) {
+      // Fetch tickets for a specific session (for success page)
+      const { data: tickets, error } = await supabase
+        .from('tickets')
+        .select(`
+          id,
+          qr_code_url,
+          purchaser_name,
+          purchaser_email,
+          status,
+          created_at
+        `)
+        .eq('stripe_session_id', sessionId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return NextResponse.json({ tickets: tickets || [] });
+    } else {
+      // Fetch all tickets (for dashboard)
+      const { data, error } = await supabaseService.getTicketsWithDetails();
+
+      if (error) {
+        throw error;
+      }
+
+      return NextResponse.json(data);
     }
-
-    return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching tickets:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
