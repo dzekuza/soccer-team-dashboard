@@ -1,23 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
-import { Download, Plus, Mail, MoreHorizontal, QrCode } from "lucide-react"
+import { Download, Plus, Mail, MoreHorizontal, QrCode, Calendar, Clock, MapPin, X, Search } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuTrigger 
-} from "@/components/ui/dropdown-menu"
-import { useToast } from "@/components/ui/use-toast"
-import { TicketPreview } from "@/components/ticket-preview"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { QRCodeCanvas } from 'qrcode.react'
+import { useToast } from "@/components/ui/use-toast"
+import { createPortal } from 'react-dom'
 
 interface TicketsClientProps {
     initialTickets: TicketWithDetails[];
@@ -64,8 +60,33 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
     }
   }
 
-  const handleDownloadPDF = (ticket: TicketWithDetails) => {
-    window.open(`/api/tickets/${ticket.id}/download`, "_blank")
+  const handleDownloadPDF = async (ticket: TicketWithDetails) => {
+    try {
+      const response = await fetch(`/api/tickets/${ticket.id}/download`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to download ticket.");
+      }
+      
+      // Get the filename from the Content-Disposition header
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const filename = contentDisposition 
+        ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
+        : `ticket-${ticket.id}.pdf`;
+      
+      // Create a blob and download it
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Could not download ticket.");
+    }
   }
 
   const filteredTickets = tickets.filter(ticket => {
@@ -81,82 +102,89 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Bilietai</h1>
-          <p className="text-gray-600">Tvarkykite ir generuokite renginių bilietus</p>
+          <h1 className="text-3xl font-bold text-white">Bilietai</h1>
+          <p className="text-gray-300">Tvarkykite ir generuokite renginių bilietus</p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#F15601] hover:bg-[#E04501] text-white">
           <Plus className="h-4 w-4 mr-2" />
           Generuoti bilietą
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-4">
-        <input
-          type="text"
-          placeholder="Filtruoti pagal renginio pavadinimą"
-          value={eventNameFilter}
-          onChange={e => setEventNameFilter(e.target.value)}
-          className="w-full sm:w-64 h-12 rounded-[16px] border border-[#5F5F71] bg-[#0A2065] px-5 py-3 text-base text-white placeholder:text-[#B6C1E2] focus:border-[#F15601] focus:bg-[#0A2065] outline-none transition-all"
-        />
-        <select
-          value={scanStatus}
-          onChange={e => setScanStatus(e.target.value as "all" | "scanned" | "not_scanned")}
-          className="w-full sm:w-48 h-12 rounded-[16px] border border-[#5F5F71] bg-[#0A2065] px-5 py-3 text-base text-white focus:border-[#F15601] focus:bg-[#0A2065] outline-none transition-all"
-        >
-          <option value="all">Visi bilietai</option>
-          <option value="scanned">Tik nuskenuoti</option>
-          <option value="not_scanned">Tik nenuskenuoti</option>
-        </select>
+      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Filtruoti pagal renginio pavadinimą"
+            value={eventNameFilter}
+            onChange={e => setEventNameFilter(e.target.value)}
+            className="pl-10 bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+          />
+        </div>
+        <Select value={scanStatus} onValueChange={(value) => setScanStatus(value as "all" | "scanned" | "not_scanned")}>
+          <SelectTrigger className="w-full sm:w-48 bg-white/10 border-gray-600 text-white focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1">
+            <SelectValue placeholder="Filtruoti bilietus" />
+          </SelectTrigger>
+          <SelectContent className="bg-[#0A165B] border-gray-600">
+            <SelectItem value="all" className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">Visi bilietai</SelectItem>
+            <SelectItem value="scanned" className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">Tik nuskenuoti</SelectItem>
+            <SelectItem value="not_scanned" className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">Tik nenuskenuoti</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="hidden md:block bg-card text-card-foreground rounded shadow overflow-x-auto">
+      <div className="hidden md:block bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Renginys</TableHead>
-              <TableHead>Pirkėjas</TableHead>
-              <TableHead>El. paštas</TableHead>
-              <TableHead>Data</TableHead>
-              <TableHead>Laikas</TableHead>
-              <TableHead>Tipas</TableHead>
-              <TableHead>Kaina</TableHead>
-              <TableHead>Statusas</TableHead>
-              <TableHead>Veiksmai</TableHead>
+            <TableRow className="border-gray-700 hover:bg-[#0A2065]/50">
+              <TableHead className="text-gray-300 font-medium">Renginys</TableHead>
+              <TableHead className="text-gray-300 font-medium">Pirkėjas</TableHead>
+              <TableHead className="text-gray-300 font-medium">El. paštas</TableHead>
+              <TableHead className="text-gray-300 font-medium">Data</TableHead>
+              <TableHead className="text-gray-300 font-medium">Laikas</TableHead>
+              <TableHead className="text-gray-300 font-medium">Tipas</TableHead>
+              <TableHead className="text-gray-300 font-medium">Kaina</TableHead>
+              <TableHead className="text-gray-300 font-medium">Statusas</TableHead>
+              <TableHead className="text-gray-300 font-medium">Veiksmai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredTickets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">Nėra bilietų pagal pasirinktus filtrus</TableCell>
+                <TableCell colSpan={9} className="text-center py-8 text-gray-400">Nėra bilietų pagal pasirinktus filtrus</TableCell>
               </TableRow>
             ) : (
               filteredTickets.map((ticket) => (
-                <TableRow key={ticket.id}>
-                  <TableCell>{ticket.event.title}</TableCell>
-                  <TableCell>{ticket.purchaserName}</TableCell>
-                  <TableCell>{ticket.purchaserEmail}</TableCell>
-                  <TableCell>{ticket.event.date}</TableCell>
-                  <TableCell>{ticket.event.time}</TableCell>
-                  <TableCell>{ticket.tier.name}</TableCell>
-                  <TableCell>{ticket.tier.price} €</TableCell>
+                <TableRow key={ticket.id} className="border-gray-700 hover:bg-[#0A2065]/30 transition-colors">
+                  <TableCell className="text-white font-medium">{ticket.event.title}</TableCell>
+                  <TableCell className="text-white">{ticket.purchaserName}</TableCell>
+                  <TableCell className="text-gray-300">{ticket.purchaserEmail}</TableCell>
+                  <TableCell className="text-white">{ticket.event.date}</TableCell>
+                  <TableCell className="text-white">{ticket.event.time}</TableCell>
+                  <TableCell className="text-gray-300">{ticket.tier.name}</TableCell>
+                  <TableCell className="text-[#F15601] font-semibold">{ticket.tier.price} €</TableCell>
                   <TableCell>
-                    <Badge variant={ticket.isValidated ? "default" : "success"}>
+                    <Badge 
+                      variant={ticket.isValidated ? "default" : "secondary"}
+                      className={ticket.isValidated ? "bg-green-600 text-white" : "bg-[#F15601] text-white"}
+                    >
                       {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button variant="ghost" className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-[#0A2065]/50">
                           <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => setPreviewTicket(ticket)}>
+                      <DropdownMenuContent align="end" className="bg-[#0A165B] border-gray-600">
+                        <DropdownMenuItem onClick={() => setPreviewTicket(ticket)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
                           <span>Peržiūrėti</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setQrTicket(ticket)}>
+                        <DropdownMenuItem onClick={() => setQrTicket(ticket)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
                           <QrCode className="mr-2 h-4 w-4" />
                           <span>Peržiūrėti QR</span>
                         </DropdownMenuItem>
@@ -164,21 +192,37 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                           onClick={async () => {
                             try {
                               const response = await fetch(`/api/tickets/${ticket.id}/download`);
-                              const data = await response.json();
-                              if (data.downloadUrl) {
-                                window.open(data.downloadUrl, "_blank");
-                              } else {
-                                throw new Error(data.error || "Failed to get download link.");
+                              if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(errorData.error || "Failed to download ticket.");
                               }
+                              
+                              // Get the filename from the Content-Disposition header
+                              const contentDisposition = response.headers.get('Content-Disposition');
+                              const filename = contentDisposition 
+                                ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
+                                : `ticket-${ticket.id}.pdf`;
+                              
+                              // Create a blob and download it
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = filename;
+                              document.body.appendChild(a);
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                              document.body.removeChild(a);
                             } catch (error) {
                               alert(error instanceof Error ? error.message : "Could not download ticket.");
                             }
                           }}
+                          className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]"
                         >
                           <Download className="mr-2 h-4 w-4" />
                           <span>Atsisiųsti</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)}>
+                        <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
                           <Mail className="mr-2 h-4 w-4" />
                           <span>Siųsti iš naujo</span>
                         </DropdownMenuItem>
@@ -193,23 +237,89 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
       </div>
 
       {/* Ticket Preview Modal */}
-      <Dialog open={!!previewTicket} onOpenChange={() => setPreviewTicket(null)}>
-        <DialogContent className="max-w-lg">
-          {previewTicket && <TicketPreview ticket={previewTicket} onDownload={() => handleDownloadPDF(previewTicket)} />}
-        </DialogContent>
-      </Dialog>
+      {previewTicket && createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setPreviewTicket(null);
+            }
+          }}
+        >
+          <div className="bg-[#0A165B] rounded-2xl p-6 shadow-md relative max-w-md w-full">
+            <div className="flex items-center justify-between mb-2">
+              <div className="h-4 w-24 bg-[#0A2065] rounded-full" />
+              <Badge variant="default" className="bg-[#F15601] text-white font-bold px-4 py-1 rounded-full text-xs">
+                {previewTicket.isValidated ? "VALID" : "VALID"}
+              </Badge>
+            </div>
+            <div className="text-center mb-4">
+              <h2 className="text-xl font-bold text-white">{previewTicket.event.title}</h2>
+            </div>
+            <div className="flex items-center justify-center gap-4 text-white mb-2">
+              <div className="flex items-center gap-1 text-base">
+                <Calendar className="h-5 w-5" />
+                <span>{previewTicket.event.date}</span>
+              </div>
+              <div className="flex items-center gap-1 text-base">
+                <Clock className="h-5 w-5" />
+                <span>{previewTicket.event.time}</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-2 text-white mb-4">
+              <MapPin className="h-5 w-5" />
+              <span>{previewTicket.event.location}</span>
+            </div>
+            <div className="bg-[#0A2065] rounded-xl p-4 mb-4 flex justify-end">
+              <span className="text-[#F15601] text-xl font-bold">{previewTicket.tier.price} €</span>
+            </div>
+            <div className="bg-[#0A2065] rounded-xl p-4 mb-4 flex flex-col items-center">
+              <QRCodeCanvas 
+                value={previewTicket.id} 
+                size={128} 
+                className="mx-auto"
+                level="M"
+                includeMargin={true}
+              />
+              <p className="text-xs text-gray-300 mt-2">QR Code</p>
+              <p className="text-xs text-gray-400">{previewTicket.id.slice(-8)}</p>
+            </div>
+            <Button onClick={() => handleDownloadPDF(previewTicket)} className="w-full bg-[#F15601] hover:bg-[#E04501] text-white rounded-lg text-lg font-semibold py-3 mt-2">
+              <Download className="h-5 w-5 mr-2" />
+              Download PDF
+            </Button>
+            <div className="text-center text-xs text-gray-300 border-t border-[#0A2065] pt-2 mt-4">
+              <p>Ticket ID: {previewTicket.id}</p>
+              <p>Generated: {new Date(previewTicket.createdAt).toLocaleDateString()}</p>
+            </div>
+            <button onClick={() => setPreviewTicket(null)} className="absolute top-4 right-4 text-white hover:text-gray-300">
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
       {/* QR Code Modal */}
-      <Dialog open={!!qrTicket} onOpenChange={() => setQrTicket(null)}>
-        <DialogContent key={qrTicket?.id} className="flex flex-col items-center max-w-xs">
-          {qrTicket ? (
-            <>
-              <h2 className="text-lg font-bold mb-2">QR kodas</h2>
-              <QRCodeCanvas value={qrTicket.qrCodeUrl ?? qrTicket.id} size={192} className="mx-auto" />
-              <div className="text-xs text-gray-500 mt-2">{qrTicket.id}</div>
-            </>
-          ) : null}
-        </DialogContent>
-      </Dialog>
+      {qrTicket && createPortal(
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setQrTicket(null);
+            }
+          }}
+        >
+          <div className="bg-white rounded-lg p-6 shadow-lg max-w-xs w-full">
+            <h2 className="text-lg font-bold mb-2 text-[#0A165B]">QR kodas</h2>
+            <QRCodeCanvas value={qrTicket.qrCodeUrl ?? qrTicket.id} size={192} className="mx-auto" />
+            <div className="text-xs text-gray-500 mt-2">{qrTicket.id}</div>
+            <button onClick={() => setQrTicket(null)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
+              <X className="h-6 w-6" />
+            </button>
+          </div>
+        </div>,
+        document.body
+      )}
 
       <div className="md:hidden space-y-4">
         {filteredTickets.length === 0 ? (

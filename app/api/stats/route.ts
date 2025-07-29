@@ -1,11 +1,22 @@
-import { createRouteHandlerClient } from '@supabase/ssr'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from "next/server"
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies: () => cookies() })
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  )
   try {
     // First, verify there is an authenticated user.
     const { data: { user }, error: userError } = await supabase.auth.getUser()

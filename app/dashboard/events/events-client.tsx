@@ -9,6 +9,10 @@ import type { EventWithTiers, TicketWithDetails, Team } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 import { EventCard } from "@/components/event-card"
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, Clock, MapPin, Trash2, Edit, Eye } from "lucide-react"
+import { formatCurrency } from "@/lib/utils"
 
 import * as React from "react"
 import {
@@ -51,6 +55,7 @@ interface CalendarData {
 interface FullScreenCalendarProps {
   data: CalendarData[]
   onNewEventClick: () => void;
+  onEventClick: (eventId: string) => void;
 }
 
 const colStartClasses = [
@@ -63,7 +68,7 @@ const colStartClasses = [
   "col-start-7",
 ]
 
-function FullScreenCalendar({ data, onNewEventClick }: FullScreenCalendarProps) {
+function FullScreenCalendar({ data, onNewEventClick, onEventClick }: FullScreenCalendarProps) {
   const today = startOfToday()
   const [selectedDay, setSelectedDay] = React.useState(today)
   const [currentMonth, setCurrentMonth] = React.useState(
@@ -135,7 +140,7 @@ function FullScreenCalendar({ data, onNewEventClick }: FullScreenCalendarProps) 
             </Button>
             <Button
               onClick={goToToday}
-              className="w-full rounded-none shadow-none first:rounded-s-lg last:rounded-e-lg focus-visible:z-10 md:w-auto"
+              className="w-full rounded-none shadow-none first:rounded-s-lg last:rounded-s-lg focus-visible:z-10 md:w-auto"
               variant="outline"
             >
               Today
@@ -231,7 +236,11 @@ function FullScreenCalendar({ data, onNewEventClick }: FullScreenCalendarProps) 
                         {day.events.slice(0, 1).map((event) => (
                           <div
                             key={event.id}
-                            className="flex flex-col items-start gap-1 rounded-lg border bg-muted/50 p-2 text-xs leading-tight"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEventClick(event.id);
+                            }}
+                            className="flex flex-col items-start gap-1 rounded-lg border bg-muted/50 p-2 text-xs leading-tight cursor-pointer hover:bg-muted/75 transition-colors"
                           >
                             <p className="font-medium leading-none">
                               {event.name}
@@ -333,6 +342,8 @@ export default function EventsClient({
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [view, setView] = useState<'grid' | 'calendar'>('grid')
+  const [selectedEvent, setSelectedEvent] = useState<EventWithTiers | null>(null)
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false)
 
   const handleEventCreated = async () => {
     window.location.reload();
@@ -362,6 +373,14 @@ export default function EventsClient({
       alert(errorMessage);
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  const handleEventClick = (eventId: string) => {
+    const event = events.find(e => e.id === eventId);
+    if (event) {
+      setSelectedEvent(event);
+      setIsEventModalOpen(true);
     }
   }
 
@@ -481,8 +500,116 @@ export default function EventsClient({
           </div>
         )
       ) : (
-        <FullScreenCalendar data={calendarData} onNewEventClick={() => setIsCreateDialogOpen(true)} />
+        <FullScreenCalendar 
+          data={calendarData} 
+          onNewEventClick={() => setIsCreateDialogOpen(true)}
+          onEventClick={handleEventClick}
+        />
       )}
+
+      {/* Event Preview Modal */}
+      <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
+        <DialogContent className="max-w-2xl bg-[#0A165B] border-[#0A2065]">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold text-white">
+              Renginio peržiūra
+            </DialogTitle>
+          </DialogHeader>
+          {selectedEvent && (
+            <div className="space-y-6">
+              {/* Event Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white">{selectedEvent.title}</h3>
+                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-300">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>{selectedEvent.date}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      <span>{selectedEvent.time}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{selectedEvent.location}</span>
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="secondary" className="bg-[#F15601] text-white">
+                  {selectedEvent.pricingTiers?.length || 0} kainų lygiai
+                </Badge>
+              </div>
+
+              {/* Event Description */}
+              {selectedEvent.description && (
+                <div>
+                  <h4 className="font-medium text-white mb-2">Aprašymas</h4>
+                  <p className="text-gray-300 text-sm">{selectedEvent.description}</p>
+                </div>
+              )}
+
+              {/* Pricing Tiers */}
+              {selectedEvent.pricingTiers && selectedEvent.pricingTiers.length > 0 && (
+                <div>
+                  <h4 className="font-medium text-white mb-3">Kainų lygiai</h4>
+                  <div className="space-y-2">
+                    {selectedEvent.pricingTiers.map((tier) => (
+                      <div key={tier.id} className="flex items-center justify-between p-3 bg-[#0A2065] rounded-lg">
+                        <div>
+                          <span className="font-medium text-white">{tier.name}</span>
+                          <p className="text-sm text-gray-300">Kiekis: {tier.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-[#F15601]">{formatCurrency(tier.price)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-[#0A2065]">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-gray-600 text-white hover:bg-gray-700"
+                  onClick={() => {
+                    // TODO: Implement edit functionality
+                    alert('Redagavimo funkcija bus pridėta vėliau');
+                  }}
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Redaguoti
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 border-gray-600 text-white hover:bg-gray-700"
+                  onClick={() => {
+                    // TODO: Implement view details functionality
+                    alert('Detalės bus rodomos vėliau');
+                  }}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Peržiūrėti
+                </Button>
+                <Button 
+                  variant="destructive" 
+                  className="flex-1"
+                  onClick={() => {
+                    setIsEventModalOpen(false);
+                    handleDeleteEvent(selectedEvent.id);
+                  }}
+                  disabled={deletingId === selectedEvent.id}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {deletingId === selectedEvent.id ? 'Ištrinama...' : 'Ištrinti'}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <CreateEventDialog
         open={isCreateDialogOpen}

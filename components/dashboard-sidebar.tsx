@@ -24,15 +24,15 @@ export function DashboardSidebar() {
   const supabase = createClient()
 
   const navItems = [
-    { name: "Overview", href: "/dashboard/overview", icon: BarChart2 },
-    { name: "Events", href: "/dashboard/events", icon: Calendar },
-    { name: "Tickets", href: "/dashboard/tickets", icon: Ticket },
-    { name: "Subscriptions", href: "/dashboard/subscriptions", icon: Ticket },
-    { name: "Fans", href: "/dashboard/fans", icon: Users },
-    { name: "QR Scanner", href: "/dashboard/scanner", icon: QrCode },
-    { name: "Export", href: "/dashboard/export", icon: Download },
-    { name: "Templates", href: "/dashboard/templates", icon: Settings },
-    { name: "Marketing", href: "/dashboard/marketing", icon: Megaphone },
+    { name: "Suvestinė", href: "/dashboard/overview", icon: BarChart2 },
+    { name: "Renginiai", href: "/dashboard/events", icon: Calendar },
+    { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
+    { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
+    { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
+    { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: QrCode },
+    { name: "Eksportas", href: "/dashboard/export", icon: Download },
+    { name: "Šablonai", href: "/dashboard/templates", icon: Settings },
+    { name: "Rinkodara", href: "/dashboard/marketing", icon: Megaphone },
   ]
 
   // Dropdown state for My Team
@@ -77,19 +77,19 @@ export function DashboardSidebar() {
                 aria-expanded={myTeamOpen}
               >
                 <Users className="h-5 w-5 mr-3" />
-                My Team
+                Mano komanda
                 {myTeamOpen ? <ChevronUp className="ml-auto h-4 w-4" /> : <ChevronDown className="ml-auto h-4 w-4" />}
               </button>
               {(myTeamOpen || isMyTeamActive) && (
                 <ul className="ml-8 mt-1 space-y-1">
                   <li>
-                    <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Players</Link>
+                    <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Žaidėjai</Link>
                   </li>
                   <li>
-                    <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Matches</Link>
+                    <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Rungtynės</Link>
                   </li>
                   <li>
-                    <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Standings</Link>
+                    <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Lentelė</Link>
                   </li>
                 </ul>
               )}
@@ -131,19 +131,19 @@ export function DashboardSidebar() {
                     aria-expanded={myTeamOpen}
                   >
                     <Users className="h-5 w-5 mr-3" />
-                    My Team
+                    Mano komanda
                     {myTeamOpen ? <ChevronUp className="ml-auto h-4 w-4" /> : <ChevronDown className="ml-auto h-4 w-4" />}
                   </button>
                   {(myTeamOpen || isMyTeamActive) && (
                     <ul className="ml-8 mt-1 space-y-1">
                       <li>
-                        <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-gray-200" : "hover:bg-gray-100")}>Players</Link>
+                        <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-gray-200" : "hover:bg-gray-100")}>Žaidėjai</Link>
                       </li>
                       <li>
-                        <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-gray-200" : "hover:bg-gray-100")}>Matches</Link>
+                        <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-gray-200" : "hover:bg-gray-100")}>Rungtynės</Link>
                       </li>
                       <li>
-                        <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-gray-200" : "hover:bg-gray-100")}>Standings</Link>
+                        <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-gray-200" : "hover:bg-gray-100")}>Lentelė</Link>
                       </li>
                     </ul>
                   )}

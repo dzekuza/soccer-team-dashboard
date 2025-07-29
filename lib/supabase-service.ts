@@ -280,7 +280,6 @@ export const supabaseService = {
         createdAt: t.created_at,
         validatedAt: t.validated_at ?? null,
         qrCodeUrl: t.qr_code_url ?? '',
-        userId: t.user_id ?? undefined,
         event: { // No need for a conditional check, as it's guaranteed by the filter
           id: t.events.id,
           title: t.events.title,
@@ -387,7 +386,7 @@ export const supabaseService = {
           purchaser_email: ticketData.purchaserEmail,
           is_validated: false,
           qr_code_url: qrCodeUrl,
-          user_id: ticketData.userId,
+          // user_id: ticketData.userId, // Removed - column was dropped from schema
         })
         .select()
         .single()
@@ -718,6 +717,57 @@ export const supabaseService = {
       // Implementation of getUser function
     } catch (error) {
       console.error("Supabase Service: Error in getUser:", error);
+      throw error;
+    }
+  },
+
+  // User registration with corporation
+  registerUserWithCorporation: async (userData: {
+    email: string;
+    password: string;
+    name?: string;
+    corporation_id: string;
+  }): Promise<any> => {
+    try {
+      // Create user with Supabase Auth
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email: userData.email,
+        password: userData.password,
+        email_confirm: true,
+        user_metadata: {
+          name: userData.name,
+          corporation_id: userData.corporation_id
+        }
+      });
+
+      if (authError) {
+        console.error("Error creating user:", authError);
+        throw new Error(`Failed to create user: ${authError.message}`);
+      }
+
+      // Insert user profile into users table
+      const { data: profileData, error: profileError } = await supabaseAdmin
+        .from("users")
+        .insert({
+          id: authData.user.id,
+          email: userData.email,
+          name: userData.name,
+          corporation_id: userData.corporation_id,
+          role: "admin"
+        })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error("Error creating user profile:", profileError);
+        // Clean up auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+        throw new Error(`Failed to create user profile: ${profileError.message}`);
+      }
+
+      return profileData;
+    } catch (error) {
+      console.error("Supabase Service: Error in registerUserWithCorporation:", error);
       throw error;
     }
   },

@@ -31,9 +31,9 @@ export const dbService = {
         .from('events')
         .insert([{
           ...event,
-          team1_id: event.team1_id,
-          team2_id: event.team2_id,
-          cover_image_url: event.cover_image_url
+          team1_id: event.team1Id,
+          team2_id: event.team2Id,
+          cover_image_url: event.coverImageUrl
         }])
         .select()
         .single()
@@ -266,7 +266,9 @@ export const dbService = {
         totalEvents: 0,
         totalTickets: 0,
         validatedTickets: 0,
-        totalRevenue: 0
+        totalRevenue: 0,
+        ticketsScanned: 0,
+        revenue: 0
       };
     }
 
@@ -298,7 +300,9 @@ export const dbService = {
         totalEvents: events.length,
         totalTickets: 0,
         validatedTickets: 0,
-        totalRevenue: 0
+        totalRevenue: 0,
+        ticketsScanned: 0,
+        revenue: 0
       };
     }
 
@@ -309,7 +313,41 @@ export const dbService = {
       totalEvents: events.length,
       totalTickets: tickets.length,
       validatedTickets,
-      totalRevenue
+      totalRevenue,
+      ticketsScanned: validatedTickets,
+      revenue: totalRevenue
     };
+  },
+
+  // Ticket validation
+  validateTicket: async (ticketId: string): Promise<{ success: boolean; ticket?: TicketWithDetails }> => {
+    try {
+      const { data: ticket, error } = await supabase
+        .from('tickets')
+        .update({ 
+          is_validated: true, 
+          validated_at: new Date().toISOString() 
+        })
+        .eq('id', ticketId)
+        .select(`
+          *,
+          event:events (*),
+          pricing_tier:pricing_tiers (*)
+        `)
+        .single();
+
+      if (error) {
+        console.error('Error validating ticket:', error);
+        return { success: false };
+      }
+
+      return { 
+        success: true, 
+        ticket: ticket as TicketWithDetails 
+      };
+    } catch (error) {
+      console.error('Error in validateTicket:', error);
+      return { success: false };
+    }
   }
 }

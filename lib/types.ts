@@ -1,4 +1,14 @@
 // Base types
+export interface User {
+  id: string
+  email: string
+  name?: string
+  created_at?: string
+  updated_at?: string
+  role?: string
+  corporation_id?: string
+}
+
 export interface Event {
   id: string
   title: string
@@ -37,7 +47,7 @@ export interface Ticket {
   createdAt: string
   validatedAt: string | null
   qrCodeUrl: string // Added QR code URL
-  userId?: string // Added for user assignment
+  userId?: string // Optional - column was removed from schema
   status?: "pending" | "paid" | "cancelled" // Added for ticket status
   eventCoverImageUrl?: string // Added for event cover image from covers bucket
   eventDate?: string // Added for event date assigned to ticket
@@ -108,6 +118,18 @@ export interface Subscription {
 }
 
 export type UserSubscription = Subscription;
+
+export interface SubscriptionPlan {
+  id: string;
+  title: string;
+  description: string;
+  price: number;
+  durationDays: number;
+  features?: string[];
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface RecentActivity {
   type: 'event_created' | 'ticket_generated' | 'ticket_validated';
@@ -191,4 +213,185 @@ export interface Player {
   name_first?: string | null;
   name_last?: string | null;
   team_key?: "BANGA A" | "BANGA B" | "BANGA M" | null;
+}
+
+// Database type for Supabase
+export interface Database {
+  public: {
+    Tables: {
+      events: {
+        Row: {
+          id: string
+          title: string
+          description: string
+          date: string
+          time: string
+          location: string
+          created_at: string
+          updated_at: string
+          team1_id?: string
+          team2_id?: string
+          cover_image_url?: string
+          corporation_id?: string
+        }
+        Insert: {
+          id?: string
+          title: string
+          description: string
+          date: string
+          time: string
+          location: string
+          created_at?: string
+          updated_at?: string
+          team1_id?: string
+          team2_id?: string
+          cover_image_url?: string
+          corporation_id?: string
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string
+          date?: string
+          time?: string
+          location?: string
+          created_at?: string
+          updated_at?: string
+          team1_id?: string
+          team2_id?: string
+          cover_image_url?: string
+          corporation_id?: string
+        }
+      }
+      tickets: {
+        Row: {
+          id: string
+          event_id: string
+          tier_id: string
+          purchaser_name: string
+          purchaser_surname?: string
+          purchaser_email: string
+          is_validated: boolean
+          created_at: string
+          validated_at: string | null
+          qr_code_url: string
+          status?: string
+          event_cover_image_url?: string
+          event_date?: string
+          event_title?: string
+          event_description?: string
+          event_location?: string
+          event_time?: string
+          team1_id?: string
+          team2_id?: string
+          team_id?: string
+          pdf_url?: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          tier_id: string
+          purchaser_name: string
+          purchaser_surname?: string
+          purchaser_email: string
+          is_validated?: boolean
+          created_at?: string
+          validated_at?: string | null
+          qr_code_url: string
+          status?: string
+          event_cover_image_url?: string
+          event_date?: string
+          event_title?: string
+          event_description?: string
+          event_location?: string
+          event_time?: string
+          team1_id?: string
+          team2_id?: string
+          team_id?: string
+          pdf_url?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          tier_id?: string
+          purchaser_name?: string
+          purchaser_surname?: string
+          purchaser_email?: string
+          is_validated?: boolean
+          created_at?: string
+          validated_at?: string | null
+          qr_code_url?: string
+          status?: string
+          event_cover_image_url?: string
+          event_date?: string
+          event_title?: string
+          event_description?: string
+          event_location?: string
+          event_time?: string
+          team1_id?: string
+          team2_id?: string
+          team_id?: string
+          pdf_url?: string
+        }
+      }
+      pricing_tiers: {
+        Row: {
+          id: string
+          event_id: string
+          name: string
+          price: number
+          quantity: number
+          sold_quantity: number
+          description?: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          name: string
+          price: number
+          quantity: number
+          sold_quantity?: number
+          description?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          name?: string
+          price?: number
+          quantity?: number
+          sold_quantity?: number
+          description?: string
+        }
+      }
+      users: {
+        Row: {
+          id: string
+          email: string
+          name?: string
+          created_at?: string
+          updated_at?: string
+          role?: string
+          corporation_id?: string
+        }
+        Insert: {
+          id?: string
+          email: string
+          name?: string
+          created_at?: string
+          updated_at?: string
+          role?: string
+          corporation_id?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          name?: string
+          created_at?: string
+          updated_at?: string
+          role?: string
+          corporation_id?: string
+        }
+      }
+    }
+  }
 }

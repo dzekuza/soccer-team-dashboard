@@ -25,12 +25,14 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
   const eventTickets = tickets.filter(t => t.eventId === event.id)
   const missingTeam = !team1 || !team2
 
-  const totalGenerated = event.pricingTiers?.reduce((acc, tier) => acc + eventTickets.filter(t => t.tierId === tier.id).length, 0) || 0
+  // Count all tickets for this event (regardless of tier)
+  const totalGenerated = eventTickets.length
+  // Sum up the total quantity from all pricing tiers
   const totalQuantity = event.pricingTiers?.reduce((acc, tier) => acc + tier.quantity, 0) || 0
   const progress = totalQuantity > 0 ? (totalGenerated / totalQuantity) * 100 : 0
 
   return (
-    <Card className="flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card text-card-foreground">
+    <Card className="group flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card text-card-foreground">
       <div className="relative">
         <Image 
           src={event.coverImageUrl || '/placeholder.jpg'} 
@@ -40,6 +42,18 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
           className="w-full h-48 object-cover" 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        
+        {/* Delete button in top-right corner */}
+        <Button
+          variant="destructive"
+          size="sm"
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+          disabled={deletingId === event.id}
+          onClick={() => onDelete(event.id)}
+        >
+          <Trash2 className="w-4 h-4" />
+        </Button>
+        
         <div className="absolute bottom-0 left-0 p-4">
           <CardTitle className="text-white text-xl font-bold">
             <Link href={`/dashboard/events/${event.id}`} className="hover:underline">
@@ -107,41 +121,33 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
         </div>
       </CardContent>
 
-      <CardFooter className="bg-muted/50 p-4 flex justify-between gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={async () => {
-            await navigator.clipboard.writeText(`${window.location.origin}/event/${event.id}`)
-            alert('Nuoroda nukopijuota!')
-          }}
-        >
-          <Share2 className="w-4 h-4 mr-2" /> Dalintis
-        </Button>
-        <div className="flex gap-2">
-            <Button
-              size="sm"
-              onClick={() => (window.location.href = `/dashboard/tickets?eventId=${event.id}`)}
-            >
-              <Ticket className="w-4 h-4 mr-2" /> Bilietai
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              asChild
-            >
-              <Link href={`/event/${event.id}`}>
-                <Eye className="w-4 h-4 mr-2" /> Peržiūrėti
-              </Link>
-            </Button>
-            <Button
-              variant="destructive"
-              size="sm"
-              disabled={deletingId === event.id}
-              onClick={() => onDelete(event.id)}
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+      <CardFooter className="bg-muted/50 p-4">
+        <div className="flex flex-wrap gap-2 w-full justify-center">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              await navigator.clipboard.writeText(`${window.location.origin}/event/${event.id}`)
+              alert('Nuoroda nukopijuota!')
+            }}
+          >
+            <Share2 className="w-4 h-4 mr-2" /> Dalintis
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => (window.location.href = `/dashboard/tickets?eventId=${event.id}`)}
+          >
+            <Ticket className="w-4 h-4 mr-2" /> Bilietai
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            asChild
+          >
+            <Link href={`/event/${event.id}`}>
+              <Eye className="w-4 h-4 mr-2" /> Peržiūrėti
+            </Link>
+          </Button>
         </div>
       </CardFooter>
     </Card>

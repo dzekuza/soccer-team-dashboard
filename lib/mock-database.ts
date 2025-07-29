@@ -51,19 +51,19 @@ const initializeMockData = () => {
 
   // Create pricing tiers
   const demoPricingTiers = [
-    // Championship Final tiers
-    { eventId: "event_1", name: "General Admission", price: 25.0, maxQuantity: 300, soldQuantity: 45 },
-    { eventId: "event_1", name: "VIP Seating", price: 65.0, maxQuantity: 100, soldQuantity: 12 },
-    { eventId: "event_1", name: "Premium Box", price: 150.0, maxQuantity: 20, soldQuantity: 3 },
+    // Championship Match tiers
+    { eventId: "event_1", name: "VIP Seating", price: 50.0, quantity: 100, soldQuantity: 45 },
+    { eventId: "event_1", name: "Premium Seating", price: 35.0, quantity: 200, soldQuantity: 78 },
+    { eventId: "event_1", name: "General Admission", price: 25.0, quantity: 500, soldQuantity: 234 },
 
-    // Season Opener tiers
-    { eventId: "event_2", name: "General Admission", price: 20.0, maxQuantity: 250, soldQuantity: 67 },
-    { eventId: "event_2", name: "Student Discount", price: 15.0, maxQuantity: 100, soldQuantity: 23 },
-    { eventId: "event_2", name: "VIP Seating", price: 45.0, maxQuantity: 75, soldQuantity: 8 },
+    // League Match tiers
+    { eventId: "event_2", name: "General Admission", price: 20.0, quantity: 250, soldQuantity: 67 },
+    { eventId: "event_2", name: "Student Discount", price: 15.0, quantity: 100, soldQuantity: 23 },
+    { eventId: "event_2", name: "VIP Seating", price: 45.0, quantity: 75, soldQuantity: 8 },
 
     // Youth Showcase tiers
-    { eventId: "event_3", name: "General Admission", price: 10.0, maxQuantity: 200, soldQuantity: 34 },
-    { eventId: "event_3", name: "Family Package", price: 30.0, maxQuantity: 60, soldQuantity: 15 },
+    { eventId: "event_3", name: "General Admission", price: 10.0, quantity: 200, soldQuantity: 34 },
+    { eventId: "event_3", name: "Family Package", price: 30.0, quantity: 60, soldQuantity: 15 },
   ]
 
   const pricingTiers = demoPricingTiers.map((tier, index) => ({

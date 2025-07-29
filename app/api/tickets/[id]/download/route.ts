@@ -81,32 +81,18 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
 
     const pdfBytes = await generateTicketPDF(ticket, team1 || undefined, team2 || undefined)
     
-    const filePath = `public/ticket-${ticket.id}.pdf`;
-    const { error: uploadError } = await supabaseAdmin.storage
-      .from('ticket-pdfs')
-      .upload(filePath, pdfBytes, {
-        contentType: 'application/pdf',
-        upsert: true,
-      });
-
-    if (uploadError) {
-      console.error("Error uploading PDF:", uploadError);
-      throw new Error(`Failed to upload ticket PDF: ${uploadError.message}`);
-    }
-
-    const { data: urlData } = supabaseAdmin.storage
-      .from('ticket-pdfs')
-      .getPublicUrl(filePath);
-
-    await supabaseAdmin
-      .from('tickets')
-      .update({ pdf_url: urlData.publicUrl })
-      .eq('id', ticket.id);
-
-    return NextResponse.json({ downloadUrl: urlData.publicUrl });
+    // Return the PDF file directly
+    return new NextResponse(pdfBytes, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="ticket-${ticket.id}.pdf"`,
+        'Content-Length': pdfBytes.length.toString(),
+      },
+    });
 
   } catch (error) {
-    console.error("Error generating or uploading ticket PDF:", error)
+    console.error("Error generating ticket PDF:", error)
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: "Failed to generate ticket PDF", details: message }, { status: 500 })
   }

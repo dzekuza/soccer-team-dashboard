@@ -45,146 +45,10 @@ export async function testSupabaseConnection() {
   }
 }
 
-// Database types
-export interface Database {
-  public: {
-    Tables: {
-      users: {
-        Row: {
-          id: string
-          email: string
-          name?: string
-          surname?: string
-          phone?: string
-          role: "user" | "admin"
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          email: string
-          name?: string
-          surname?: string
-          phone?: string
-          role?: "user" | "admin"
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          email?: string
-          name?: string
-          surname?: string
-          phone?: string
-          role?: "user" | "admin"
-        }
-      }
-      events: {
-        Row: {
-          id: string
-          title: string
-          description?: string
-          date?: string
-          time?: string
-          location?: string
-          team1_id?: string
-          team2_id?: string
-          cover_image_url?: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          title: string
-          description?: string
-          date?: string
-          time?: string
-          location?: string
-          team1_id?: string
-          team2_id?: string
-          cover_image_url?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          title?: string
-          description?: string
-          date?: string
-          time?: string
-          location?: string
-          team1_id?: string
-          team2_id?: string
-          cover_image_url?: string
-          updated_at?: string
-        }
-      }
-      pricing_tiers: {
-        Row: {
-          id: string
-          event_id: string
-          name: string
-          price: number
-          quantity: number
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          event_id: string
-          name: string
-          price: number
-          quantity: number
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          event_id?: string
-          name?: string
-          price?: number
-          quantity?: number
-          updated_at?: string
-        }
-      }
-      tickets: {
-        Row: {
-          id: string
-          event_id: string
-          tier_id: string
-          user_id?: string
-          purchaser_name?: string
-          status?: string
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          event_id: string
-          tier_id: string
-          user_id?: string
-          purchaser_name?: string
-          status?: string
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          event_id?: string
-          tier_id?: string
-          user_id?: string
-          purchaser_name?: string
-          status?: string
-          updated_at?: string
-        }
-      }
-    }
-  }
-}
-
 export interface Ticket {
   id: string
   event_id: string
   tier_id: string
-  user_id?: string
   purchaser_name?: string
   status?: string
   created_at: string
@@ -195,13 +59,11 @@ export interface CreateTicketInput {
   event_id: string
   tier_id: string
   purchaser_name?: string
-  user_id?: string
 }
 
 export interface UpdateTicketInput {
   event_id?: string
   tier_id?: string
-  user_id?: string
   purchaser_name?: string
   status?: string
 }

@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       tierId,
       purchaserName,
       purchaserEmail,
-      userId: user.id,
+      // userId: user.id, // Removed - user_id column was dropped from schema
     })
 
     notificationService.sendTicketConfirmation(newTicket.id)

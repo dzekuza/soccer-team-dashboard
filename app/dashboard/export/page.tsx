@@ -9,11 +9,13 @@ export default async function ExportPage() {
         const ticketsData = supabaseService.getTicketsWithDetails();
         const statsData = supabaseService.getEventStats();
 
-        const [events, tickets, stats] = await Promise.all([
+        const [events, ticketsResult, stats] = await Promise.all([
             eventsData,
             ticketsData,
             statsData,
         ]);
+
+        const tickets = ticketsResult.data || [];
 
         return <ExportClient initialEvents={events} initialTickets={tickets} initialStats={stats} />;
     } catch (error) {

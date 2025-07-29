@@ -98,28 +98,27 @@ export default function TemplatesPage() {
     try {
       const response = await fetch(`/api/templates/${selectedTemplate.name}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          subject: selectedTemplate.subject,
-          body_html: selectedTemplate.body_html,
-        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(selectedTemplate),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save template");
+        throw new Error("Failed to save template");
       }
 
       toast({
-        title: "Success!",
-        description: "Template has been saved successfully.",
+        title: "Success",
+        description: "Template saved successfully.",
       });
-      fetchTemplates(); // Refresh the list
     } catch (error) {
       toast({
         title: "Error",
         description:
-          error instanceof Error ? error.message : "Could not save template.",
+          error instanceof Error
+            ? error.message
+            : "Could not save template.",
         variant: "destructive",
       });
     } finally {
@@ -128,31 +127,29 @@ export default function TemplatesPage() {
   };
 
   const insertVariable = (variable: string) => {
-    const textarea = bodyTextareaRef.current;
-    if (!textarea || !selectedTemplate) return;
+    if (!bodyTextareaRef.current) return;
 
+    const textarea = bodyTextareaRef.current;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
-    const newText = text.substring(0, start) + variable + text.substring(end);
+    const before = text.substring(0, start);
+    const after = text.substring(end, text.length);
 
-    setSelectedTemplate({
-      ...selectedTemplate,
-      body_html: newText,
-    });
+    textarea.value = before + variable + after;
+    textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+    textarea.focus();
 
-    // Focus and set cursor position after inserting
-    setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = textarea.selectionEnd = start + variable.length;
-    }, 0);
+    // Trigger onChange event
+    const event = new Event("input", { bubbles: true });
+    textarea.dispatchEvent(event);
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">El. pašto šablonai</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-3xl font-bold text-white">El. pašto šablonai</h1>
+        <p className="text-gray-300">
           Keiskite ir redaguokite siunčiamų laiškų turinį.
         </p>
       </div>
@@ -160,14 +157,14 @@ export default function TemplatesPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
         {/* Mobile View: Dropdown for template selection */}
         <div className="md:hidden">
-          <Label>Pasirinkite šabloną</Label>
+          <Label className="text-white">Pasirinkite šabloną</Label>
           <Select onValueChange={handleSelectTemplate} value={selectedTemplate?.name}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-white/10 border-gray-600 text-white focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1">
               <SelectValue placeholder="Pasirinkite šabloną..." />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-[#0A165B] border-gray-600">
               {templates.map((template) => (
-                <SelectItem key={template.id} value={template.name}>
+                <SelectItem key={template.id} value={template.name} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
                   {template.name.replace(/_/g, " ")}
                 </SelectItem>
               ))}
@@ -177,13 +174,13 @@ export default function TemplatesPage() {
 
         {/* Desktop View: Sidebar for template selection */}
         <div className="hidden md:block md:col-span-1">
-          <Card className="bg-card">
+          <Card className="bg-[#0A165B]/50 border border-gray-700">
             <CardHeader>
-              <CardTitle>Šablonai</CardTitle>
+              <CardTitle className="text-white">Šablonai</CardTitle>
             </CardHeader>
             <CardContent>
               {isLoading ? (
-                <p>Kraunasi...</p>
+                <p className="text-gray-300">Kraunasi...</p>
               ) : (
                 <ul className="space-y-2">
                   {templates.map((template) => (
@@ -194,7 +191,11 @@ export default function TemplatesPage() {
                             ? "default"
                             : "ghost"
                         }
-                        className="w-full justify-start"
+                        className={`w-full justify-start ${
+                          selectedTemplate?.name === template.name
+                            ? "bg-[#F15601] text-white hover:bg-[#E04501]"
+                            : "text-gray-300 hover:text-white hover:bg-[#0A2065]/50"
+                        }`}
                         onClick={() => handleSelectTemplate(template.name)}
                       >
                         {template.name.replace(/_/g, " ")}
@@ -209,41 +210,42 @@ export default function TemplatesPage() {
 
         <div className="md:col-span-3">
           {isLoading && !selectedTemplate && (
-            <Card className="flex items-center justify-center h-64 bg-card">
-                <p>Kraunasi šablonai...</p>
+            <Card className="flex items-center justify-center h-64 bg-[#0A165B]/50 border border-gray-700">
+                <p className="text-gray-300">Kraunasi šablonai...</p>
             </Card>
           )}
           {selectedTemplate ? (
             <Tabs defaultValue="editor">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                <TabsList>
-                  <TabsTrigger value="editor">Redaktorius</TabsTrigger>
-                  <TabsTrigger value="preview">Peržiūra</TabsTrigger>
+                <TabsList className="bg-gray-100">
+                  <TabsTrigger value="editor" className="data-[state=active]:bg-white data-[state=active]:text-[#0A165B] data-[state=active]:font-semibold">Redaktorius</TabsTrigger>
+                  <TabsTrigger value="preview" className="data-[state=active]:bg-white data-[state=active]:text-[#0A165B] data-[state=active]:font-semibold">Peržiūra</TabsTrigger>
                 </TabsList>
-                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto" variant="default">
+                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white" variant="default">
                   {isSaving ? "Saugoma..." : "Išsaugoti pakeitimus"}
                 </Button>
               </div>
               <TabsContent value="editor">
-                <Card className="bg-card">
+                <Card className="bg-[#0A165B]/50 border border-gray-700">
                   <CardHeader>
-                    <CardTitle>Šablono redagavimas</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Šablono redagavimas</CardTitle>
+                    <CardDescription className="text-gray-300">
                       Redaguokite pasirinkto šablono turinį.
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="subject">Laiško antraštė</Label>
+                      <Label htmlFor="subject" className="text-white">Laiško antraštė</Label>
                       <Input
                         id="subject"
                         name="subject"
                         value={selectedTemplate.subject}
                         onChange={handleInputChange}
+                        className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="body_html">Laiško turinys (HTML)</Label>
+                      <Label htmlFor="body_html" className="text-white">Laiško turinys (HTML)</Label>
                       <Textarea
                         id="body_html"
                         name="body_html"
@@ -251,11 +253,11 @@ export default function TemplatesPage() {
                         value={selectedTemplate.body_html}
                         onChange={handleInputChange}
                         rows={15}
-                        className="font-mono text-sm"
+                        className="font-mono text-sm bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
                       />
                     </div>
                     <div>
-                      <Label>Galimi kintamieji</Label>
+                      <Label className="text-white">Galimi kintamieji</Label>
                       <div className="flex flex-wrap gap-2 mt-2">
                         {(templateVariables[selectedTemplate.name] || []).map(
                           (variable) => (
@@ -264,7 +266,7 @@ export default function TemplatesPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => insertVariable(variable)}
-                              className="font-mono"
+                              className="font-mono border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]"
                             >
                               {variable}
                             </Button>
@@ -276,25 +278,25 @@ export default function TemplatesPage() {
                 </Card>
               </TabsContent>
               <TabsContent value="preview">
-                <Card>
+                <Card className="bg-[#0A165B]/50 border border-gray-700">
                   <CardHeader>
-                    <CardTitle>Šablono peržiūra</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-white">Šablono peržiūra</CardTitle>
+                    <CardDescription className="text-gray-300">
                       Taip atrodys jūsų el. laiškas.
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
-                        <Label>Antraštė</Label>
-                        <p className="text-lg font-semibold p-2 bg-gray-100 rounded">
+                        <Label className="text-white">Antraštė</Label>
+                        <p className="text-lg font-semibold p-3 bg-[#0A2065] rounded border border-gray-600 text-white">
                           {selectedTemplate.subject}
                         </p>
                       </div>
                       <div>
-                        <Label>Turinys</Label>
+                        <Label className="text-white">Turinys</Label>
                         <div
-                          className="border rounded-md p-4 min-h-[400px]"
+                          className="border border-gray-600 rounded-md p-4 min-h-[400px] bg-[#0A2065] text-white"
                           dangerouslySetInnerHTML={{
                             __html: selectedTemplate.body_html,
                           }}
@@ -306,9 +308,9 @@ export default function TemplatesPage() {
               </TabsContent>
             </Tabs>
           ) : (
-            <Card>
+            <Card className="bg-[#0A165B]/50 border border-gray-700">
               <CardContent className="pt-6">
-                <p>Pasirinkite šabloną, kurį norite redaguoti.</p>
+                <p className="text-gray-300">Pasirinkite šabloną, kurį norite redaguoti.</p>
               </CardContent>
             </Card>
           )}

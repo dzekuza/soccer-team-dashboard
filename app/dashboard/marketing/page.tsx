@@ -26,9 +26,9 @@ export default function MarketingPage() {
   const { toast } = useToast();
 
   const steps = [
-    { label: "Pasirinkite gavėjus" },
-    { label: "Sukurkite el. laišką" },
-    { label: "Peržiūra ir siuntimas" },
+    "Pasirinkite gavėjus",
+    "Sukurkite el. laišką", 
+    "Peržiūra ir siuntimas",
   ];
 
   useEffect(() => {
@@ -99,226 +99,219 @@ export default function MarketingPage() {
       } else {
         payload.textBody = body;
       }
-      
-      const response = await fetch('/api/marketing/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+
+      const response = await fetch("/api/marketing/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to send emails');
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send email");
       }
 
-      toast({ title: "Išsiųsta!", description: "Laiškai sėkmingai išsiųsti." });
-      setStep(0);
+      toast({
+        title: "Success",
+        description: `Email sent successfully to ${selectedFans.length} recipients.`,
+      });
+
+      // Reset form
       setSelectedFans([]);
       setSubject("");
       setBody("");
-
+      setStep(0);
     } catch (error) {
+      console.error("Failed to send email:", error);
       toast({
-        title: "Klaida siunčiant",
-        description: error instanceof Error ? error.message : "Įvyko nežinoma klaida.",
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   const handleTemplateSelect = (campaignId: string) => {
-    const campaign = campaigns.find(c => c.id === campaignId);
+    const campaign = campaigns.find((c) => c.id === campaignId);
     if (campaign) {
       setSubject(campaign.subject);
-      if (campaign.body_html) {
-        setBody(campaign.body_html);
-        setEmailFormat("html");
-      } else if (campaign.body_text) {
-        setBody(campaign.body_text);
-        setEmailFormat("text");
-      }
+      setBody(campaign.body_html || campaign.body_text || "");
+      setEmailFormat(campaign.body_html ? "html" : "text");
     }
   };
 
-  const totalEmailsSent = campaigns.reduce((acc, c) => acc + c.recipient_count, 0);
-
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h1 className="text-3xl font-bold">Rinkodara</h1>
-        <Card className="p-4 w-full md:w-auto">
-          <p className="text-sm font-medium">Iš viso išsiųsta laiškų</p>
-          <p className="text-2xl font-bold">{totalEmailsSent}</p>
-        </Card>
+      <div>
+        <h1 className="text-3xl font-bold text-white">Marketingas</h1>
+        <p className="text-gray-300">
+          Siųskite el. laiškus savo gerbėjams ir stebėkite kampanijų rezultatus.
+        </p>
       </div>
 
-      <div>
-        <div className="mb-6">
-          <Stepper steps={steps.map(s => s.label)} currentStep={step} onStepChange={setStep} />
-        </div>
-        {step === 0 && (
-          <div>
-            <div className="text-xl font-semibold mb-2">1. Pasirinkite gavėjus</div>
-            <div className="mb-4 text-sm text-gray-300">Pasirinkite vartotojus, kuriems norite siųsti laišką.</div>
-            {/* Mobile View */}
-            <div className="md:hidden space-y-2">
-              <div className="flex items-center space-x-2 p-2 border-b">
+      <Card className="bg-[#0A165B]/50 border border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white">El. laiško kampanija</CardTitle>
+          <CardDescription className="text-gray-300">
+            Sukurkite ir išsiųskite el. laiškus savo gerbėjams.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Stepper steps={steps} currentStep={step} onStepChange={setStep} />
+
+          {step === 0 && (
+            <div>
+              <CardTitle className="text-white mt-6">1. Pasirinkite gavėjus</CardTitle>
+              <CardDescription className="text-gray-300 mb-4">
+                Pasirinkite gerbėjus, kuriuos norite įtraukti į kampaniją.
+              </CardDescription>
+              
+              <div className="flex items-center space-x-2 mb-4">
                 <Checkbox
-                  id="select-all-mobile"
-                  checked={selectedFans.length > 0 && selectedFans.length === fans.length}
+                  id="select-all"
+                  checked={selectedFans.length === fans.length && fans.length > 0}
                   onCheckedChange={handleSelectAll}
                 />
-                <Label htmlFor="select-all-mobile" className="font-medium">Pasirinkti visus</Label>
+                <Label htmlFor="select-all" className="text-white">
+                  Pasirinkti visus ({fans.length} gerbėjų)
+                </Label>
               </div>
-              {fans.map((fan, index) => (
-                <div key={`${fan.email}-${index}`} className="flex items-center space-x-3 p-2 border-b last:border-b-0">
-                  <Checkbox
-                    id={`fan-${index}-mobile`}
-                    checked={selectedFans.includes(fan.email)}
-                    onCheckedChange={(checked) => handleSelectFan(fan.email, !!checked)}
-                  />
-                  <Label htmlFor={`fan-${index}-mobile`} className="flex-1">
-                    <div className="font-medium">{fan.name}</div>
-                    <div className="text-sm text-gray-500">{fan.email}</div>
-                  </Label>
-                </div>
-              ))}
-            </div>
-            {/* Desktop View */}
-            <div className="hidden md:block">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">
-                      <Checkbox
-                        checked={selectedFans.length > 0 && selectedFans.length === fans.length}
-                        onCheckedChange={handleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead>Vardas</TableHead>
-                    <TableHead>El. paštas</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fans.map((fan, index) => (
-                    <TableRow key={`${fan.email}-${index}`}> 
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedFans.includes(fan.email)}
-                          onCheckedChange={(checked) => handleSelectFan(fan.email, !!checked)}
-                        />
-                      </TableCell>
-                      <TableCell>{fan.name}</TableCell>
-                      <TableCell>{fan.email}</TableCell>
+
+              <div className="hidden md:block bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-gray-700 hover:bg-[#0A2065]/50">
+                      <TableHead className="text-gray-300 font-medium">Pasirinkti</TableHead>
+                      <TableHead className="text-gray-300 font-medium">Vardas</TableHead>
+                      <TableHead className="text-gray-300 font-medium">El. paštas</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        )}
-
-        {step === 1 && (
-          <div>
-            <CardTitle>2. Sukurkite el. laišką</CardTitle>
-            <CardDescription className="mb-4">Sukurkite naują laišką arba pasirinkite iš seniau naudotų.</CardDescription>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label>Naudoti šabloną</Label>
-                <Select onValueChange={handleTemplateSelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pasirinkite seną kampaniją..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {campaigns.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.subject} (Išsiųsta: {new Date(c.created_at).toLocaleDateString()})
-                      </SelectItem>
+                  </TableHeader>
+                  <TableBody>
+                    {fans.map((fan, index) => (
+                      <TableRow key={`${fan.email}-${index}`} className="border-gray-700 hover:bg-[#0A2065]/30 transition-colors"> 
+                        <TableCell>
+                          <Checkbox
+                            checked={selectedFans.includes(fan.email)}
+                            onCheckedChange={(checked) => handleSelectFan(fan.email, !!checked)}
+                          />
+                        </TableCell>
+                        <TableCell className="text-white font-medium">{fan.name}</TableCell>
+                        <TableCell className="text-gray-300">{fan.email}</TableCell>
+                      </TableRow>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-muted-foreground">Arba</span>
-                  </div>
-              </div>
-
-              <RadioGroup value={emailFormat} onValueChange={(value: "html" | "text") => setEmailFormat(value)} className="flex space-x-4 mb-4">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="html" id="format-html" />
-                  <Label htmlFor="format-html">HTML</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="text" id="format-text" />
-                  <Label htmlFor="format-text">Paprastas tekstas</Label>
-                </div>
-              </RadioGroup>
-              <div>
-                <Label htmlFor="subject">Antraštė</Label>
-                <Input
-                  id="subject"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Jūsų laiško antraštė"
-                />
-              </div>
-              <div>
-                <Label htmlFor="body">Turinys ({emailFormat === 'html' ? 'HTML' : 'Paprastas tekstas'})</Label>
-                <Textarea
-                  id="body"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder={emailFormat === 'html' ? "<p>Jūsų HTML turinys čia...</p>" : "Jūsų paprastas tekstas čia..."}
-                  rows={15}
-                />
+                  </TableBody>
+                </Table>
               </div>
             </div>
-          </div>
-        )}
-        
-        {step === 2 && (
-          <div>
-            <CardTitle>3. Peržiūra ir siuntimas</CardTitle>
-            <CardDescription className="mb-4">Peržiūrėkite informaciją prieš siunčiant.</CardDescription>
-            <div className="space-y-4">
-              <p><strong>Gavėjų skaičius:</strong> {selectedFans.length}</p>
-              <p><strong>Antraštė:</strong> {subject}</p>
-              <div>
-                <strong>Turinio peržiūra:</strong>
-                {emailFormat === 'html' ? (
-                  <div
-                    className="border rounded-md p-4 mt-2 bg-gray-50 max-h-96 overflow-auto"
-                    dangerouslySetInnerHTML={{ __html: body }}
-                  />
-                ) : (
-                  <pre className="border rounded-md p-4 mt-2 bg-gray-50 max-h-96 overflow-auto whitespace-pre-wrap">{body}</pre>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="mt-6 flex flex-col-reverse sm:flex-row justify-between gap-2">
-          <Button variant="outline" onClick={handlePrevStep} disabled={step === 0} className="w-full sm:w-auto">
-            Atgal
-          </Button>
-          {step < steps.length - 1 ? (
-            <Button onClick={handleNextStep} className="w-full sm:w-auto">Toliau</Button>
-          ) : (
-            <Button onClick={handleSendEmail} disabled={isLoading} className="w-full sm:w-auto">
-              {isLoading ? "Siunčiama..." : "Siųsti"}
-            </Button>
           )}
-        </div>
-      </div>
+
+          {step === 1 && (
+            <div>
+              <CardTitle className="text-white mt-6">2. Sukurkite el. laišką</CardTitle>
+              <CardDescription className="text-gray-300 mb-4">Sukurkite naują laišką arba pasirinkite iš seniau naudotų.</CardDescription>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-white">Naudoti šabloną</Label>
+                  <Select onValueChange={handleTemplateSelect}>
+                    <SelectTrigger className="bg-white/10 border-gray-600 text-white focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1">
+                      <SelectValue placeholder="Pasirinkite seną kampaniją..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0A165B] border-gray-600">
+                      {campaigns.map((c) => (
+                        <SelectItem key={c.id} value={c.id} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
+                          {c.subject} (Išsiųsta: {new Date(c.created_at).toLocaleDateString()})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="relative my-4">
+                    <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-600" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-[#0A165B] px-2 text-gray-300">Arba</span>
+                    </div>
+                </div>
+
+                <RadioGroup value={emailFormat} onValueChange={(value: "html" | "text") => setEmailFormat(value)} className="flex space-x-4 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="html" id="format-html" className="text-[#F15601]" />
+                    <Label htmlFor="format-html" className="text-white">HTML</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="text" id="format-text" className="text-[#F15601]" />
+                    <Label htmlFor="format-text" className="text-white">Paprastas tekstas</Label>
+                  </div>
+                </RadioGroup>
+                <div>
+                  <Label htmlFor="subject" className="text-white">Antraštė</Label>
+                  <Input
+                    id="subject"
+                    value={subject}
+                    onChange={(e) => setSubject(e.target.value)}
+                    placeholder="Jūsų laiško antraštė"
+                    className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="body" className="text-white">Turinys ({emailFormat === 'html' ? 'HTML' : 'Paprastas tekstas'})</Label>
+                  <Textarea
+                    id="body"
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                    placeholder={emailFormat === 'html' ? "<p>Jūsų HTML turinys čia...</p>" : "Jūsų paprastas tekstas čia..."}
+                    rows={15}
+                    className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {step === 2 && (
+            <div>
+              <CardTitle className="text-white mt-6">3. Peržiūra ir siuntimas</CardTitle>
+              <CardDescription className="text-gray-300 mb-4">Peržiūrėkite informaciją prieš siunčiant.</CardDescription>
+              <div className="space-y-4">
+                <p className="text-white"><strong>Gavėjų skaičius:</strong> {selectedFans.length}</p>
+                <p className="text-white"><strong>Antraštė:</strong> {subject}</p>
+                <div>
+                  <strong className="text-white">Turinio peržiūra:</strong>
+                  {emailFormat === 'html' ? (
+                    <div
+                      className="border border-gray-600 rounded-md p-4 mt-2 bg-[#0A2065] max-h-96 overflow-auto text-white"
+                      dangerouslySetInnerHTML={{ __html: body }}
+                    />
+                  ) : (
+                    <pre className="border border-gray-600 rounded-md p-4 mt-2 bg-[#0A2065] max-h-96 overflow-auto whitespace-pre-wrap text-white">{body}</pre>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="mt-6 flex flex-col-reverse sm:flex-row justify-between gap-2">
+            <Button variant="outline" onClick={handlePrevStep} disabled={step === 0} className="w-full sm:w-auto border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]">
+              Atgal
+            </Button>
+            {step < steps.length - 1 ? (
+              <Button onClick={handleNextStep} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white">
+                Toliau
+              </Button>
+            ) : (
+              <Button onClick={handleSendEmail} disabled={isLoading} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white">
+                {isLoading ? "Siunčiama..." : "Siųsti"}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 } 
