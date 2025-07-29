@@ -30,26 +30,46 @@ export default function SubscriptionCheckoutPage() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
 
-  const handleCheckout = async () => {
-    setLoading(true)
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    
     try {
-      const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-      if (!stripe) {
-        throw new Error('Stripe.js not loaded');
+      if (!selectedPlanId || !userEmail) {
+        throw new Error("Please select a plan and enter your email");
       }
 
-      // This is a placeholder for a real checkout flow.
-      // In a real application, you would create a checkout session on your server
-      // and then redirect to Stripe using the session ID.
-      // For now, we'll just simulate a successful redirect.
-      
-      router.push('/checkout/subscription/success');
+      // Create checkout session
+      const response = await fetch("/api/checkout/subscription", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-customer-email": userEmail,
+        },
+        body: JSON.stringify({
+          subscriptionId: selectedPlanId,
+        }),
+      });
+
+      const { url, error: apiError } = await response.json();
+
+      if (!response.ok) {
+        throw new Error(apiError || "Failed to create checkout session");
+      }
+
+      if (url) {
+        // Redirect to Stripe Checkout
+        window.location.href = url;
+      } else {
+        throw new Error("No checkout URL received");
+      }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred')
-      setLoading(false)
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-[#f6f8fb] flex items-center justify-center font-sans">
@@ -96,8 +116,8 @@ export default function SubscriptionCheckoutPage() {
           )}
           <button
             type="submit"
-            className="w-full py-4 mt-2 bg-[#1a1f36] text-white text-lg font-semibold rounded-md shadow hover:bg-[#232946] transition"
-            disabled={loading || !selectedPlanId}
+            className="w-full py-4 mt-2 bg-[#1a1f36] text-white text-lg font-semibold rounded-md shadow hover:bg-[#232946] transition disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !selectedPlanId || !userEmail}
           >
             {loading ? "Redirecting to Stripe..." : selectedPlan ? `Subscribe for ${formatCurrency(selectedPlan.price)}` : "Subscribe"}
           </button>

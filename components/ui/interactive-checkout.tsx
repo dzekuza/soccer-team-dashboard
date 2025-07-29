@@ -27,14 +27,14 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
             animate={{ opacity: 1, x: 0 }}
             className={cn(
                 "w-full flex flex-col",
-                "p-4 rounded-xl",
-                "bg-[#070F40]",
-                "border border-[rgba(95,95,113,0.3)]",
+                "p-6 rounded-xl",
+                "bg-main-div-bg",
+                "border border-main-border",
             )}
         >
-            <div className="flex items-center gap-2 mb-3">
-                <ShoppingCart className="w-4 h-4 text-gray-400" />
-                <h2 className="text-sm font-medium text-white">
+            <div className="flex items-center gap-2 mb-4">
+                <ShoppingCart className="w-5 h-5 text-gray-400" />
+                <h2 className="text-lg font-semibold text-white">
                     Krepšelis ({totalItems})
                 </h2>
             </div>
@@ -43,8 +43,8 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                 className={cn(
                     "flex-1 overflow-y-auto",
                     "min-h-0",
-                    "-mx-4 px-4",
-                    "space-y-3"
+                    "-mx-6 px-6",
+                    "space-y-4"
                 )}
             >
                 <AnimatePresence initial={false} mode="popLayout">
@@ -60,13 +60,13 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                 layout: { duration: 0.2 },
                             }}
                             className={cn(
-                                "flex items-center gap-3",
-                                "p-2 rounded-lg",
+                                "flex items-center gap-4",
+                                "p-4 rounded-lg",
                                 "bg-black/20",
-                                "mb-3"
+                                "border border-main-border/50"
                             )}
                         >
-                            <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-black/10">
+                            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-black/10">
                                 <Image
                                     src={item.image}
                                     alt={item.name}
@@ -75,8 +75,8 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                 />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-white truncate">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-base font-medium text-white truncate">
                                         {item.name}
                                     </span>
                                     <motion.button
@@ -85,13 +85,13 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                         onClick={() =>
                                             removeFromCart(item.id)
                                         }
-                                        className="p-1 rounded-md hover:bg-white/10"
+                                        className="p-2 rounded-md hover:bg-white/10 transition-colors"
                                     >
-                                        <X className="w-3 h-3 text-gray-400" />
+                                        <X className="w-4 h-4 text-gray-400" />
                                     </motion.button>
                                 </div>
-                                <div className="flex items-center justify-between mt-1">
-                                    <div className="flex items-center gap-1">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
                                         <motion.button
                                             whileHover={{ scale: 1.1 }}
                                             whileTap={{ scale: 0.95 }}
@@ -101,13 +101,13 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                                     -1
                                                 )
                                             }
-                                            className="p-1 rounded-md hover:bg-white/10"
+                                            className="p-2 rounded-md hover:bg-white/10 transition-colors"
                                         >
-                                            <Minus className="w-3 h-3 text-white" />
+                                            <Minus className="w-4 h-4 text-white" />
                                         </motion.button>
                                         <motion.span
                                             layout
-                                            className="text-xs text-gray-300 w-4 text-center"
+                                            className="text-base text-white font-medium w-8 text-center"
                                         >
                                             {item.quantity}
                                         </motion.span>
@@ -120,14 +120,14 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                                     1
                                                 )
                                             }
-                                            className="p-1 rounded-md hover:bg-white/10"
+                                            className="p-2 rounded-md hover:bg-white/10 transition-colors"
                                         >
-                                            <Plus className="w-3 h-3 text-white" />
+                                            <Plus className="w-4 h-4 text-white" />
                                         </motion.button>
                                     </div>
                                     <motion.span
                                         layout
-                                        className="text-xs text-gray-400"
+                                        className="text-lg font-bold text-white"
                                     >
                                         €
                                         {(
@@ -140,9 +140,9 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                     ))}
                 </AnimatePresence>
                 {cart.length === 0 && (
-                    <div className="text-center py-10 text-gray-400">
-                        <ShoppingCart className="w-8 h-8 mx-auto mb-2" />
-                        Jūsų krepšelis tuščias.
+                    <div className="text-center py-12 text-gray-400">
+                        <ShoppingCart className="w-12 h-12 mx-auto mb-4" />
+                        <p className="text-lg">Jūsų krepšelis tuščias.</p>
                     </div>
                 )}
             </motion.div>
@@ -150,20 +150,20 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                 <motion.div
                     layout
                     className={cn(
-                        "pt-3 mt-3",
-                        "border-t border-[rgba(95,95,113,0.3)]",
-                        "bg-[#070F40]"
+                        "pt-4 mt-6",
+                        "border-t border-main-border",
+                        "bg-main-div-bg"
                     )}
                 >
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-white">
+                    <div className="flex items-center justify-between">
+                        <span className="text-lg font-semibold text-white">
                             Iš viso
                         </span>
                         <motion.span
                             layout
-                            className="text-sm font-semibold text-white"
+                            className="text-2xl font-bold text-white"
                         >
-                            <NumberFlow value={totalPrice} />
+                            €<NumberFlow value={totalPrice} />
                         </motion.span>
                     </div>
                 </motion.div>

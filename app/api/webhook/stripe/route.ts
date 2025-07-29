@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
         quantity, 
         purchaserName, 
         purchaserSurname, 
-        purchaserEmail 
+        purchaserEmail,
+        subscriptionId
       } = session.metadata || {};
 
       if (session.mode === "payment" && eventId && tierId && quantity) {
@@ -69,25 +70,72 @@ export async function POST(req: NextRequest) {
         }
         console.log(`${numQuantity} ticket(s) created and confirmation sent for event ${eventId} via Stripe webhook.`);
       } 
-      /*
       else if (session.mode === 'subscription' && session.subscription) {
         // Handle a new subscription
-        const { user_id, subscription_id } = session.metadata || {};
         const subscription = await stripe.subscriptions.retrieve(session.subscription.toString());
+        
+        // Create user subscription record
         const { error: subError } = await supabaseAdmin.from('user_subscriptions').insert({
-            user_id: user_id,
-            subscription_id: subscription_id,
-            start_date: new Date(subscription.current_period_start * 1000).toISOString(),
-            end_date: new Date(subscription.current_period_end * 1000).toISOString()
+          user_id: session.customer_email, // Using email as user identifier for now
+          subscription_id: subscriptionId,
+          stripe_subscription_id: session.subscription.toString(),
+          start_date: new Date((subscription as any).current_period_start * 1000).toISOString(),
+          end_date: new Date((subscription as any).current_period_end * 1000).toISOString(),
+          status: subscription.status,
+          customer_email: session.customer_email
         });
 
         if (subError) {
-             console.error(`Failed to create subscription for user ${user_id} after Stripe payment.`, subError);
+          console.error(`Failed to create subscription for user ${session.customer_email} after Stripe payment.`, subError);
         } else {
-             console.log(`Subscription created for user ${user_id} via Stripe webhook.`);
+          console.log(`Subscription created for user ${session.customer_email} via Stripe webhook.`);
+          
+          // Send subscription confirmation email if we have the subscription ID
+          if (subscriptionId) {
+            try {
+              await notificationService.sendSubscriptionConfirmation(subscriptionId);
+            } catch (err) {
+              console.error(`Failed to send subscription confirmation email:`, err);
+            }
+          }
         }
       }
-      */
+    }
+    else if (event.type === "customer.subscription.updated") {
+      const subscription = event.data.object as Stripe.Subscription;
+      
+      // Update subscription status in database
+      const { error: updateError } = await supabaseAdmin
+        .from('user_subscriptions')
+        .update({
+          status: subscription.status,
+          end_date: new Date((subscription as any).current_period_end * 1000).toISOString()
+        })
+        .eq('stripe_subscription_id', subscription.id);
+
+      if (updateError) {
+        console.error(`Failed to update subscription ${subscription.id}:`, updateError);
+      } else {
+        console.log(`Subscription ${subscription.id} updated successfully.`);
+      }
+    }
+    else if (event.type === "customer.subscription.deleted") {
+      const subscription = event.data.object as Stripe.Subscription;
+      
+      // Mark subscription as cancelled in database
+      const { error: deleteError } = await supabaseAdmin
+        .from('user_subscriptions')
+        .update({
+          status: 'cancelled',
+          end_date: new Date().toISOString()
+        })
+        .eq('stripe_subscription_id', subscription.id);
+
+      if (deleteError) {
+        console.error(`Failed to mark subscription ${subscription.id} as cancelled:`, deleteError);
+      } else {
+        console.log(`Subscription ${subscription.id} marked as cancelled.`);
+      }
     }
   } catch(e) {
       console.error("Error processing webhook event:", e);

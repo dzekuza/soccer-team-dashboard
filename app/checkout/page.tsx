@@ -58,33 +58,60 @@ export default function CheckoutPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0A2065] text-white py-12">
-            <div className="container mx-auto">
-                <h1 className="text-3xl font-bold mb-8 text-center">Apmokėjimas</h1>
+        <div className="min-h-screen bg-main text-white py-12">
+            <div className="container mx-auto px-4">
+                <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Apmokėjimas</h1>
                 <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto items-start">
+                    {/* Cart Section */}
                     <div>
                         <InteractiveCheckout />
                     </div>
-                    <div className="bg-[#070F40] p-6 rounded-xl border border-[rgba(95,95,113,0.3)]">
-                        <h2 className="text-xl font-semibold mb-4">Jūsų duomenys</h2>
-                        <div className="space-y-4">
+                    
+                    {/* Form Section */}
+                    <div className="bg-main-div-bg border-main-border p-6 rounded-xl border">
+                        <h2 className="text-xl font-semibold mb-6 text-white">Jūsų duomenys</h2>
+                        <div className="space-y-6">
                             <div>
-                                <Label htmlFor="name">Vardas</Label>
-                                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jonas" className="bg-transparent border-main-orange text-white" />
+                                <Label htmlFor="name" className="text-white mb-2 block">Vardas</Label>
+                                <Input 
+                                    id="name" 
+                                    value={name} 
+                                    onChange={(e) => setName(e.target.value)} 
+                                    placeholder="Jonas" 
+                                    className="bg-transparent border-main-border text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-orange-500" 
+                                />
                             </div>
                             <div>
-                                <Label htmlFor="surname">Pavardė</Label>
-                                <Input id="surname" value={surname} onChange={(e) => setSurname(e.target.value)} placeholder="Jonaitis" className="bg-transparent border-main-orange text-white" />
+                                <Label htmlFor="surname" className="text-white mb-2 block">Pavardė</Label>
+                                <Input 
+                                    id="surname" 
+                                    value={surname} 
+                                    onChange={(e) => setSurname(e.target.value)} 
+                                    placeholder="Jonaitis" 
+                                    className="bg-transparent border-main-border text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-orange-500" 
+                                />
                             </div>
                             <div>
-                                <Label htmlFor="email">El. paštas</Label>
-                                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jonas.jonaitis@email.com" className="bg-transparent border-main-orange text-white" />
+                                <Label htmlFor="email" className="text-white mb-2 block">El. paštas</Label>
+                                <Input 
+                                    id="email" 
+                                    type="email" 
+                                    value={email} 
+                                    onChange={(e) => setEmail(e.target.value)} 
+                                    placeholder="jonas.jonaitis@email.com" 
+                                    className="bg-transparent border-main-border text-white placeholder:text-gray-400 focus:border-orange-500 focus:ring-orange-500" 
+                                />
                             </div>
                         </div>
-                        <Button size="lg" className="w-full gap-2 mt-8 bg-main-orange hover:bg-main-orange/90" onClick={handleCheckout} disabled={isLoading || cart.length === 0}>
+                        <Button 
+                            size="lg" 
+                            className="w-full gap-2 mt-8 bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors duration-200" 
+                            onClick={handleCheckout} 
+                            disabled={isLoading || cart.length === 0}
+                        >
                             {isLoading ? "Vykdoma..." : <><CreditCard className="w-4 h-4" /> Apmokėti</>}
                         </Button>
-                        {error && <p className="text-red-500 text-sm mt-2 text-center">{error}</p>}
+                        {error && <p className="text-red-400 text-sm mt-4 text-center">{error}</p>}
                     </div>
                 </div>
             </div>

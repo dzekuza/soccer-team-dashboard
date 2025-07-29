@@ -14,11 +14,13 @@ import {
   CheckCircleIcon,
   CreditCardIcon,
   UserIcon,
+  CalendarIcon,
+  ClockIcon,
+  MapPinIcon,
 } from "@heroicons/react/24/outline"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { loadStripe } from "@stripe/stripe-js"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import Link from "next/link"
 
 const stripePromise = loadStripe(
@@ -196,54 +198,225 @@ export default function EventPage() {
   return (
     <div className="bg-main text-white min-h-screen">
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
-      <EventHeader event={event} team1={team1} team2={team2} />
+
+      {/* Cover Image Section */}
+      {event.coverImageUrl && (
+        <div className="relative w-full h-64 md:h-80 lg:h-96 overflow-hidden">
+          <Image
+            src={event.coverImageUrl}
+            alt={event.title}
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              {/* Team Logos and Names */}
+              <div className="flex items-center justify-center gap-8 mb-6">
+                <div className="flex flex-col items-center">
+                  <img 
+                    src={team1?.logo || '/placeholder-logo.svg'} 
+                    alt={team1?.team_name || 'Komanda 1'} 
+                    className="object-contain w-20 h-20 mb-3" 
+                  />
+                  <span className="text-white font-bold text-lg">
+                    {team1?.team_name || 'Komanda 1'}
+                  </span>
+                </div>
+                <div className="text-4xl md:text-5xl font-bold text-white/80">VS</div>
+                <div className="flex flex-col items-center">
+                  <img 
+                    src={team2?.logo || '/placeholder-logo.svg'} 
+                    alt={team2?.team_name || 'Komanda 2'} 
+                    className="object-contain w-20 h-20 mb-3" 
+                  />
+                  <span className="text-white font-bold text-lg">
+                    {team2?.team_name || 'Komanda 2'}
+                  </span>
+                </div>
+              </div>
+              
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+                {event.title}
+              </h1>
+              <div className="flex items-center justify-center gap-4 text-white/90">
+                <div className="flex items-center gap-2">
+                  <CalendarIcon className="h-5 w-5" />
+                  <span>{event.date}</span>
+                </div>
+                {event.time && (
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="h-5 w-5" />
+                    <span>{event.time}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-5 w-5" />
+                  <span>{event.location}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="container mx-auto px-4 py-8 md:py-12">
-        <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="w-full flex justify-center mb-6 bg-transparent">
-            <TabsTrigger value="overview" className="flex-1">Apžvalga</TabsTrigger>
-            <TabsTrigger value="tickets" className="flex-1">Bilietų informacija</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="overview">
+        {/* 2x1 Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Left Column - Event Description */}
+          <div className="space-y-6">
             <Card className="bg-main-div-bg border-main-border">
               <CardHeader>
                 <CardTitle className="text-white">Apie Renginį</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-300 whitespace-pre-wrap">
+                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
                   {event.description}
                 </p>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="tickets">
-            <Card className="bg-main-div-bg border-main-border flex flex-col items-center justify-center py-12">
-              <div className="flex flex-col items-center gap-4 mb-8">
-                <div className="text-2xl font-bold text-white">{event.title}</div>
-                <div className="flex flex-row items-center gap-6">
-                  <img src={team1?.logo || '/placeholder-logo.svg'} alt={team1?.team_name || 'Komanda 1'} className="object-contain w-20 h-20" />
-                  <span className="text-3xl font-extrabold text-white">VS</span>
-                  <img src={team2?.logo || '/placeholder-logo.svg'} alt={team2?.team_name || 'Komanda 2'} className="object-contain w-20 h-20" />
-                </div>
-                <div className="flex flex-row items-center gap-8 mt-4">
-                  <div className="flex flex-col items-center">
-                    <span className="text-lg font-semibold text-white">{team1?.team_name || 'Komanda 1'}</span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-lg font-semibold text-white">{team2?.team_name || 'Komanda 2'}</span>
+            {/* Event Details Card */}
+            <Card className="bg-main-div-bg border-main-border">
+              <CardHeader>
+                <CardTitle className="text-white">Renginio Informacija</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CalendarIcon className="h-5 w-5 text-blue-400" />
+                  <div>
+                    <p className="text-sm text-gray-400">Data</p>
+                    <p className="text-white font-medium">{event.date}</p>
                   </div>
                 </div>
-                <div className="text-white text-xl mt-4">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
-                <div className="text-white/80 text-lg">{event.location}</div>
-              </div>
-              <Link href={`/event/${event.id}/tickets`} passHref legacyBehavior>
-                <Button className="btn-main text-lg font-bold w-full max-w-xs mt-8">Pasirinkti bilietus</Button>
-              </Link>
+                {event.time && (
+                  <div className="flex items-center gap-3">
+                    <ClockIcon className="h-5 w-5 text-blue-400" />
+                    <div>
+                      <p className="text-sm text-gray-400">Laikas</p>
+                      <p className="text-white font-medium">{event.time}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <MapPinIcon className="h-5 w-5 text-blue-400" />
+                  <div>
+                    <p className="text-sm text-gray-400">Vieta</p>
+                    <p className="text-white font-medium">{event.location}</p>
+                  </div>
+                </div>
+              </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+
+          {/* Right Column - Ticket Selection */}
+          <div className="space-y-6">
+            <Card className="bg-main-div-bg border-main-border">
+              <CardHeader>
+                <CardTitle className="text-white">Bilietų Pasirinkimas</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Team Display */}
+                <div className="flex items-center justify-center gap-6 mb-6">
+                  <div className="flex flex-col items-center">
+                    <img 
+                      src={team1?.logo || '/placeholder-logo.svg'} 
+                      alt={team1?.team_name || 'Komanda 1'} 
+                      className="object-contain w-16 h-16 mb-2" 
+                    />
+                    <span className="text-white font-semibold text-center">
+                      {team1?.team_name || 'Komanda 1'}
+                    </span>
+                  </div>
+                  <div className="text-2xl font-bold text-white">VS</div>
+                  <div className="flex flex-col items-center">
+                    <img 
+                      src={team2?.logo || '/placeholder-logo.svg'} 
+                      alt={team2?.team_name || 'Komanda 2'} 
+                      className="object-contain w-16 h-16 mb-2" 
+                    />
+                    <span className="text-white font-semibold text-center">
+                      {team2?.team_name || 'Komanda 2'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Pricing Tiers */}
+                {event.pricingTiers && event.pricingTiers.length > 0 ? (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">Pasirinkite bilietą:</h3>
+                    {event.pricingTiers.map((tier) => {
+                      const soldQuantity = tier.soldQuantity || 0
+                      const totalQuantity = tier.quantity || 0
+                      const availableQuantity = Math.max(0, totalQuantity - soldQuantity)
+                      const inCart = getQuantityInCart(tier.id)
+                      
+                      return (
+                        <div
+                          key={tier.id}
+                          className={cn(
+                            "border rounded-lg p-4 cursor-pointer transition-all",
+                            selectedTier?.id === tier.id
+                              ? "border-blue-500 bg-blue-500/10"
+                              : "border-main-border hover:border-gray-600"
+                          )}
+                          onClick={() => setSelectedTier(tier)}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h4 className="text-white font-semibold">{tier.name}</h4>
+                              {tier.description && (
+                                <p className="text-gray-400 text-sm mt-1">{tier.description}</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold text-white">€{tier.price}</p>
+                              <p className="text-sm text-gray-400">
+                                Liko: {availableQuantity} bilietų
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {inCart > 0 && (
+                            <div className="mt-2 p-2 bg-green-500/20 border border-green-500/30 rounded">
+                              <p className="text-green-400 text-sm">
+                                Krepšelyje: {inCart} vnt.
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <p className="text-gray-400">Bilietų informacija neprieinama</p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                {selectedTier && (
+                  <div className="grid grid-cols-2 gap-4 pt-6">
+                    <Button
+                      onClick={handleAddToCart}
+                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors duration-200"
+                      disabled={selectedTier.quantity - selectedTier.soldQuantity <= 0}
+                    >
+                      Pridėti į krepšelį
+                    </Button>
+                    
+                    <Link href={`/event/${event.id}/tickets`} passHref>
+                      <Button className="w-full bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-900 font-bold py-4 px-6 rounded-lg text-lg transition-all duration-200">
+                        Peržiūrėti bilietus
+                      </Button>
+                    </Link>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </main>
     </div>
   )
