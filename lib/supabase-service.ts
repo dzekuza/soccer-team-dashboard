@@ -18,6 +18,8 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
+export { supabaseAdmin };
+
 export const supabaseService = {
   // Events
   createEvent: async (
@@ -60,6 +62,94 @@ export const supabaseService = {
     } catch (error) {
       console.error("Supabase Service: Error in createEvent:", error);
       throw error;
+    }
+  },
+
+  getEvents: async (): Promise<Event[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("events")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching events:", error);
+        throw new Error(`Failed to fetch events: ${error.message}`);
+      }
+
+      return data.map((event) => ({
+        id: event.id,
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        time: event.time,
+        location: event.location,
+        team1Id: event.team1_id,
+        team2Id: event.team2_id,
+        coverImageUrl: event.cover_image_url,
+        createdAt: event.created_at,
+        updatedAt: event.updated_at,
+      }));
+    } catch (error) {
+      console.error("Supabase Service: Error in getEvents:", error);
+      throw error;
+    }
+  },
+
+  getEventStats: async (): Promise<{
+    totalEvents: number;
+    totalTickets: number;
+    totalRevenue: number;
+    validatedTickets: number;
+    ticketsScanned: number;
+    revenue: number;
+  }> => {
+    try {
+      // Get total events
+      const { count: totalEvents } = await supabaseAdmin
+        .from("events")
+        .select("*", { count: "exact", head: true });
+
+      // Get total tickets and validated tickets
+      const { count: totalTickets } = await supabaseAdmin
+        .from("tickets")
+        .select("*", { count: "exact", head: true });
+
+      const { count: validatedTickets } = await supabaseAdmin
+        .from("tickets")
+        .select("*", { count: "exact", head: true })
+        .eq("is_validated", true);
+
+      // Calculate total revenue from tickets
+      const { data: ticketsWithPricing } = await supabaseAdmin
+        .from("tickets")
+        .select(`
+          pricing_tier:pricing_tiers(price)
+        `);
+
+      const totalRevenue = ticketsWithPricing?.reduce((sum, ticket: any) => {
+        return sum + (ticket.pricing_tier?.price || 0);
+      }, 0) || 0;
+
+      return {
+        totalEvents: totalEvents || 0,
+        totalTickets: totalTickets || 0,
+        totalRevenue: totalRevenue,
+        validatedTickets: validatedTickets || 0,
+        ticketsScanned: validatedTickets || 0,
+        revenue: totalRevenue,
+      };
+    } catch (error) {
+      console.error("Supabase Service: Error in getEventStats:", error);
+      // Return default values if there's an error
+      return {
+        totalEvents: 0,
+        totalTickets: 0,
+        totalRevenue: 0,
+        validatedTickets: 0,
+        ticketsScanned: 0,
+        revenue: 0,
+      };
     }
   },
 
@@ -516,6 +606,156 @@ export const supabaseService = {
         error,
       );
       throw error;
+    }
+  },
+
+  // Subscriptions
+  getSubscriptions: async (): Promise<Subscription[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("subscriptions")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching subscriptions:", error);
+        throw new Error(`Failed to fetch subscriptions: ${error.message}`);
+      }
+
+      return data.map((subscription) => ({
+        id: subscription.id,
+        purchaser_name: subscription.purchaser_name,
+        purchaser_surname: subscription.purchaser_surname,
+        purchaser_email: subscription.purchaser_email,
+        valid_from: subscription.valid_from,
+        valid_to: subscription.valid_to,
+        qr_code_url: subscription.qr_code_url,
+        createdAt: subscription.created_at,
+        updatedAt: subscription.updated_at,
+        owner_id: subscription.owner_id,
+      }));
+    } catch (error) {
+      console.error("Supabase Service: Error in getSubscriptions:", error);
+      throw error;
+    }
+  },
+
+  // Teams
+  getTeams: async (): Promise<Team[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("teams")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching teams:", error);
+        throw new Error(`Failed to fetch teams: ${error.message}`);
+      }
+
+      return data.map((team) => ({
+        id: team.id,
+        team_name: team.team_name,
+        logo: team.logo,
+        created_at: team.created_at,
+      }));
+    } catch (error) {
+      console.error("Supabase Service: Error in getTeams:", error);
+      throw error;
+    }
+  },
+
+  // Events with Tiers
+  getEventsWithTiers: async (): Promise<EventWithTiers[]> => {
+    try {
+      const { data: events, error: eventsError } = await supabaseAdmin
+        .from("events")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (eventsError) {
+        console.error("Error fetching events:", eventsError);
+        throw new Error(`Failed to fetch events: ${eventsError.message}`);
+      }
+
+      const eventsWithTiers = await Promise.all(
+        events.map(async (event) => {
+          const { data: pricingTiers } = await supabaseAdmin
+            .from("pricing_tiers")
+            .select("*")
+            .eq("event_id", event.id);
+
+          return {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            date: event.date,
+            time: event.time,
+            location: event.location,
+            team1Id: event.team1_id,
+            team2Id: event.team2_id,
+            coverImageUrl: event.cover_image_url,
+            createdAt: event.created_at,
+            updatedAt: event.updated_at,
+            pricingTiers: pricingTiers || [],
+          };
+        }),
+      );
+
+      return eventsWithTiers;
+    } catch (error) {
+      console.error("Supabase Service: Error in getEventsWithTiers:", error);
+      throw error;
+    }
+  },
+
+  // Matches (placeholder - you may need to adjust based on your schema)
+  getMatches: async (): Promise<
+    { data: any[] | null; error: Error | null }
+  > => {
+    try {
+      // This is a placeholder - adjust based on your actual matches table
+      const { data, error } = await supabaseAdmin
+        .from("events")
+        .select("*")
+        .order("date", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return { data: data || [], error: null };
+    } catch (error) {
+      console.error("Supabase Service: Error in getMatches:", error);
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  },
+
+  // Players (placeholder - you may need to adjust based on your schema)
+  getPlayers: async (): Promise<
+    { data: any[] | null; error: Error | null }
+  > => {
+    try {
+      // This is a placeholder - adjust based on your actual players table
+      const { data, error } = await supabaseAdmin
+        .from("teams")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      return { data: data || [], error: null };
+    } catch (error) {
+      console.error("Supabase Service: Error in getPlayers:", error);
+      return {
+        data: null,
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
     }
   },
 };

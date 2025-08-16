@@ -106,9 +106,9 @@ async function validateEnhancedTicketQR(qrData: any, supabase: any) {
 
     // Validate QR code data against database
     if (
-      ticket.event_id !== qrData.eventId ||
-      ticket.purchaser_name !== qrData.purchaserName ||
-      ticket.purchaser_email !== qrData.purchaserEmail
+      ticket.event_id !== qrData.eid ||
+      ticket.purchaser_name !== qrData.pn ||
+      ticket.purchaser_email !== qrData.pe
     ) {
       return NextResponse.json({
         error: "QR code data mismatch",
@@ -116,55 +116,45 @@ async function validateEnhancedTicketQR(qrData: any, supabase: any) {
       }, { status: 400 });
     }
 
+    // Check if ticket is already validated
     if (ticket.is_validated) {
       return NextResponse.json({
-        error: "This ticket already scanned",
-        details:
-          "This ticket has already been validated and used. Each ticket can only be used once.",
+        error: "Ticket already validated",
+        details: `Ticket was validated on ${
+          new Date(ticket.validated_at).toLocaleString()
+        }`,
       }, { status: 400 });
     }
 
-    // Validate event date (ticket should be for today or future)
-    const eventDate = new Date(ticket.event.date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    if (eventDate < today) {
-      return NextResponse.json({
-        error: "Event has passed",
-        details: "This ticket is for an event that has already occurred",
-      }, { status: 400 });
-    }
-
-    // Mark ticket as validated
-    const { error: updateError } = await supabase
+    // Validate the ticket
+    const { error: validationError } = await supabase
       .from("tickets")
       .update({
         is_validated: true,
         validated_at: new Date().toISOString(),
       })
-      .eq("id", qrData.ticketId);
+      .eq("id", qrData.tid);
 
-    if (updateError) {
-      console.error("Error updating ticket validation status:", updateError);
+    if (validationError) {
+      console.error("Error validating ticket:", validationError);
       return NextResponse.json({
         error: "Failed to validate ticket",
-        details: "Could not update ticket status",
+        details: "Database error occurred during validation",
       }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       message: "Ticket validated successfully",
-      data: {
-        ticketId: ticket.id,
-        eventTitle: ticket.event.title,
-        eventDate: ticket.event.date,
-        eventTime: ticket.event.time,
-        purchaserName: ticket.purchaser_name,
-        tierName: ticket.pricing_tier.name,
+      ticket: {
+        id: ticket.id,
+        eventTitle: qrData.et,
+        eventDate: qrData.ed,
+        purchaserName: qrData.pn,
+        purchaserEmail: qrData.pe,
+        tierName: qrData.tn,
+        tierPrice: qrData.tp,
         validatedAt: new Date().toISOString(),
-        qrCodeType: "enhanced",
       },
     });
   } catch (error) {
@@ -191,8 +181,8 @@ async function validateEnhancedSubscriptionQR(qrData: any, supabase: any) {
 
     // Validate QR code data against database
     if (
-      subscription.purchaser_name !== qrData.purchaserName ||
-      subscription.purchaser_email !== qrData.purchaserEmail
+      subscription.purchaser_name !== qrData.pn ||
+      subscription.purchaser_email !== qrData.pe
     ) {
       return NextResponse.json({
         error: "QR code data mismatch",
@@ -208,34 +198,29 @@ async function validateEnhancedSubscriptionQR(qrData: any, supabase: any) {
 
     if (now < validFrom) {
       return NextResponse.json({
-        error: "Subscription not yet active",
-        details: `Subscription becomes active on ${
-          validFrom.toLocaleDateString("lt-LT")
-        }`,
+        error: "Subscription not yet valid",
+        details:
+          `Subscription becomes valid on ${validFrom.toLocaleDateString()}`,
       }, { status: 400 });
     }
 
     if (now > validTo) {
       return NextResponse.json({
         error: "Subscription expired",
-        details: `Subscription expired on ${
-          validTo.toLocaleDateString("lt-LT")
-        }`,
+        details: `Subscription expired on ${validTo.toLocaleDateString()}`,
       }, { status: 400 });
     }
 
-    // Subscriptions can be used multiple times until they expire
     return NextResponse.json({
       success: true,
       message: "Subscription validated successfully",
-      data: {
-        subscriptionId: subscription.id,
-        purchaserName: subscription.purchaser_name,
-        purchaserSurname: subscription.purchaser_surname,
-        validFrom: subscription.valid_from,
-        validTo: subscription.valid_to,
+      subscription: {
+        id: subscription.id,
+        purchaserName: qrData.pn,
+        purchaserEmail: qrData.pe,
+        validFrom: qrData.vf,
+        validTo: qrData.vt,
         validatedAt: new Date().toISOString(),
-        qrCodeType: "enhanced",
       },
     });
   } catch (error) {

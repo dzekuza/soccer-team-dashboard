@@ -11,7 +11,7 @@ import { CreateTicketDialog } from "@/components/create-ticket-dialog"
 import type { TicketWithDetails } from "@/lib/types"
 import { Download, Plus, Mail, MoreHorizontal, QrCode, Calendar, Clock, MapPin, X, Search } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { QRCodeCanvas } from 'qrcode.react'
+import { QRCodeService } from "@/lib/qr-code-service"
 import { useToast } from "@/components/ui/use-toast"
 import { createPortal } from 'react-dom'
 
@@ -27,6 +27,10 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
   const { toast } = useToast()
   const [previewTicket, setPreviewTicket] = useState<TicketWithDetails | null>(null)
   const [qrTicket, setQrTicket] = useState<TicketWithDetails | null>(null)
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("")
+  const [isLoadingQR, setIsLoadingQR] = useState(false)
+  const [previewQrCodeUrl, setPreviewQrCodeUrl] = useState<string>("")
+  const [isLoadingPreviewQR, setIsLoadingPreviewQR] = useState(false)
 
   async function fetchTickets() {
     try {
@@ -101,157 +105,149 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
         throw new Error(errorData.error || "Failed to delete ticket.");
       }
       
-      toast({ title: "Sėkmė", description: "Bilietas sėkmingai ištrintas." });
-      fetchTickets(); // Refresh the list
+      toast({ title: "Success", description: "Ticket deleted successfully." });
+      fetchTickets();
     } catch (error) {
       toast({
-        title: "Klaida",
-        description: error instanceof Error ? error.message : "Nepavyko ištrinti bilieto.",
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
         variant: "destructive",
       });
     }
   }
 
+  const handleShowQR = async (ticket: TicketWithDetails) => {
+    setQrTicket(ticket)
+    setIsLoadingQR(true)
+    setQrCodeUrl("")
+    
+    try {
+      // Generate enhanced QR code using the same service as PDF generation
+      const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(ticket)
+      setQrCodeUrl(enhancedQRCodeUrl)
+    } catch (error) {
+      console.error("Error generating QR code:", error)
+      toast({
+        title: "Error",
+        description: "Failed to generate QR code.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingQR(false)
+    }
+  }
+
+  const handleShowPreview = async (ticket: TicketWithDetails) => {
+    setPreviewTicket(ticket)
+    setIsLoadingPreviewQR(true)
+    setPreviewQrCodeUrl("")
+    
+    try {
+      // Generate enhanced QR code using the same service as PDF generation
+      const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(ticket)
+      setPreviewQrCodeUrl(enhancedQRCodeUrl)
+    } catch (error) {
+      console.error("Error generating QR code for preview:", error)
+      // Don't show toast for preview errors, just log them
+    } finally {
+      setIsLoadingPreviewQR(false)
+    }
+  }
+
   const filteredTickets = tickets.filter(ticket => {
-    const matchesEvent = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
-    const matchesScan =
-      scanStatus === 'all' ||
-      (scanStatus === 'scanned' && ticket.isValidated) ||
-      (scanStatus === 'not_scanned' && !ticket.isValidated)
-    return matchesEvent && matchesScan
+    const matchesEventName = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
+    const matchesScanStatus = scanStatus === "all" || 
+      (scanStatus === "scanned" && ticket.isValidated) || 
+      (scanStatus === "not_scanned" && !ticket.isValidated)
+    return matchesEventName && matchesScanStatus
   })
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Bilietai</h1>
-          <p className="text-gray-300">Tvarkykite ir generuokite renginių bilietus</p>
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+          <Input
+            placeholder="Filtruoti pagal renginį..."
+            value={eventNameFilter}
+            onChange={(e) => setEventNameFilter(e.target.value)}
+            className="w-full sm:w-64"
+          />
+          <Select value={scanStatus} onValueChange={(value: "all" | "scanned" | "not_scanned") => setScanStatus(value)}>
+            <SelectTrigger className="w-full sm:w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Visi bilietai</SelectItem>
+              <SelectItem value="scanned">Patvirtinti</SelectItem>
+              <SelectItem value="not_scanned">Nepatvirtinti</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#F15601] hover:bg-[#E04501] text-white">
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#F15601] hover:bg-[#E04501]">
           <Plus className="h-4 w-4 mr-2" />
-          Generuoti bilietą
+          Sukurti bilietą
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Filtruoti pagal renginio pavadinimą"
-            value={eventNameFilter}
-            onChange={e => setEventNameFilter(e.target.value)}
-            className="pl-10 bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
-          />
-        </div>
-        <Select value={scanStatus} onValueChange={(value) => setScanStatus(value as "all" | "scanned" | "not_scanned")}>
-          <SelectTrigger className="w-full sm:w-48 bg-white/10 border-gray-600 text-white focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1">
-            <SelectValue placeholder="Filtruoti bilietus" />
-          </SelectTrigger>
-          <SelectContent className="bg-[#0A165B] border-gray-600">
-            <SelectItem value="all" className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">Visi bilietai</SelectItem>
-            <SelectItem value="scanned" className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">Tik nuskenuoti</SelectItem>
-            <SelectItem value="not_scanned" className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">Tik nenuskenuoti</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="hidden md:block bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg overflow-x-auto">
+      <div className="hidden md:block">
         <Table>
           <TableHeader>
-            <TableRow className="border-gray-700 hover:bg-[#0A2065]/50">
-              <TableHead className="text-gray-300 font-medium">Renginys</TableHead>
-              <TableHead className="text-gray-300 font-medium">Pirkėjas</TableHead>
-              <TableHead className="text-gray-300 font-medium">El. paštas</TableHead>
-              <TableHead className="text-gray-300 font-medium">Data</TableHead>
-              <TableHead className="text-gray-300 font-medium">Laikas</TableHead>
-              <TableHead className="text-gray-300 font-medium">Tipas</TableHead>
-              <TableHead className="text-gray-300 font-medium">Kaina</TableHead>
-              <TableHead className="text-gray-300 font-medium">Statusas</TableHead>
-              <TableHead className="text-gray-300 font-medium">Veiksmai</TableHead>
+            <TableRow>
+              <TableHead>El. paštas</TableHead>
+              <TableHead>Data</TableHead>
+              <TableHead>Laikas</TableHead>
+              <TableHead>Tipas</TableHead>
+              <TableHead>Kaina</TableHead>
+              <TableHead>Statusas</TableHead>
+              <TableHead>Veiksmai</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredTickets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-gray-400">Nėra bilietų pagal pasirinktus filtrus</TableCell>
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  Nėra bilietų pagal pasirinktus filtrus
+                </TableCell>
               </TableRow>
             ) : (
               filteredTickets.map((ticket) => (
-                <TableRow key={ticket.id} className="border-gray-700 hover:bg-[#0A2065]/30 transition-colors">
-                  <TableCell className="text-white font-medium">{ticket.event.title}</TableCell>
-                  <TableCell className="text-white">{ticket.purchaserName}</TableCell>
-                  <TableCell className="text-gray-300">{ticket.purchaserEmail}</TableCell>
-                  <TableCell className="text-white">{ticket.event.date}</TableCell>
-                  <TableCell className="text-white">{ticket.event.time}</TableCell>
-                  <TableCell className="text-gray-300">{ticket.tier.name}</TableCell>
-                  <TableCell className="text-[#F15601] font-semibold">{ticket.tier.price} €</TableCell>
+                <TableRow key={ticket.id}>
+                  <TableCell>{ticket.purchaserEmail}</TableCell>
+                  <TableCell>{ticket.event.date}</TableCell>
+                  <TableCell>{ticket.event.time}</TableCell>
+                  <TableCell>{ticket.tier.name}</TableCell>
+                  <TableCell className="text-red-500 font-semibold">{ticket.tier.price} €</TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={ticket.isValidated ? "default" : "secondary"}
-                      className={ticket.isValidated ? "bg-green-600 text-white" : "bg-[#F15601] text-white"}
-                    >
+                    <Badge variant={ticket.isValidated ? "default" : "secondary"} className={ticket.isValidated ? "bg-green-500" : "bg-orange-500"}>
                       {ticket.isValidated ? "Patvirtintas" : "Galiojantis"}
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0 text-gray-300 hover:text-white hover:bg-[#0A2065]/50">
+                        <Button variant="ghost" className="h-8 w-8 p-0">
                           <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-[#0A165B] border-gray-600">
-                        <DropdownMenuItem onClick={() => setPreviewTicket(ticket)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
-                          <span>Peržiūrėti</span>
+                                              <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleShowPreview(ticket)}>
+                            Peržiūrėti
+                          </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleShowQR(ticket)}>
+                          <QrCode className="h-4 w-4 mr-2" />
+                          QR kodas
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setQrTicket(ticket)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
-                          <QrCode className="mr-2 h-4 w-4" />
-                          <span>Peržiūrėti QR</span>
+                        <DropdownMenuItem onClick={() => handleDownloadPDF(ticket)}>
+                          <Download className="h-4 w-4 mr-2" />
+                          Atsisiųsti PDF
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={async () => {
-                            try {
-                              const response = await fetch(`/api/tickets/${ticket.id}/download`);
-                              if (!response.ok) {
-                                const errorData = await response.json();
-                                throw new Error(errorData.error || "Failed to download ticket.");
-                              }
-                              
-                              // Get the filename from the Content-Disposition header
-                              const contentDisposition = response.headers.get('Content-Disposition');
-                              const filename = contentDisposition 
-                                ? contentDisposition.split('filename=')[1]?.replace(/"/g, '') 
-                                : `ticket-${ticket.id}.pdf`;
-                              
-                              // Create a blob and download it
-                              const blob = await response.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = filename;
-                              document.body.appendChild(a);
-                              a.click();
-                              window.URL.revokeObjectURL(url);
-                              document.body.removeChild(a);
-                            } catch (error) {
-                              alert(error instanceof Error ? error.message : "Could not download ticket.");
-                            }
-                          }}
-                          className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]"
-                        >
-                          <Download className="mr-2 h-4 w-4" />
-                          <span>Atsisiųsti</span>
+                        <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)}>
+                          <Mail className="h-4 w-4 mr-2" />
+                          Siųsti el. laišką
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
-                          <Mail className="mr-2 h-4 w-4" />
-                          <span>Siųsti iš naujo</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleDeleteTicket(ticket.id)} className="text-red-400 hover:text-red-300 hover:bg-red-900/20 focus:bg-red-900/20">
-                          <X className="mr-2 h-4 w-4" />
-                          <span>Ištrinti</span>
+                        <DropdownMenuItem onClick={() => handleDeleteTicket(ticket.id)} className="text-red-600">
+                          Ištrinti
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -263,7 +259,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
         </Table>
       </div>
 
-      {/* Ticket Preview Modal */}
+      {/* Preview Modal */}
       {previewTicket && createPortal(
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
@@ -301,13 +297,25 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
               <span className="text-[#F15601] text-xl font-bold">{previewTicket.tier.price} €</span>
             </div>
             <div className="bg-[#0A2065] rounded-xl p-4 mb-4 flex flex-col items-center">
-              <QRCodeCanvas 
-                value={previewTicket.id} 
-                size={128} 
-                className="mx-auto"
-                level="M"
-                includeMargin={true}
-              />
+              {isLoadingPreviewQR ? (
+                <div className="flex flex-col items-center">
+                  <div className="w-48 h-48 bg-gray-200 rounded animate-pulse" />
+                  <p className="text-sm text-gray-500 mt-2">Generating QR Code...</p>
+                </div>
+              ) : previewQrCodeUrl ? (
+                <img 
+                  src={previewQrCodeUrl} 
+                  alt="QR Code" 
+                  className="w-48 h-48 mx-auto"
+                />
+              ) : (
+                <div className="flex flex-col items-center">
+                  <div className="w-48 h-48 bg-gray-200 rounded flex items-center justify-center">
+                    <QrCode className="h-24 w-24 text-gray-400" />
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">QR Code Unavailable</p>
+                </div>
+              )}
               <p className="text-xs text-gray-300 mt-2">QR Code</p>
               <p className="text-xs text-gray-400">{previewTicket.id.slice(-8)}</p>
             </div>
@@ -338,8 +346,26 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
         >
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-xs w-full">
             <h2 className="text-lg font-bold mb-2 text-[#0A165B]">QR kodas</h2>
-            <QRCodeCanvas value={qrTicket.qrCodeUrl ?? qrTicket.id} size={192} className="mx-auto" />
-            <div className="text-xs text-gray-500 mt-2">{qrTicket.id}</div>
+            {isLoadingQR ? (
+              <div className="flex flex-col items-center">
+                <div className="w-48 h-48 bg-gray-200 rounded animate-pulse" />
+                <p className="text-sm text-gray-500 mt-2">Generating QR Code...</p>
+              </div>
+            ) : qrCodeUrl ? (
+              <img 
+                src={qrCodeUrl} 
+                alt="QR Code" 
+                className="w-48 h-48 mx-auto"
+              />
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="w-48 h-48 bg-gray-200 rounded flex items-center justify-center">
+                  <QrCode className="h-24 w-24 text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-500 mt-2">QR Code Unavailable</p>
+              </div>
+            )}
+            <div className="text-xs text-gray-500 mt-2 text-center">{qrTicket.id}</div>
             <button onClick={() => setQrTicket(null)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
               <X className="h-6 w-6" />
             </button>
@@ -376,10 +402,10 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                   <span>{ticket.isValidated ? "Patvirtintas" : "Galiojantis"}</span>
                 </div>
                 <div className="flex gap-2 mt-2">
-                  <Button size="sm" variant="outline" onClick={() => setPreviewTicket(ticket)}>
+                  <Button size="sm" variant="outline" onClick={() => handleShowPreview(ticket)}>
                     Peržiūrėti
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => setQrTicket(ticket)}>
+                  <Button size="sm" variant="outline" onClick={() => handleShowQR(ticket)}>
                     <QrCode className="h-4 w-4 mr-1" /> QR
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(ticket)}>
