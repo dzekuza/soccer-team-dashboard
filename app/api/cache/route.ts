@@ -8,10 +8,10 @@ export async function DELETE() {
     if (keys.length > 0) {
       await redis.del(...keys)
     }
-    return NextResponse.json({ message: "Cache cleared successfully" })
+    return NextResponse.json({ message: "Talpykla sėkmingai išvalyta" })
   } catch (error) {
     console.error("Error clearing cache:", error)
-    return NextResponse.json({ error: "Failed to clear cache" }, { status: 500 })
+          return NextResponse.json({ error: "Nepavyko išvalyti talpyklos" }, { status: 500 })
   }
 }
 
@@ -33,6 +33,6 @@ export async function GET() {
     return NextResponse.json(cacheStats);
   } catch (error) {
     console.error("Error fetching cache info:", error);
-    return NextResponse.json({ error: "Failed to fetch cache info" }, { status: 500 });
+          return NextResponse.json({ error: "Nepavyko gauti talpyklos informacijos" }, { status: 500 });
   }
 }

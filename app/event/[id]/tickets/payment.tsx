@@ -123,9 +123,9 @@ export default function PaymentPage() {
     return v
   }
 
-  if (loading) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Loading...</div>
-  if (error) return <div className="bg-main flex items-center justify-center min-h-screen text-red-500">{error}</div>
-  if (!eventData) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Event not found.</div>
+      if (loading) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Kraunama...</div>
+    if (error) return <div className="bg-main flex items-center justify-center min-h-screen text-red-500">{error}</div>
+    if (!eventData) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Renginys nerastas.</div>
 
   const { event, team1, team2 } = eventData
 
@@ -149,7 +149,7 @@ export default function PaymentPage() {
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Payment form */}
         <Card className="bg-[#070F40] border border-[#232B5D] col-span-2 p-8">
-          <h2 className="text-2xl font-bold mb-8">Where to send the tickets</h2>
+          <h2 className="text-2xl font-bold mb-8">Kur siųsti bilietus</h2>
           <div className="flex flex-col md:flex-row gap-6 mb-8">
             <input
               type="email"
@@ -166,7 +166,7 @@ export default function PaymentPage() {
               onChange={e => setConfirmEmail(e.target.value)}
             />
           </div>
-          <h2 className="text-2xl font-bold mb-6">Choose your payment method</h2>
+          <h2 className="text-2xl font-bold mb-6">Pasirinkite mokėjimo būdą</h2>
           <div className="flex flex-col gap-4 mb-8">
             {paymentMethods.map(method => (
               <label key={method.id} className={cn(
@@ -203,7 +203,7 @@ export default function PaymentPage() {
                   maxLength={19}
                 />
                 {payment === "card" && !cardNumber && (
-                  <div className="text-red-500 text-sm">Your card number is incomplete.</div>
+                  <div className="text-red-500 text-sm">Jūsų kortelės numeris neužbaigtas.</div>
                 )}
                 <div className="grid grid-cols-2 gap-4">
                   <input
@@ -300,8 +300,8 @@ export default function PaymentPage() {
         <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-block w-3 h-3 rounded-full bg-white" />
-            <span className="text-white font-medium">Time remaining:</span>
-            <span className="text-white font-bold">15:00 min.</span>
+                    <span className="text-white font-medium">Liko laiko:</span>
+        <span className="text-white font-bold">15:00 min.</span>
           </div>
           <div>
             <div className="text-lg font-bold mb-2">{team1?.team_name} – {team2?.team_name}</div>
@@ -309,9 +309,9 @@ export default function PaymentPage() {
             <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
           </div>
           <div>
-            <div className="text-lg font-bold mb-2">Order Summary</div>
+            <div className="text-lg font-bold mb-2">Užsakymo santrauka</div>
             {selectedTiers.length === 0 ? (
-              <div className="text-[#B0B8D9]">No tickets selected.</div>
+              <div className="text-[#B0B8D9]">Bilietų nepasirinkta.</div>
             ) : (
               <ul className="mb-2">
                 {selectedTiers.map(tier => (
@@ -327,7 +327,7 @@ export default function PaymentPage() {
               <span>€{total.toFixed(2)}</span>
             </div>
           </div>
-          <Button className="btn-main text-lg font-bold w-full mt-4" disabled={!canSubmit}>Confirm Payment</Button>
+          <Button className="btn-main text-lg font-bold w-full mt-4" disabled={!canSubmit}>Patvirtinti mokėjimą</Button>
         </Card>
       </div>
     </div>

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     const { cartItems, purchaserEmail, purchaserName } = await request.json()
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0 || !purchaserEmail || !purchaserName) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+      return NextResponse.json({ error: "Trūksta privalomų laukų" }, { status: 400 })
     }
 
     const line_items = cartItems.map((item: CartItem) => {

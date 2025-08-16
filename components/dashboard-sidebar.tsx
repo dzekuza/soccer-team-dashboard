@@ -108,7 +108,7 @@ export function DashboardSidebar() {
           </SheetTrigger>
           <SheetContent side="left">
             <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
+              <SheetTitle>Meniu</SheetTitle>
             </SheetHeader>
             <nav className="mt-8">
               <ul>

@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     if (!eventId || !tierId || !purchaserName || !purchaserEmail) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Trūksta privalomų laukų" },
         { status: 400 },
       )
     }
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const tier = await supabaseService.getPricingTier(tierId)
     if (!tier || tier.quantity <= tier.soldQuantity) {
       return NextResponse.json(
-        { error: "Tier sold out or not available" },
+        { error: "Kainos lygis išparduotas arba neprieinamas" },
         { status: 400 },
       )
     }
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       error instanceof Error ? error.message : "Internal Server Error"
     console.error("Error creating ticket:", message)
     return NextResponse.json(
-      { error: "Failed to create ticket", details: message },
+              { error: "Nepavyko sukurti bilieto", details: message },
       { status: 500 },
     )
   }

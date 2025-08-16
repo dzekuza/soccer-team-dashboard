@@ -27,12 +27,12 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
   async function fetchMatches() {
     try {
       const response = await fetch('/api/matches');
-      if (!response.ok) throw new Error("Failed to fetch matches");
+      if (!response.ok) throw new Error("Nepavyko gauti rungtynių");
       const data = await response.json();
       setMatches(data);
     } catch (error) {
       console.error("Failed to fetch matches:", error)
-      toast({ title: "Error", description: "Could not refresh the match list.", variant: "destructive" });
+      toast({ title: "Klaida", description: "Nepavyko atnaujinti rungtynių sąrašo.", variant: "destructive" });
     }
   }
 
@@ -52,22 +52,22 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
   };
 
   const handleDelete = async (fingerprint: string) => {
-    if (!confirm("Are you sure you want to delete this match?")) return;
+    if (!confirm("Ar tikrai norite ištrinti šias rungtynes?")) return;
 
     try {
       const response = await fetch(`/api/matches/${fingerprint}`, { method: 'DELETE' });
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete match");
+        throw new Error(errorData.error || "Nepavyko ištrinti rungtynių");
       }
-      toast({ title: "Success", description: "Match deleted successfully." });
+      toast({ title: "Sėkmingai", description: "Rungtynės sėkmingai ištrintos." });
       fetchMatches();
     } catch (error) {
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-        variant: "destructive",
-      });
+              toast({
+          title: "Klaida",
+          description: error instanceof Error ? error.message : "Įvyko nežinoma klaida.",
+          variant: "destructive",
+        });
     }
   };
 
@@ -75,12 +75,12 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Matches</h1>
-          <p className="text-gray-600">Manage and view your team&apos;s matches.</p>
+                  <h1 className="text-3xl font-bold">Mano rungtynės</h1>
+        <p className="text-gray-600">Tvarkykite ir peržiūrėkite savo komandos rungtynes.</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />
-          Create Match
+          Sukurti rungtynes
         </Button>
       </div>
 
@@ -88,7 +88,7 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
         {/* Mobile View - Card List */}
         <div className="md:hidden">
           {matches.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No matches found.</div>
+            <div className="text-center py-8 text-muted-foreground">Rungtynių nerasta.</div>
           ) : (
             matches.map((match) => (
               <div key={match.fingerprint} className="border-b last:border-b-0 p-4">
@@ -103,10 +103,10 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleEdit(match)}>
-                        Edit
+                        Redaguoti
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => handleDelete(match.fingerprint)}>
-                        Delete
+                        Ištrinti
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -114,7 +114,7 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
                 <div className="text-sm text-muted-foreground mt-2">
                   <p>{match.match_date} at {match.match_time}</p>
                   <p>{match.venue}</p>
-                  <p>Status: <span className="font-semibold">{match.status}</span></p>
+                  <p>Būsena: <span className="font-semibold">{match.status}</span></p>
                 </div>
               </div>
             ))
@@ -139,7 +139,7 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
             <TableBody>
               {matches.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">No matches found.</TableCell>
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Rungtynių nerasta.</TableCell>
                 </TableRow>
               ) : (
                 matches.map((match) => (
@@ -160,12 +160,12 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(match)}>
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDelete(match.fingerprint)}>
-                            Delete
-                          </DropdownMenuItem>
+                                                  <DropdownMenuItem onClick={() => handleEdit(match)}>
+                          Redaguoti
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDelete(match.fingerprint)}>
+                          Ištrinti
+                        </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

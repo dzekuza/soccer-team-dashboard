@@ -9,7 +9,7 @@ const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 export function Providers({ children }: { children: React.ReactNode }) {
   if (!stripePromise) {
-    return <div className="bg-red-900 text-white p-4 text-center font-bold">Stripe publishable key is missing. Please set NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY in your environment.</div>
+    return <div className="bg-red-900 text-white p-4 text-center font-bold">Trūksta Stripe viešojo rakto. Nustatykite NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY savo aplinkoje.</div>
   }
   return <Elements stripe={stripePromise}>{children}</Elements>
 } 

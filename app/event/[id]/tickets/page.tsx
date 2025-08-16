@@ -101,8 +101,8 @@ export default function TicketsPage() {
   if (loading) return (
     <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-white">
       <div className="text-center">
-        <div className="text-2xl font-bold mb-4">Loading...</div>
-        <div className="text-[#B0B8D9]">Fetching event details</div>
+        <div className="text-2xl font-bold mb-4">Kraunama...</div>
+        <div className="text-[#B0B8D9]">Gaunami renginio duomenys</div>
       </div>
     </div>
   )
@@ -110,13 +110,13 @@ export default function TicketsPage() {
   if (error) return (
     <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-red-500">
       <div className="text-center">
-        <div className="text-2xl font-bold mb-4">Error</div>
+        <div className="text-2xl font-bold mb-4">Klaida</div>
         <div className="text-lg">{error}</div>
         <Button 
           className="mt-4 btn-main"
           onClick={() => window.location.reload()}
         >
-          Try Again
+          Bandyti dar kartą
         </Button>
       </div>
     </div>
@@ -125,8 +125,8 @@ export default function TicketsPage() {
   if (!eventData) return (
     <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-white">
       <div className="text-center">
-        <div className="text-2xl font-bold mb-4">Event not found</div>
-        <div className="text-[#B0B8D9]">The event you are looking for doesn&apos;t exist</div>
+        <div className="text-2xl font-bold mb-4">Renginys nerastas</div>
+        <div className="text-[#B0B8D9]">Renginys, kurio ieškote, neegzistuoja</div>
       </div>
     </div>
   )
@@ -163,7 +163,7 @@ export default function TicketsPage() {
                       <div className="text-lg font-bold mb-1">{tier.name}</div>
                       <div className="text-[#B0B8D9] text-sm mb-2">{tier.description}</div>
                       <div className="text-2xl font-bold mb-1">{tier.price === 0 ? "Nemokamas" : `€ ${tier.price.toFixed(2)}`}</div>
-                      <div className="text-[#B0B8D9] text-xs">Remaining {tier.quantity}</div>
+                      <div className="text-[#B0B8D9] text-xs">Liko {tier.quantity}</div>
                     </div>
                     <div className="flex items-center gap-4 mt-4 md:mt-0">
                       <Button variant="ghost" className="text-2xl px-3 py-1" onClick={() => handleQuantityChange(tier.id, -1, tier.quantity)}>-</Button>
@@ -175,21 +175,21 @@ export default function TicketsPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="text-[#B0B8D9] text-lg">No pricing tiers available for this event</div>
+                <div className="text-[#B0B8D9] text-lg">Šiam renginiui kainų lygių nėra</div>
               </div>
             )}
           </Card>
           {/* Order summary */}
           <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
             <div>
-              <div className="text-lg font-bold mb-2">{team1?.team_name || 'Team 1'} – {team2?.team_name || 'Team 2'}</div>
+              <div className="text-lg font-bold mb-2">{team1?.team_name || 'Komanda 1'} – {team2?.team_name || 'Komanda 2'}</div>
               <div className="text-[#B0B8D9] text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
               <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
             </div>
             <div>
-              <div className="text-lg font-bold mb-2">Order Summary</div>
+              <div className="text-lg font-bold mb-2">Užsakymo santrauka</div>
               {selectedTiers.length === 0 ? (
-                <div className="text-[#B0B8D9]">No tickets selected.</div>
+                <div className="text-[#B0B8D9]">Bilietų nepasirinkta.</div>
               ) : (
                 <ul className="mb-2">
                   {selectedTiers.map(tier => (

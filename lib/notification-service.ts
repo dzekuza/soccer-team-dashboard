@@ -76,16 +76,16 @@ async function sendSubscriptionConfirmation(
       subscriptionId,
     );
 
-    if (
-      !subscription ||
-      !subscription.purchaser_email ||
-      !subscription.purchaser_name ||
-      !subscription.purchaser_surname ||
-      !subscription.qr_code_url
-    ) {
-      throw new Error(
-        "Subscription data is incomplete and email cannot be sent.",
-      );
+    if (!subscription) {
+      throw new Error("Subscription not found.");
+    }
+
+    if (!subscription.purchaser_email) {
+      throw new Error("Subscription is missing purchaser email address.");
+    }
+
+    if (!subscription.purchaser_name) {
+      throw new Error("Subscription is missing purchaser name.");
     }
 
     const template = await supabaseService.getEmailTemplateByName(
@@ -98,7 +98,7 @@ async function sendSubscriptionConfirmation(
     const pdfPayload = {
       id: subscription.id,
       purchaser_name: subscription.purchaser_name,
-      purchaser_surname: subscription.purchaser_surname,
+      purchaser_surname: subscription.purchaser_surname || "",
       purchaser_email: subscription.purchaser_email,
       qr_code_url: subscription.id,
       valid_from: subscription.valid_from,

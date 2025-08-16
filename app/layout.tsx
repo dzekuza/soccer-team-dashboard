@@ -3,6 +3,7 @@ import { Inter as FontSans } from "next/font/google"
 import { cn } from "@/lib/utils"
 import { Providers } from "@/components/providers"
 import { CartProvider } from "@/context/cart-context"
+import { Toaster } from "@/components/ui/toaster"
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -10,8 +11,8 @@ const fontSans = FontSans({
 })
 
 export const metadata = {
-  title: "FK Banga tickets dash",
-  description: "Manage soccer team events and tickets",
+  title: "FK Banga bilietų valdymas",
+  description: "Futbolo komandos renginių ir bilietų valdymas",
   generator: 'v0.dev'
 };
 
@@ -21,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="lt" suppressHydrationWarning>
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased dark",
@@ -31,6 +32,7 @@ export default function RootLayout({
         <Providers>
           <CartProvider>
             {children}
+            <Toaster />
           </CartProvider>
         </Providers>
       </body>

@@ -102,7 +102,7 @@ const QrScanner = ({ onScan, onValidationResult }: QrScannerProps) => {
       {isScanning && (
         <div className="absolute inset-0 bg-green-500 bg-opacity-20 flex items-center justify-center">
           <div className="bg-white p-4 rounded-lg shadow-lg">
-            <p className="text-green-600 font-semibold">Processing QR Code...</p>
+            <p className="text-green-600 font-semibold">Apdorojamas QR kodas...</p>
           </div>
         </div>
       )}

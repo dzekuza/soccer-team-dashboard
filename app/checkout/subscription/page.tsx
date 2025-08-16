@@ -37,7 +37,7 @@ export default function SubscriptionCheckoutPage() {
     
     try {
       if (!selectedPlanId || !userEmail) {
-        throw new Error("Please select a plan and enter your email");
+        throw new Error("Pasirinkite planą ir įveskite savo el. paštą");
       }
 
       // Create checkout session
@@ -55,18 +55,18 @@ export default function SubscriptionCheckoutPage() {
       const { url, error: apiError } = await response.json();
 
       if (!response.ok) {
-        throw new Error(apiError || "Failed to create checkout session");
+        throw new Error(apiError || "Nepavyko sukurti apmokėjimo sesijos");
       }
 
       if (url) {
         // Redirect to Stripe Checkout
         window.location.href = url;
       } else {
-        throw new Error("No checkout URL received");
+        throw new Error("Nepavyko gauti apmokėjimo URL");
       }
 
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      setError(err instanceof Error ? err.message : 'Įvyko nežinoma klaida');
       setLoading(false);
     }
   };

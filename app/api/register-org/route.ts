@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false, 
-          error: "Missing required fields. Please provide userId, email, name, and organizationName." 
+          error: "Trūksta privalomų laukų. Pateikite userId, email, name ir organizationName." 
         }, 
         { status: 400 }
       );

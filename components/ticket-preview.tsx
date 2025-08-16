@@ -7,6 +7,7 @@ import { QrCode, Download, MapPin, Calendar, Clock } from "lucide-react"
 import type { TicketWithDetails } from "@/lib/types"
 import { QRCodeService } from "@/lib/qr-code-service"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 interface TicketPreviewProps {
   ticket: TicketWithDetails
@@ -67,13 +68,15 @@ export function TicketPreview({ ticket, onDownload }: TicketPreviewProps) {
         {isLoadingQR ? (
           <div className="flex flex-col items-center">
             <div className="w-32 h-32 bg-gray-600 rounded animate-pulse" />
-            <p className="text-xs text-gray-300 mt-2">Generating QR Code...</p>
+            <p className="text-xs text-gray-300 mt-2">Generuojamas QR kodas...</p>
           </div>
         ) : qrCodeUrl ? (
           <>
-            <img 
+            <Image 
               src={qrCodeUrl} 
               alt="QR Code" 
+              width={128}
+              height={128}
               className="w-32 h-32 mx-auto"
             />
             <p className="text-xs text-gray-300 mt-2">Enhanced QR Code</p>
@@ -84,14 +87,14 @@ export function TicketPreview({ ticket, onDownload }: TicketPreviewProps) {
             <div className="w-32 h-32 bg-gray-600 rounded flex items-center justify-center">
               <QrCode className="h-16 w-16 text-gray-400" />
             </div>
-            <p className="text-xs text-gray-300 mt-2">QR Code Unavailable</p>
+            <p className="text-xs text-gray-300 mt-2">QR kodas neprieinamas</p>
           </div>
         )}
       </div>
       {onDownload && (
         <Button onClick={onDownload} className="w-full bg-[#F15601] hover:bg-[#E04501] text-white rounded-lg text-lg font-semibold py-3 mt-2">
           <Download className="h-5 w-5 mr-2" />
-          Download PDF
+          Atsisiųsti PDF
         </Button>
       )}
       <div className="text-center text-xs text-gray-300 border-t border-[#0A2065] pt-2 mt-4">

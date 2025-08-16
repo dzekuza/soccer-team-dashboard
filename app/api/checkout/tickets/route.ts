@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     if (!eventId || !tierId || !quantity || !purchaserName || !purchaserEmail) {
-      return NextResponse.json({ error: "Missing required fields" }, {
+      return NextResponse.json({ error: "Trūksta privalomų laukų" }, {
         status: 400,
         headers: CORS_HEADERS,
       });
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     const tier = eventWithTiers?.pricingTiers.find((t) => t.id === tierId);
 
     if (!eventWithTiers || !tier) {
-      return NextResponse.json({ error: "Event or pricing tier not found" }, {
+      return NextResponse.json({ error: "Renginys ar kainos lygis nerastas" }, {
         status: 404,
         headers: CORS_HEADERS,
       });
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           currency: "eur",
           product_data: {
             name: `${eventWithTiers.title} - ${tier.name}`,
-            description: `Ticket for ${eventWithTiers.title}`,
+            description: `Bilietas į ${eventWithTiers.title}`,
           },
           unit_amount: Math.round(tier.price * 100),
         },
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error("Error creating checkout session:", error);
     return NextResponse.json({
-      error: error.message || "Failed to create checkout session",
+      error: error.message || "Nepavyko sukurti apmokėjimo sesijos",
     }, { status: 500, headers: CORS_HEADERS });
   }
 }

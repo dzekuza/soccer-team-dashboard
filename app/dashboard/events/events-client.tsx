@@ -13,6 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, MapPin, Trash2, Edit, Eye } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import Image from "next/image"
+import { useToast } from "@/components/ui/use-toast"
 
 import * as React from "react"
 import {
@@ -336,6 +338,7 @@ export default function EventsClient({
   initialTickets = [],
   initialTeams,
 }: EventsClientProps) {
+  const { toast } = useToast()
   const [events, setEvents] = useState<EventWithTiers[]>(initialEvents)
   const [tickets, setTickets] = useState<TicketWithDetails[]>(initialTickets)
   const [teams, setTeams] = useState<Team[]>(initialTeams)
@@ -362,13 +365,21 @@ export default function EventsClient({
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError) {
       console.error('❌ Authentication error:', authError);
-      alert('Authentication error. Please log in again.');
+      toast({
+        title: "Klaida",
+        description: "Autentifikacijos klaida. Prisijunkite dar kartą.",
+        variant: "destructive",
+      });
       return;
     }
     
     if (!user) {
       console.error('❌ No authenticated user found');
-      alert('Please log in to delete events.');
+      toast({
+        title: "Klaida",
+        description: "Prisijunkite, kad galėtumėte ištrinti renginius.",
+        variant: "destructive",
+      });
       return;
     }
     
@@ -436,7 +447,10 @@ export default function EventsClient({
       
       console.log('✅ Successfully deleted event');
       setEvents(events.filter(e => e.id !== eventId));
-      alert('Renginys sėkmingai ištrintas.');
+      toast({
+        title: "Sėkmingai",
+        description: "Renginys sėkmingai ištrintas.",
+      });
 
     } catch (err) {
       console.error('❌ Error in handleDeleteEvent:', err);
@@ -504,7 +518,13 @@ export default function EventsClient({
             {/* Team 1 */}
             <div className="flex flex-col items-center min-w-[100px]">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-2 overflow-hidden">
-                <img src={team1?.logo || '/placeholder-logo.svg'} alt={team1?.team_name || 'Komanda 1'} className="object-contain w-16 h-16" />
+                <Image 
+                  src={team1?.logo || '/placeholder-logo.svg'} 
+                  alt={team1?.team_name || 'Komanda 1'} 
+                  width={64}
+                  height={64}
+                  className="object-contain w-16 h-16" 
+                />
               </div>
               <div className="text-white text-xl font-bold leading-tight">{team1?.team_name || 'Komanda 1'}</div>
               <div className="text-white/70 text-xs mt-1">{/* Pozicija */}– vieta A lygoje</div>
@@ -516,7 +536,13 @@ export default function EventsClient({
             {/* Team 2 */}
             <div className="flex flex-col items-center min-w-[100px]">
               <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-2 overflow-hidden">
-                <img src={team2?.logo || '/placeholder-logo.svg'} alt={team2?.team_name || 'Komanda 2'} className="object-contain w-16 h-16" />
+                <Image 
+                  src={team2?.logo || '/placeholder-logo.svg'} 
+                  alt={team2?.team_name || 'Komanda 2'} 
+                  width={64}
+                  height={64}
+                  className="object-contain w-16 h-16" 
+                />
               </div>
               <div className="text-white text-xl font-bold leading-tight">{team2?.team_name || 'Komanda 2'}</div>
               <div className="text-white/70 text-xs mt-1">{/* Pozicija */}– vieta A lygoje</div>

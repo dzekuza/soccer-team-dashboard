@@ -72,8 +72,8 @@ export default function EventPage() {
           fetch(`/api/events/${id}/pricing-tiers`),
         ])
 
-        if (!eventRes.ok) throw new Error("Failed to fetch event details")
-        if (!tiersRes.ok) throw new Error("Failed to fetch pricing tiers")
+        if (!eventRes.ok) throw new Error("Nepavyko gauti renginio duomenų")
+        if (!tiersRes.ok) throw new Error("Nepavyko gauti kainų lygių")
 
         const { event, team1, team2 } = await eventRes.json()
         const pricingTiers = await tiersRes.json()
@@ -87,7 +87,7 @@ export default function EventPage() {
         setEventData(fullEventData)
       } catch (e: unknown) {
         console.error("Error fetching event data:", e)
-        setError(e instanceof Error ? e.message : "An unknown error occurred.")
+        setError(e instanceof Error ? e.message : "Įvyko nežinoma klaida.")
       } finally {
         setLoading(false)
       }
@@ -103,12 +103,12 @@ export default function EventPage() {
 
   const handlePurchase = async () => {
     if (!selectedTier || !eventData) {
-      alert("Please select a ticket tier.")
+      alert("Pasirinkite bilieto kainos lygį.")
       return
     }
 
     if (!formData.firstName || !formData.lastName || !formData.email) {
-      alert("Please fill in all your details.")
+      alert("Užpildykite visus savo duomenis.")
       setCurrentStep("03")
       return
     }
@@ -140,12 +140,12 @@ export default function EventPage() {
         const { error } = await stripe.redirectToCheckout({ sessionId })
         if (error) {
           console.error("Stripe redirect error:", error)
-          alert(`Payment error: ${error.message}`)
+          alert(`Mokėjimo klaida: ${error.message}`)
         }
       }
     } catch (error) {
       console.error("Failed to create checkout session:", error)
-      alert(`An error occurred: ${error instanceof Error ? error.message : "Unknown error"}`)
+      alert(`Įvyko klaida: ${error instanceof Error ? error.message : "Nežinoma klaida"}`)
     }
   }
 
@@ -177,7 +177,7 @@ export default function EventPage() {
   if (loading)
     return (
       <div className="bg-main flex items-center justify-center min-h-screen text-white">
-        Loading...
+        Kraunama...
       </div>
     )
   if (error)
@@ -215,9 +215,11 @@ export default function EventPage() {
               {/* Team Logos and Names */}
               <div className="flex items-center justify-center gap-8 mb-6">
                 <div className="flex flex-col items-center">
-                  <img 
+                  <Image 
                     src={team1?.logo || '/placeholder-logo.svg'} 
                     alt={team1?.team_name || 'Komanda 1'} 
+                    width={80}
+                    height={80}
                     className="object-contain w-20 h-20 mb-3" 
                   />
                   <span className="text-white font-bold text-lg">
@@ -226,9 +228,11 @@ export default function EventPage() {
                 </div>
                 <div className="text-4xl md:text-5xl font-bold text-white/80">VS</div>
                 <div className="flex flex-col items-center">
-                  <img 
+                  <Image 
                     src={team2?.logo || '/placeholder-logo.svg'} 
                     alt={team2?.team_name || 'Komanda 2'} 
+                    width={80}
+                    height={80}
                     className="object-contain w-20 h-20 mb-3" 
                   />
                   <span className="text-white font-bold text-lg">
@@ -320,9 +324,11 @@ export default function EventPage() {
                 {/* Team Display */}
                 <div className="flex items-center justify-center gap-6 mb-6">
                   <div className="flex flex-col items-center">
-                    <img 
+                    <Image 
                       src={team1?.logo || '/placeholder-logo.svg'} 
                       alt={team1?.team_name || 'Komanda 1'} 
+                      width={64}
+                      height={64}
                       className="object-contain w-16 h-16 mb-2" 
                     />
                     <span className="text-white font-semibold text-center">
@@ -331,9 +337,11 @@ export default function EventPage() {
                   </div>
                   <div className="text-2xl font-bold text-white">VS</div>
                   <div className="flex flex-col items-center">
-                    <img 
+                    <Image 
                       src={team2?.logo || '/placeholder-logo.svg'} 
                       alt={team2?.team_name || 'Komanda 2'} 
+                      width={64}
+                      height={64}
                       className="object-contain w-16 h-16 mb-2" 
                     />
                     <span className="text-white font-semibold text-center">

@@ -1,10 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { notificationService } from "@/lib/notification-service";
 
 export async function POST(request: NextRequest) {
-  try {
-    const { subscriptionId } = await request.json();
+  const cookieStore = await cookies();
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    },
+  );
 
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const subscriptionId = searchParams.get('id');
+    
     if (!subscriptionId) {
       return NextResponse.json({ error: "Subscription ID is required" }, { status: 400 });
     }

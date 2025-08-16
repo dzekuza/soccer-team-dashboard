@@ -48,14 +48,14 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
 
   const handleResendEmail = async (subscriptionId: string) => {
     try {
-      const response = await fetch(`/api/subscriptions/${subscriptionId}/resend`, { method: "POST" })
+      const response = await fetch(`/api/subscriptions/resend?id=${subscriptionId}`, { method: "POST" })
       const result = await response.json()
       if (!response.ok) throw new Error(result.error || "Failed to resend email")
-      toast({ title: "Success", description: "Subscription confirmation email has been resent." })
+      toast({ title: "Sėkmingai", description: "Prenumeratos patvirtinimo el. laiškas buvo išsiųstas iš naujo." })
     } catch (error) {
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko išsiųsti el. laiško.",
         variant: "destructive",
       })
     }
@@ -63,7 +63,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
 
   const handleDownloadPDF = async (subscription: Subscription) => {
     try {
-      const response = await fetch(`/api/subscriptions/${subscription.id}/download`);
+      const response = await fetch(`/api/subscriptions/download?id=${subscription.id}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to download subscription.");
@@ -86,7 +86,11 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Could not download subscription.");
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko atsisiųsti prenumeratos.",
+        variant: "destructive",
+      });
     }
   }
 

@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { recipients, subject, htmlBody, textBody } = await request.json();
 
     if (!recipients || recipients.length === 0 || !subject || (!htmlBody && !textBody)) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: "Trūksta privalomų laukų" }, { status: 400 });
     }
 
     // Send the email first
