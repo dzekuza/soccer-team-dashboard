@@ -8,6 +8,7 @@ import type {
   Fan,
   PricingTier,
   Subscription,
+  SubscriptionType,
   Team,
   Ticket,
   TicketWithDetails,
@@ -171,6 +172,17 @@ export const supabaseService = {
         .select("*")
         .eq("event_id", id);
 
+      // Transform pricing tiers to include soldQuantity
+      const transformedTiers = (pricingTiers || []).map((tier) => ({
+        id: tier.id,
+        eventId: tier.event_id,
+        name: tier.name,
+        description: tier.description,
+        price: tier.price,
+        quantity: tier.quantity,
+        soldQuantity: tier.sold_quantity || 0,
+      }));
+
       return {
         id: event.id,
         title: event.title,
@@ -183,7 +195,7 @@ export const supabaseService = {
         coverImageUrl: event.cover_image_url,
         createdAt: event.created_at,
         updatedAt: event.updated_at,
-        pricingTiers: pricingTiers || [],
+        pricingTiers: transformedTiers,
       };
     } catch (error) {
       console.error("Supabase Service: Error in getEventWithTiers:", error);
@@ -495,6 +507,7 @@ export const supabaseService = {
     valid_from: string;
     valid_to: string;
     owner_id: string;
+    subscription_type_id: string;
   }): Promise<Subscription> => {
     try {
       // Generate enhanced QR code for subscription
@@ -509,7 +522,7 @@ export const supabaseService = {
       });
 
       const { data, error } = await supabaseAdmin
-        .from("subscriptions")
+        .from("user_subscriptions")
         .insert({
           id: subscriptionData.id,
           purchaser_name: subscriptionData.purchaser_name,
@@ -518,6 +531,7 @@ export const supabaseService = {
           valid_from: subscriptionData.valid_from,
           valid_to: subscriptionData.valid_to,
           owner_id: subscriptionData.owner_id,
+          subscription_type_id: subscriptionData.subscription_type_id,
           qr_code_url: enhancedQRCodeUrl,
         })
         .select()
@@ -539,6 +553,7 @@ export const supabaseService = {
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         owner_id: data.owner_id,
+        subscription_type_id: data.subscription_type_id,
       };
     } catch (error) {
       console.error("Supabase Service: Error in createSubscription:", error);
@@ -549,7 +564,7 @@ export const supabaseService = {
   getSubscriptionById: async (id: string): Promise<Subscription | null> => {
     try {
       const { data, error } = await supabaseAdmin
-        .from("subscriptions")
+        .from("user_subscriptions")
         .select("*")
         .eq("id", id)
         .single();
@@ -571,6 +586,7 @@ export const supabaseService = {
         createdAt: data.created_at,
         updatedAt: data.updated_at,
         owner_id: data.owner_id,
+        subscription_type_id: data.subscription_type_id,
       };
     } catch (error) {
       console.error("Supabase Service: Error in getSubscriptionById:", error);
@@ -614,8 +630,11 @@ export const supabaseService = {
   getSubscriptions: async (): Promise<Subscription[]> => {
     try {
       const { data, error } = await supabaseAdmin
-        .from("subscriptions")
-        .select("*")
+        .from("user_subscriptions")
+        .select(`
+          *,
+          subscription_type:subscription_types(*)
+        `)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -634,6 +653,22 @@ export const supabaseService = {
         createdAt: subscription.created_at,
         updatedAt: subscription.updated_at,
         owner_id: subscription.owner_id,
+        subscription_type_id: subscription.subscription_type_id,
+        subscription_type: subscription.subscription_type
+          ? {
+            id: subscription.subscription_type.id,
+            title: subscription.subscription_type.title,
+            description: subscription.subscription_type.description,
+            price: subscription.subscription_type.price,
+            duration_days: subscription.subscription_type.duration_days,
+            features: subscription.subscription_type.features,
+            is_active: subscription.subscription_type.is_active,
+            created_at: subscription.subscription_type.created_at,
+            updated_at: subscription.subscription_type.updated_at,
+            corporation_id: subscription.subscription_type.corporation_id,
+            created_by: subscription.subscription_type.created_by,
+          }
+          : undefined,
       }));
     } catch (error) {
       console.error("Supabase Service: Error in getSubscriptions:", error);
@@ -943,6 +978,163 @@ export const supabaseService = {
     } catch (error) {
       console.error(
         "Supabase Service: Error in registerUserWithCorporation:",
+        error,
+      );
+      throw error;
+    }
+  },
+
+  // Subscription Types Management
+  createSubscriptionType: async (subscriptionTypeData: {
+    title: string;
+    description?: string | null;
+    price: number;
+    duration_days: number;
+    features: string[];
+    is_active: boolean;
+  }): Promise<SubscriptionType> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("subscription_types")
+        .insert({
+          title: subscriptionTypeData.title,
+          description: subscriptionTypeData.description,
+          price: subscriptionTypeData.price,
+          duration_days: subscriptionTypeData.duration_days,
+          features: subscriptionTypeData.features,
+          is_active: subscriptionTypeData.is_active,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating subscription type:", error);
+        throw new Error(`Failed to create subscription type: ${error.message}`);
+      }
+
+      return {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        duration_days: data.duration_days,
+        features: data.features,
+        is_active: data.is_active,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        created_by: data.created_by,
+      };
+    } catch (error) {
+      console.error(
+        "Supabase Service: Error in createSubscriptionType:",
+        error,
+      );
+      throw error;
+    }
+  },
+
+  getSubscriptionTypes: async (): Promise<SubscriptionType[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("subscription_types")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching subscription types:", error);
+        throw new Error(`Failed to fetch subscription types: ${error.message}`);
+      }
+
+      return data.map((subscriptionType) => ({
+        id: subscriptionType.id,
+        title: subscriptionType.title,
+        description: subscriptionType.description,
+        price: subscriptionType.price,
+        duration_days: subscriptionType.duration_days,
+        features: subscriptionType.features,
+        is_active: subscriptionType.is_active,
+        created_at: subscriptionType.created_at,
+        updated_at: subscriptionType.updated_at,
+        created_by: subscriptionType.created_by,
+      }));
+    } catch (error) {
+      console.error("Supabase Service: Error in getSubscriptionTypes:", error);
+      throw error;
+    }
+  },
+
+  updateSubscriptionType: async (
+    id: string,
+    subscriptionTypeData: {
+      title: string;
+      description?: string | null;
+      price: number;
+      duration_days: number;
+      features: string[];
+      is_active: boolean;
+    },
+  ): Promise<SubscriptionType> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("subscription_types")
+        .update({
+          title: subscriptionTypeData.title,
+          description: subscriptionTypeData.description,
+          price: subscriptionTypeData.price,
+          duration_days: subscriptionTypeData.duration_days,
+          features: subscriptionTypeData.features,
+          is_active: subscriptionTypeData.is_active,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error updating subscription type:", error);
+        throw new Error(`Failed to update subscription type: ${error.message}`);
+      }
+
+      return {
+        id: data.id,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        duration_days: data.duration_days,
+        features: data.features,
+        is_active: data.is_active,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        corporation_id: data.corporation_id,
+        created_by: data.created_by,
+      };
+    } catch (error) {
+      console.error(
+        "Supabase Service: Error in updateSubscriptionType:",
+        error,
+      );
+      throw error;
+    }
+  },
+
+  deleteSubscriptionType: async (id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabaseAdmin
+        .from("subscription_types")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("Error deleting subscription type:", error);
+        throw new Error(`Failed to delete subscription type: ${error.message}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error(
+        "Supabase Service: Error in deleteSubscriptionType:",
         error,
       );
       throw error;

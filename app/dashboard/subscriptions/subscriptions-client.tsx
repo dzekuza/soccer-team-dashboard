@@ -29,15 +29,19 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("")
   const [isLoadingQR, setIsLoadingQR] = useState(false)
 
-  async function fetchSubscriptions() {
+  const fetchSubscriptions = async () => {
     try {
-      const response = await fetch('/api/subscriptions');
-      if (!response.ok) throw new Error("Failed to fetch subscriptions");
-      const data = await response.json();
-      setSubscriptions(data);
+      const response = await fetch('/api/subscriptions')
+      if (!response.ok) throw new Error("Nepavyko užkrauti prenumeratų")
+      const data = await response.json()
+      setSubscriptions(data)
     } catch (error) {
       console.error("Failed to fetch subscriptions:", error)
-      toast({ title: "Klaida", description: "Nepavyko atnaujinti prenumeratų sąrašo.", variant: "destructive" });
+      toast({
+        title: "Klaida",
+        description: "Nepavyko užkrauti prenumeratų",
+        variant: "destructive",
+      })
     }
   }
 
@@ -66,7 +70,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
       const response = await fetch(`/api/subscriptions/download?id=${subscription.id}`);
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to download subscription.");
+        throw new Error(errorData.error || "Nepavyko atsisiųsti prenumeratos.");
       }
       
       // Get the filename from the Content-Disposition header
@@ -127,7 +131,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete subscription.");
+        throw new Error(errorData.error || "Nepavyko ištrinti prenumeratos.");
       }
 
       toast({ 
@@ -160,7 +164,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete all subscriptions.");
+        throw new Error(errorData.error || "Nepavyko ištrinti visų prenumeratų.");
       }
 
       toast({ 
@@ -225,8 +229,10 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
             <TableRow>
               <TableHead>Vardas</TableHead>
               <TableHead>El. paštas</TableHead>
+              <TableHead>Prenumeratos tipas</TableHead>
               <TableHead>Galioja nuo</TableHead>
               <TableHead>Galioja iki</TableHead>
+              <TableHead>Statusas</TableHead>
               <TableHead>Veiksmai</TableHead>
             </TableRow>
           </TableHeader>
@@ -242,13 +248,23 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
                 <TableRow key={subscription.id}>
                   <TableCell>{subscription.purchaser_name || "Nenurodyta"}</TableCell>
                   <TableCell>{subscription.purchaser_email}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">
+                      {subscription.subscription_type?.title || "Nenurodyta"}
+                    </Badge>
+                  </TableCell>
                   <TableCell>{new Date(subscription.valid_from).toLocaleDateString()}</TableCell>
                   <TableCell>{new Date(subscription.valid_to).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <Badge variant={new Date(subscription.valid_to) > new Date() ? "default" : "secondary"}>
+                      {new Date(subscription.valid_to) > new Date() ? "Aktyvus" : "Pasibaigęs"}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
+                          <span className="sr-only">Atidaryti meniu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>

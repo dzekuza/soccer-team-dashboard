@@ -28,6 +28,7 @@ export function DashboardSidebar() {
     { name: "Renginiai", href: "/dashboard/events", icon: Calendar },
     { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
     { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
+    { name: "Prenumeratos tipai", href: "/dashboard/subscription-types", icon: BadgeCheck },
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: QrCode },
     { name: "Eksportas", href: "/dashboard/export", icon: Download },

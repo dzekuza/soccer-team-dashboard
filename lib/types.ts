@@ -1,74 +1,74 @@
 // Base types
 export interface User {
-  id: string
-  email: string
-  name?: string
-  created_at?: string
-  updated_at?: string
-  role?: string
-  corporation_id?: string
+  id: string;
+  email: string;
+  name?: string;
+  created_at?: string;
+  updated_at?: string;
+  role?: string;
+  corporation_id?: string;
 }
 
 export interface Event {
-  id: string
-  title: string
-  description: string
-  date: string
-  time: string
-  location: string
-  createdAt: string
-  updatedAt: string
-  team1Id?: string
-  team2Id?: string
-  coverImageUrl?: string
-  team1?: Team
-  team2?: Team
-  pricingTiers?: PricingTier[]
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  createdAt: string;
+  updatedAt: string;
+  team1Id?: string;
+  team2Id?: string;
+  coverImageUrl?: string;
+  team1?: Team;
+  team2?: Team;
+  pricingTiers?: PricingTier[];
 }
 
 export interface PricingTier {
-  id: string
-  eventId: string
-  name: string
-  price: number
-  quantity: number
-  soldQuantity: number
-  description?: string
+  id: string;
+  eventId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  soldQuantity: number;
+  description?: string;
 }
 
 export interface Ticket {
-  id: string
-  eventId: string
-  tierId: string
-  purchaserName: string
-  purchaserSurname?: string
-  purchaserEmail: string
-  isValidated: boolean
-  createdAt: string
-  validatedAt: string | null
-  qrCodeUrl: string // Added QR code URL
-  userId?: string // Optional - column was removed from schema
-  status?: "pending" | "paid" | "cancelled" // Added for ticket status
-  eventCoverImageUrl?: string // Added for event cover image from covers bucket
-  eventDate?: string // Added for event date assigned to ticket
-  eventTitle?: string // Added for event title
-  eventDescription?: string // Added for event description
-  eventLocation?: string // Added for event location
-  eventTime?: string // Added for event time
-  team1Id?: string // Added for team1
-  team2Id?: string // Added for team2
-  teamId?: string // Added for legacy team_id column
-  pdfUrl?: string // Added for ticket PDF public URL
+  id: string;
+  eventId: string;
+  tierId: string;
+  purchaserName: string;
+  purchaserSurname?: string;
+  purchaserEmail: string;
+  isValidated: boolean;
+  createdAt: string;
+  validatedAt: string | null;
+  qrCodeUrl: string; // Added QR code URL
+  userId?: string; // Optional - column was removed from schema
+  status?: "pending" | "paid" | "cancelled"; // Added for ticket status
+  eventCoverImageUrl?: string; // Added for event cover image from covers bucket
+  eventDate?: string; // Added for event date assigned to ticket
+  eventTitle?: string; // Added for event title
+  eventDescription?: string; // Added for event description
+  eventLocation?: string; // Added for event location
+  eventTime?: string; // Added for event time
+  team1Id?: string; // Added for team1
+  team2Id?: string; // Added for team2
+  teamId?: string; // Added for legacy team_id column
+  pdfUrl?: string; // Added for ticket PDF public URL
 }
 
 // Extended types for API responses
 export interface EventWithTiers extends Event {
-  pricingTiers: PricingTier[]
+  pricingTiers: PricingTier[];
 }
 
 export interface TicketWithDetails extends Ticket {
-  event: Event
-  tier: PricingTier
+  event: Event;
+  tier: PricingTier;
 }
 
 // Type for the simplified ticket list view
@@ -98,23 +98,43 @@ export interface EventStats {
 }
 
 export interface Team {
-  id: string
-  team_name: string
-  logo: string
-  created_at?: string
+  id: string;
+  team_name: string;
+  logo: string;
+  created_at?: string;
 }
 
 export interface Subscription {
-  id: string
-  createdAt: string
-  updatedAt: string
-  purchaser_name: string | null
-  purchaser_surname: string | null
-  purchaser_email: string | null
-  valid_from: string
-  valid_to: string
-  qr_code_url: string | null
-  owner_id: string
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  purchaser_name: string | null;
+  purchaser_surname: string | null;
+  purchaser_email: string | null;
+  valid_from: string;
+  valid_to: string;
+  qr_code_url: string | null;
+  owner_id: string;
+  user_id?: string;
+  subscription_type_id: string;
+  status?: "active" | "expired" | "cancelled";
+  purchase_date?: string;
+  assigned_by?: string;
+  corporation_id?: string;
+  subscription_type?: SubscriptionType;
+}
+
+export interface SubscriptionType {
+  id: string;
+  title: string;
+  description: string | null;
+  price: number;
+  duration_days: number;
+  features: string[] | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
 }
 
 export type UserSubscription = Subscription;
@@ -132,7 +152,7 @@ export interface SubscriptionPlan {
 }
 
 export interface RecentActivity {
-  type: 'event_created' | 'ticket_generated' | 'ticket_validated';
+  type: "event_created" | "ticket_generated" | "ticket_validated";
   title: string;
   timestamp: string;
   details: string;
@@ -221,177 +241,177 @@ export interface Database {
     Tables: {
       events: {
         Row: {
-          id: string
-          title: string
-          description: string
-          date: string
-          time: string
-          location: string
-          created_at: string
-          updated_at: string
-          team1_id?: string
-          team2_id?: string
-          cover_image_url?: string
-          corporation_id?: string
-        }
+          id: string;
+          title: string;
+          description: string;
+          date: string;
+          time: string;
+          location: string;
+          created_at: string;
+          updated_at: string;
+          team1_id?: string;
+          team2_id?: string;
+          cover_image_url?: string;
+          corporation_id?: string;
+        };
         Insert: {
-          id?: string
-          title: string
-          description: string
-          date: string
-          time: string
-          location: string
-          created_at?: string
-          updated_at?: string
-          team1_id?: string
-          team2_id?: string
-          cover_image_url?: string
-          corporation_id?: string
-        }
+          id?: string;
+          title: string;
+          description: string;
+          date: string;
+          time: string;
+          location: string;
+          created_at?: string;
+          updated_at?: string;
+          team1_id?: string;
+          team2_id?: string;
+          cover_image_url?: string;
+          corporation_id?: string;
+        };
         Update: {
-          id?: string
-          title?: string
-          description?: string
-          date?: string
-          time?: string
-          location?: string
-          created_at?: string
-          updated_at?: string
-          team1_id?: string
-          team2_id?: string
-          cover_image_url?: string
-          corporation_id?: string
-        }
-      }
+          id?: string;
+          title?: string;
+          description?: string;
+          date?: string;
+          time?: string;
+          location?: string;
+          created_at?: string;
+          updated_at?: string;
+          team1_id?: string;
+          team2_id?: string;
+          cover_image_url?: string;
+          corporation_id?: string;
+        };
+      };
       tickets: {
         Row: {
-          id: string
-          event_id: string
-          tier_id: string
-          purchaser_name: string
-          purchaser_surname?: string
-          purchaser_email: string
-          is_validated: boolean
-          created_at: string
-          validated_at: string | null
-          qr_code_url: string
-          status?: string
-          event_cover_image_url?: string
-          event_date?: string
-          event_title?: string
-          event_description?: string
-          event_location?: string
-          event_time?: string
-          team1_id?: string
-          team2_id?: string
-          team_id?: string
-          pdf_url?: string
-        }
+          id: string;
+          event_id: string;
+          tier_id: string;
+          purchaser_name: string;
+          purchaser_surname?: string;
+          purchaser_email: string;
+          is_validated: boolean;
+          created_at: string;
+          validated_at: string | null;
+          qr_code_url: string;
+          status?: string;
+          event_cover_image_url?: string;
+          event_date?: string;
+          event_title?: string;
+          event_description?: string;
+          event_location?: string;
+          event_time?: string;
+          team1_id?: string;
+          team2_id?: string;
+          team_id?: string;
+          pdf_url?: string;
+        };
         Insert: {
-          id?: string
-          event_id: string
-          tier_id: string
-          purchaser_name: string
-          purchaser_surname?: string
-          purchaser_email: string
-          is_validated?: boolean
-          created_at?: string
-          validated_at?: string | null
-          qr_code_url: string
-          status?: string
-          event_cover_image_url?: string
-          event_date?: string
-          event_title?: string
-          event_description?: string
-          event_location?: string
-          event_time?: string
-          team1_id?: string
-          team2_id?: string
-          team_id?: string
-          pdf_url?: string
-        }
+          id?: string;
+          event_id: string;
+          tier_id: string;
+          purchaser_name: string;
+          purchaser_surname?: string;
+          purchaser_email: string;
+          is_validated?: boolean;
+          created_at?: string;
+          validated_at?: string | null;
+          qr_code_url: string;
+          status?: string;
+          event_cover_image_url?: string;
+          event_date?: string;
+          event_title?: string;
+          event_description?: string;
+          event_location?: string;
+          event_time?: string;
+          team1_id?: string;
+          team2_id?: string;
+          team_id?: string;
+          pdf_url?: string;
+        };
         Update: {
-          id?: string
-          event_id?: string
-          tier_id?: string
-          purchaser_name?: string
-          purchaser_surname?: string
-          purchaser_email?: string
-          is_validated?: boolean
-          created_at?: string
-          validated_at?: string | null
-          qr_code_url?: string
-          status?: string
-          event_cover_image_url?: string
-          event_date?: string
-          event_title?: string
-          event_description?: string
-          event_location?: string
-          event_time?: string
-          team1_id?: string
-          team2_id?: string
-          team_id?: string
-          pdf_url?: string
-        }
-      }
+          id?: string;
+          event_id?: string;
+          tier_id?: string;
+          purchaser_name?: string;
+          purchaser_surname?: string;
+          purchaser_email?: string;
+          is_validated?: boolean;
+          created_at?: string;
+          validated_at?: string | null;
+          qr_code_url?: string;
+          status?: string;
+          event_cover_image_url?: string;
+          event_date?: string;
+          event_title?: string;
+          event_description?: string;
+          event_location?: string;
+          event_time?: string;
+          team1_id?: string;
+          team2_id?: string;
+          team_id?: string;
+          pdf_url?: string;
+        };
+      };
       pricing_tiers: {
         Row: {
-          id: string
-          event_id: string
-          name: string
-          price: number
-          quantity: number
-          sold_quantity: number
-          description?: string
-        }
+          id: string;
+          event_id: string;
+          name: string;
+          price: number;
+          quantity: number;
+          sold_quantity: number;
+          description?: string;
+        };
         Insert: {
-          id?: string
-          event_id: string
-          name: string
-          price: number
-          quantity: number
-          sold_quantity?: number
-          description?: string
-        }
+          id?: string;
+          event_id: string;
+          name: string;
+          price: number;
+          quantity: number;
+          sold_quantity?: number;
+          description?: string;
+        };
         Update: {
-          id?: string
-          event_id?: string
-          name?: string
-          price?: number
-          quantity?: number
-          sold_quantity?: number
-          description?: string
-        }
-      }
+          id?: string;
+          event_id?: string;
+          name?: string;
+          price?: number;
+          quantity?: number;
+          sold_quantity?: number;
+          description?: string;
+        };
+      };
       users: {
         Row: {
-          id: string
-          email: string
-          name?: string
-          created_at?: string
-          updated_at?: string
-          role?: string
-          corporation_id?: string
-        }
+          id: string;
+          email: string;
+          name?: string;
+          created_at?: string;
+          updated_at?: string;
+          role?: string;
+          corporation_id?: string;
+        };
         Insert: {
-          id?: string
-          email: string
-          name?: string
-          created_at?: string
-          updated_at?: string
-          role?: string
-          corporation_id?: string
-        }
+          id?: string;
+          email: string;
+          name?: string;
+          created_at?: string;
+          updated_at?: string;
+          role?: string;
+          corporation_id?: string;
+        };
         Update: {
-          id?: string
-          email?: string
-          name?: string
-          created_at?: string
-          updated_at?: string
-          role?: string
-          corporation_id?: string
-        }
-      }
-    }
-  }
+          id?: string;
+          email?: string;
+          name?: string;
+          created_at?: string;
+          updated_at?: string;
+          role?: string;
+          corporation_id?: string;
+        };
+      };
+    };
+  };
 }

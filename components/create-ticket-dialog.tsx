@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Event, PricingTier } from "@/lib/types"
 import { supabase } from "@/lib/supabase"
 import { v4 as uuidv4 } from "uuid"
+import { useToast } from "@/components/ui/use-toast"
 
 interface CreateTicketDialogProps {
   open: boolean
@@ -26,6 +27,7 @@ interface CreateTicketDialogProps {
 }
 
 export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: CreateTicketDialogProps) {
+  const { toast } = useToast()
   const [events, setEvents] = useState<Event[]>([])
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([])
   const [selectedEventId, setSelectedEventId] = useState("")
@@ -72,7 +74,11 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedEventId || !selectedTierId) {
-      alert("Please select an event and a pricing tier before creating a ticket.")
+      toast({
+        title: "Klaida",
+        description: "Pasirinkite renginį ir kainų lygį prieš kuriant bilietą.",
+        variant: "destructive",
+      });
       return
     }
     setIsLoading(true)
@@ -103,9 +109,17 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
     } catch (error) {
       console.error("Failed to create ticket:", error)
       if (error instanceof Error) {
-        alert("Failed to create ticket: " + error.message);
+        toast({
+          title: "Klaida",
+          description: "Nepavyko sukurti bilieto: " + error.message,
+          variant: "destructive",
+        });
       } else {
-        alert("Failed to create ticket: An unknown error occurred");
+        toast({
+          title: "Klaida",
+          description: "Nepavyko sukurti bilieto: Įvyko nežinoma klaida",
+          variant: "destructive",
+        });
       }
     } finally {
       setIsLoading(false)

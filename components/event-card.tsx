@@ -9,6 +9,7 @@ import { AlertTriangle, Calendar, Clock, MapPin, Share2, Ticket, Trash2, Eye } f
 import type { EventWithTiers, TicketWithDetails, Team } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
+import { useToast } from "@/components/ui/use-toast"
 
 interface EventCardProps {
   event: EventWithTiers
@@ -19,6 +20,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, tickets, teams, onDelete, deletingId }: EventCardProps) {
+  const { toast } = useToast()
   const getTeam = (id?: string) => teams.find(t => t.id === id)
   const team1 = getTeam(event.team1Id)
   const team2 = getTeam(event.team2Id)
@@ -128,7 +130,10 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
             size="sm"
             onClick={async () => {
               await navigator.clipboard.writeText(`${window.location.origin}/event/${event.id}`)
-              alert('Nuoroda nukopijuota!')
+              toast({
+                title: "Sėkmingai",
+                description: "Nuoroda nukopijuota!",
+              });
             }}
           >
             <Share2 className="w-4 h-4 mr-2" /> Dalintis

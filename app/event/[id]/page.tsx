@@ -10,6 +10,7 @@ import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
 import { EventHeader } from "@/components/event-header"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/components/ui/use-toast"
 import {
   CheckCircleIcon,
   CreditCardIcon,
@@ -41,6 +42,7 @@ const steps = [
 
 export default function EventPage() {
   const { id } = useParams()
+  const { toast } = useToast()
   const [eventData, setEventData] = useState<EventData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -103,12 +105,20 @@ export default function EventPage() {
 
   const handlePurchase = async () => {
     if (!selectedTier || !eventData) {
-      alert("Pasirinkite bilieto kainos lygį.")
+      toast({
+        title: "Klaida",
+        description: "Pasirinkite bilieto kainos lygį.",
+        variant: "destructive",
+      });
       return
     }
 
     if (!formData.firstName || !formData.lastName || !formData.email) {
-      alert("Užpildykite visus savo duomenis.")
+      toast({
+        title: "Klaida",
+        description: "Užpildykite visus savo duomenis.",
+        variant: "destructive",
+      });
       setCurrentStep("03")
       return
     }
@@ -140,12 +150,20 @@ export default function EventPage() {
         const { error } = await stripe.redirectToCheckout({ sessionId })
         if (error) {
           console.error("Stripe redirect error:", error)
-          alert(`Mokėjimo klaida: ${error.message}`)
+          toast({
+            title: "Mokėjimo klaida",
+            description: error.message,
+            variant: "destructive",
+          });
         }
       }
     } catch (error) {
       console.error("Failed to create checkout session:", error)
-      alert(`Įvyko klaida: ${error instanceof Error ? error.message : "Nežinoma klaida"}`)
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nežinoma klaida",
+        variant: "destructive",
+      });
     }
   }
 
@@ -405,7 +423,7 @@ export default function EventPage() {
 
                 {/* Action Buttons */}
                 {selectedTier && (
-                  <div className="grid grid-cols-2 gap-4 pt-6">
+                  <div className="pt-6">
                     <Button
                       onClick={handleAddToCart}
                       className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors duration-200"
@@ -413,12 +431,6 @@ export default function EventPage() {
                     >
                       Pridėti į krepšelį
                     </Button>
-                    
-                    <Link href={`/event/${event.id}/tickets`} passHref>
-                      <Button className="w-full bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-900 font-bold py-4 px-6 rounded-lg text-lg transition-all duration-200">
-                        Peržiūrėti bilietus
-                      </Button>
-                    </Link>
                   </div>
                 )}
               </CardContent>

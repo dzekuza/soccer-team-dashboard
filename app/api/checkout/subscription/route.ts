@@ -1,55 +1,94 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabase } from "@/lib/supabase";
+import { supabaseService } from "@/lib/supabase-service";
+import type { SubscriptionType } from "@/lib/types";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-export async function POST(req: NextRequest) {
+// CORS headers helper
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+};
+
+// Handle preflight OPTIONS requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+export async function POST(request: NextRequest) {
   try {
-    const { subscriptionId } = await req.json();
-    if (!subscriptionId) {
-      return NextResponse.json({ error: "Missing subscriptionId" }, { status: 400 });
+    const {
+      subscriptionTypeId,
+      purchaserName,
+      purchaserSurname,
+      purchaserEmail,
+    } = await request.json();
+
+    if (!subscriptionTypeId || !purchaserName || !purchaserEmail) {
+      return NextResponse.json({ error: "Trūksta privalomų laukų" }, {
+        status: 400,
+        headers: CORS_HEADERS,
+      });
     }
-    // Fetch the subscription plan from Supabase
-    const { data: plan, error } = await supabase
-      .from("subscriptions")
-      .select("id, title, description, price, duration_days")
-      .eq("id", subscriptionId)
-      .single();
-    if (error || !plan) {
-      return NextResponse.json({ error: "Subscription plan not found" }, { status: 404 });
+
+    // 1. Fetch subscription type details
+    const subscriptionTypes = await supabaseService.getSubscriptionTypes();
+    const subscriptionType = subscriptionTypes.find((type: SubscriptionType) =>
+      type.id === subscriptionTypeId
+    );
+
+    if (!subscriptionType) {
+      return NextResponse.json({ error: "Prenumeratos tipas nerastas" }, {
+        status: 404,
+        headers: CORS_HEADERS,
+      });
     }
-    // Create Stripe Checkout session
+
+    // 2. Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "eur",
-            product_data: {
-              name: plan.title,
-              description: plan.description || undefined,
-            },
-            unit_amount: Math.round(plan.price * 100),
-            recurring: {
-              interval: "day",
-              interval_count: plan.duration_days,
-            },
+      line_items: [{
+        price_data: {
+          currency: "eur",
+          product_data: {
+            name: subscriptionType.title,
+            description: subscriptionType.description ||
+              `Prenumerata: ${subscriptionType.title}`,
           },
-          quantity: 1,
+          unit_amount: Math.round(subscriptionType.price * 100),
         },
-      ],
-      mode: "subscription",
-      customer_email: req.headers.get("x-customer-email") || undefined,
+        quantity: 1,
+      }],
+      mode: "payment",
+      success_url: `${
+        request.headers.get("origin")
+      }/checkout/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${request.headers.get("origin")}/subscriptions`,
       metadata: {
-        subscriptionId,
+        subscriptionTypeId,
+        purchaserName,
+        purchaserSurname,
+        purchaserEmail,
+        durationDays: subscriptionType.duration_days.toString(),
       },
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/subscription?canceled=1`,
+      customer_email: purchaserEmail,
+      // Expire the session after 1 hour
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
     });
-    // NOTE: Subscription assignment is handled by the Stripe webhook at /api/webhook/stripe
-    return NextResponse.json({ url: session.url });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+
+    return NextResponse.json({ sessionId: session.id }, {
+      headers: CORS_HEADERS,
+    });
+  } catch (error: any) {
+    console.error("Error creating subscription checkout session:", error);
+    return NextResponse.json({
+      error: error.message ||
+        "Nepavyko sukurti prenumeratos apmokėjimo sesijos",
+    }, { status: 500, headers: CORS_HEADERS });
   }
-} 
+}

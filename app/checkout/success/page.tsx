@@ -157,9 +157,6 @@ function CheckoutSuccessContent() {
             <Button asChild className="w-full bg-[#F15601] hover:bg-[#E04501] text-white">
               <a href="/">Grįžti į pradžią</a>
             </Button>
-            <Button variant="outline" asChild className="w-full border-gray-600 text-white hover:bg-[#0A2065]">
-              <a href="/dashboard">Eiti į valdymo skydą</a>
-            </Button>
           </div>
         </div>
       </div>

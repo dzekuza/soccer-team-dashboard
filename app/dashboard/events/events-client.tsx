@@ -455,7 +455,11 @@ export default function EventsClient({
     } catch (err) {
       console.error('❌ Error in handleDeleteEvent:', err);
       const errorMessage = err instanceof Error ? err.message : "Nepavyko ištrinti renginio.";
-      alert(errorMessage);
+      toast({
+        title: "Klaida",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setDeletingId(null);
     }
@@ -673,7 +677,10 @@ export default function EventsClient({
                   className="flex-1 border-gray-600 text-white hover:bg-gray-700"
                   onClick={() => {
                     // TODO: Implement edit functionality
-                    alert('Redagavimo funkcija bus pridėta vėliau');
+                    toast({
+                      title: "Informacija",
+                      description: "Redagavimo funkcija bus pridėta vėliau",
+                    });
                   }}
                 >
                   <Edit className="h-4 w-4 mr-2" />
@@ -684,7 +691,10 @@ export default function EventsClient({
                   className="flex-1 border-gray-600 text-white hover:bg-gray-700"
                   onClick={() => {
                     // TODO: Implement view details functionality
-                    alert('Detalės bus rodomos vėliau');
+                    toast({
+                      title: "Informacija",
+                      description: "Detalės bus rodomos vėliau",
+                    });
                   }}
                 >
                   <Eye className="h-4 w-4 mr-2" />

@@ -89,7 +89,11 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Could not download ticket.");
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko atsisiųsti bilieto.",
+        variant: "destructive",
+      });
     }
   }
 
