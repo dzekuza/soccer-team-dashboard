@@ -1107,7 +1107,6 @@ export const supabaseService = {
         is_active: data.is_active,
         created_at: data.created_at,
         updated_at: data.updated_at,
-        corporation_id: data.corporation_id,
         created_by: data.created_by,
       };
     } catch (error) {
