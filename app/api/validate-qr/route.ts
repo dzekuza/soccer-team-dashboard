@@ -23,38 +23,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "QR data is required" }, { status: 400 });
     }
 
-    // Parse the QR code data
-    let parsedData;
-    try {
-      parsedData = JSON.parse(qrData);
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid QR code data format" }, { status: 400 });
+    // QR code now contains only the ID (ticket ID or subscription ID)
+    const id = qrData.trim();
+
+    if (!id) {
+      return NextResponse.json({ error: "Invalid QR code data" }, { status: 400 });
     }
 
-    // Validate the data structure
-    if (!parsedData.type || !parsedData.timestamp) {
-      return NextResponse.json({ error: "Invalid QR code data structure" }, { status: 400 });
+    // Try to validate as ticket first
+    const ticketResult = await validateTicketQR({ ticketId: id }, supabase);
+    if (ticketResult.status !== 404) {
+      return ticketResult;
     }
 
-    // Check if QR code is not too old (e.g., within 24 hours)
-    const qrTimestamp = new Date(parsedData.timestamp);
-    const now = new Date();
-    const hoursDiff = (now.getTime() - qrTimestamp.getTime()) / (1000 * 60 * 60);
-    
-    if (hoursDiff > 24) {
-      return NextResponse.json({ 
-        error: "QR code is too old", 
-        details: "QR code was generated more than 24 hours ago" 
-      }, { status: 400 });
+    // If not a ticket, try as subscription
+    const subscriptionResult = await validateSubscriptionQR({ subscriptionId: id }, supabase);
+    if (subscriptionResult.status !== 404) {
+      return subscriptionResult;
     }
 
-    if (parsedData.type === 'ticket') {
-      return await validateTicketQR(parsedData, supabase);
-    } else if (parsedData.type === 'subscription') {
-      return await validateSubscriptionQR(parsedData, supabase);
-    } else {
-      return NextResponse.json({ error: "Unknown QR code type" }, { status: 400 });
-    }
+    // If neither found, return error
+    return NextResponse.json({ 
+      error: "Invalid QR code", 
+      details: "The scanned QR code does not correspond to any valid ticket or subscription" 
+    }, { status: 404 });
 
   } catch (error) {
     console.error("Error validating QR code:", error);
@@ -65,6 +57,8 @@ export async function POST(request: NextRequest) {
 
 async function validateTicketQR(qrData: any, supabase: any) {
   try {
+    console.log(`🔍 Validating ticket: ${qrData.ticketId}`);
+    
     // Check if ticket exists and is not already validated
     const { data: ticket, error } = await supabase
       .from('tickets')
@@ -77,18 +71,24 @@ async function validateTicketQR(qrData: any, supabase: any) {
       .single();
 
     if (error || !ticket) {
+      console.log(`❌ Ticket not found: ${qrData.ticketId}`);
       return NextResponse.json({ 
         error: "Ticket not found", 
         details: "The ticket ID in the QR code does not exist" 
       }, { status: 404 });
     }
 
+    console.log(`📋 Ticket found: ${ticket.id}, validated: ${ticket.is_validated}`);
+
     if (ticket.is_validated) {
+      console.log(`❌ Ticket already validated: ${ticket.id}`);
       return NextResponse.json({ 
-        error: "Ticket already used", 
-        details: "This ticket has already been validated and used" 
+        error: "This ticket already scanned", 
+        details: "This ticket has already been validated and used. Each ticket can only be used once." 
       }, { status: 400 });
     }
+
+    console.log(`✅ Ticket is valid for validation: ${ticket.id}`);
 
     // Validate event date (ticket should be for today or future)
     const eventDate = new Date(ticket.event.date);
@@ -103,6 +103,7 @@ async function validateTicketQR(qrData: any, supabase: any) {
     }
 
     // Mark ticket as validated
+    console.log(`🔄 Marking ticket as validated: ${qrData.ticketId}`);
     const { error: updateError } = await supabase
       .from('tickets')
       .update({ 
@@ -118,6 +119,8 @@ async function validateTicketQR(qrData: any, supabase: any) {
         details: "Could not update ticket status" 
       }, { status: 500 });
     }
+
+    console.log(`✅ Ticket marked as validated: ${qrData.ticketId}`);
 
     return NextResponse.json({
       success: true,
@@ -174,6 +177,7 @@ async function validateSubscriptionQR(qrData: any, supabase: any) {
       }, { status: 400 });
     }
 
+    // Subscriptions can be used multiple times until they expire
     return NextResponse.json({
       success: true,
       message: "Subscription validated successfully",

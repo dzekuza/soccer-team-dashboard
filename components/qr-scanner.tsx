@@ -26,17 +26,17 @@ const QrScanner = ({ onScan, onValidationResult }: QrScannerProps) => {
         console.log("QR Code scanned:", result.data)
         
         try {
-          // Try to parse as JSON (new structured format)
-          const parsedData = JSON.parse(result.data)
+          // QR code now contains only the ID (ticket ID or subscription ID)
+          const qrData = result.data.trim();
           
-          if (parsedData.type === 'ticket' || parsedData.type === 'subscription') {
+          if (qrData) {
             // Validate the QR code through our API
             const response = await fetch('/api/validate-qr', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({ qrData: result.data }),
+              body: JSON.stringify({ qrData }),
             });
 
             const validationResult = await response.json();
@@ -58,12 +58,12 @@ const QrScanner = ({ onScan, onValidationResult }: QrScannerProps) => {
               });
             }
           } else {
-            // Fallback for old format or unknown type
+            // Fallback for empty data
             onScan(result.data);
           }
         } catch (error) {
-          // If it's not JSON, treat as old format
-          console.log("Non-JSON QR code data, using old format");
+          // If there's an error, treat as old format
+          console.log("Error processing QR code data, using old format");
           onScan(result.data);
         }
         

@@ -23,12 +23,12 @@ const paymentMethods = [
   {
     id: "wallet",
     label: "Skaitmeninės piniginės",
-    desc: "Apmokėkite greitai naudodami „Apple Pay“, „Google Pay“, „PayPal“ ir kt.",
+    desc: "Apmokėkite greitai naudodami Apple Pay, Google Pay, PayPal ir kt.",
   },
   {
     id: "card",
     label: "Mokėjimo kortelė",
-    desc: "Apmokėkite naudodami „Visa“, „Mastercard“ ar kitą banko kortelę.",
+    desc: "Apmokėkite naudodami Visa, Mastercard ar kitą banko kortelę.",
   },
 ]
 
@@ -42,6 +42,15 @@ export default function PaymentPage() {
   const [email, setEmail] = useState("")
   const [confirmEmail, setConfirmEmail] = useState("")
   const [payment, setPayment] = useState<string>("")
+  
+  // Card payment fields
+  const [cardNumber, setCardNumber] = useState("")
+  const [cardExpiry, setCardExpiry] = useState("")
+  const [cardCvc, setCardCvc] = useState("")
+  const [cardName, setCardName] = useState("")
+  
+  // Digital wallet selection
+  const [selectedWallet, setSelectedWallet] = useState<string>("")
 
   useEffect(() => {
     if (!id) return
@@ -80,7 +89,39 @@ export default function PaymentPage() {
 
   const selectedTiers = eventData?.event.pricingTiers.filter(tier => order[tier.id]) || []
   const total = selectedTiers.reduce((sum, tier) => sum + (order[tier.id] || 0) * tier.price, 0)
-  const canSubmit = email && confirmEmail && email === confirmEmail && payment
+  
+  // Validation logic
+  const isEmailValid = email && confirmEmail && email === confirmEmail
+  const isCardValid = payment === "card" ? cardNumber && cardExpiry && cardCvc && cardName : true
+  const isWalletValid = payment === "wallet" ? selectedWallet : true
+  const isBankValid = payment === "bank" ? true : true // Bank payment doesn't need additional fields
+  
+  const canSubmit = isEmailValid && payment && (isCardValid || isWalletValid || isBankValid)
+
+  // Card number formatting
+  const formatCardNumber = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
+    const matches = v.match(/\d{4,16}/g)
+    const match = matches && matches[0] || ''
+    const parts = []
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4))
+    }
+    if (parts.length) {
+      return parts.join(' ')
+    } else {
+      return v
+    }
+  }
+
+  // Expiry date formatting
+  const formatExpiry = (value: string) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
+    if (v.length >= 2) {
+      return v.substring(0, 2) + '/' + v.substring(2, 4)
+    }
+    return v
+  }
 
   if (loading) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Loading...</div>
   if (error) return <div className="bg-main flex items-center justify-center min-h-screen text-red-500">{error}</div>
@@ -126,7 +167,7 @@ export default function PaymentPage() {
             />
           </div>
           <h2 className="text-2xl font-bold mb-6">Choose your payment method</h2>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 mb-8">
             {paymentMethods.map(method => (
               <label key={method.id} className={cn(
                 "flex items-center border border-[#232B5D] bg-transparent px-6 py-5 cursor-pointer transition-colors",
@@ -147,6 +188,113 @@ export default function PaymentPage() {
               </label>
             ))}
           </div>
+
+          {/* Payment method specific fields */}
+          {payment === "card" && (
+            <div className="border border-[#232B5D] bg-[#10194A] p-6">
+              <h3 className="text-xl font-bold mb-4">Įveskite kortelės duomenis</h3>
+              <div className="space-y-4">
+                <input
+                  type="text"
+                  placeholder="Card number"
+                  className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                  value={cardNumber}
+                  onChange={e => setCardNumber(formatCardNumber(e.target.value))}
+                  maxLength={19}
+                />
+                {payment === "card" && !cardNumber && (
+                  <div className="text-red-500 text-sm">Your card number is incomplete.</div>
+                )}
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="MM/YY"
+                    className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    value={cardExpiry}
+                    onChange={e => setCardExpiry(formatExpiry(e.target.value))}
+                    maxLength={5}
+                  />
+                  <input
+                    type="text"
+                    placeholder="CVC"
+                    className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    value={cardCvc}
+                    onChange={e => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                    maxLength={4}
+                  />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Cardholder name"
+                  className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                  value={cardName}
+                  onChange={e => setCardName(e.target.value)}
+                />
+              </div>
+            </div>
+          )}
+
+          {payment === "wallet" && (
+            <div className="border border-[#232B5D] bg-[#10194A] p-6">
+              <h3 className="text-xl font-bold mb-4">Pasirinkite skaitmeninę piniginę</h3>
+              <div className="space-y-3">
+                {[
+                  { id: "apple-pay", label: "Apple Pay", desc: "Apmokėkite naudodami Apple Pay" },
+                  { id: "google-pay", label: "Google Pay", desc: "Apmokėkite naudodami Google Pay" },
+                  { id: "paypal", label: "PayPal", desc: "Apmokėkite naudodami PayPal" },
+                ].map(wallet => (
+                  <label key={wallet.id} className={cn(
+                    "flex items-center border border-[#232B5D] bg-transparent px-4 py-3 cursor-pointer transition-colors",
+                    selectedWallet === wallet.id ? "border-white bg-[#070F40]" : ""
+                  )}>
+                    <input
+                      type="radio"
+                      name="wallet"
+                      value={wallet.id}
+                      checked={selectedWallet === wallet.id}
+                      onChange={() => setSelectedWallet(wallet.id)}
+                      className="form-radio accent-main-orange mr-3 w-4 h-4"
+                    />
+                    <div>
+                      <div className="text-lg font-medium">{wallet.label}</div>
+                      <div className="text-[#B0B8D9] text-sm">{wallet.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {payment === "bank" && (
+            <div className="border border-[#232B5D] bg-[#10194A] p-6">
+              <h3 className="text-xl font-bold mb-4">Elektroninė bankininkystė</h3>
+              <div className="space-y-3">
+                {[
+                  { id: "swedbank", label: "Swedbank", desc: "Atsiskaitykite per Swedbank" },
+                  { id: "seb", label: "SEB", desc: "Atsiskaitykite per SEB" },
+                  { id: "luminor", label: "Luminor", desc: "Atsiskaitykite per Luminor" },
+                ].map(bank => (
+                  <label key={bank.id} className={cn(
+                    "flex items-center border border-[#232B5D] bg-transparent px-4 py-3 cursor-pointer transition-colors",
+                    selectedWallet === bank.id ? "border-white bg-[#070F40]" : ""
+                  )}>
+                    <input
+                      type="radio"
+                      name="bank"
+                      value={bank.id}
+                      checked={selectedWallet === bank.id}
+                      onChange={() => setSelectedWallet(bank.id)}
+                      className="form-radio accent-main-orange mr-3 w-4 h-4"
+                    />
+                    <div>
+                      <div className="text-lg font-medium">{bank.label}</div>
+                      <div className="text-[#B0B8D9] text-sm">{bank.desc}</div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
         {/* Order summary */}
         <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
