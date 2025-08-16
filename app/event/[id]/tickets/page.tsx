@@ -1,13 +1,12 @@
 "use client"
 
-import { useEffect, useState, useCallback } from "react"
+import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { EventWithTiers, Team, PricingTier } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import { CardElement, PaymentRequestButtonElement, useStripe, useElements } from '@stripe/react-stripe-js'
 
 interface EventData {
   event: EventWithTiers
@@ -18,13 +17,13 @@ interface EventData {
 const paymentMethods = [
   {
     id: "wallet",
-    label: "Skaitmeniniai piniginės",
-    desc: "Apmokėkite greitai naudodami „Apple Pay“, „Google Pay“ ir kt.",
+    label: "Skaitmeninės piniginės",
+    desc: "Apmokėkite greitai naudodami Apple Pay, Google Pay ir kt.",
   },
   {
     id: "card",
     label: "Mokėjimo kortelė",
-    desc: "Apmokėkite naudodami „Visa“, „Mastercard“ ar kitą banko kortelę.",
+    desc: "Apmokėkite naudodami Visa, Mastercard ar kitą banko kortelę.",
   },
 ]
 
@@ -39,12 +38,6 @@ export default function TicketsPage() {
   const [email, setEmail] = useState("")
   const [confirmEmail, setConfirmEmail] = useState("")
   const [payment, setPayment] = useState<string>("")
-  const stripe = useStripe()
-  const elements = useElements()
-  const [processing, setProcessing] = useState(false)
-  const [paymentError, setPaymentError] = useState<string | null>(null)
-  const [paymentRequest, setPaymentRequest] = useState<any>(null)
-  const [canMakePayment, setCanMakePayment] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -52,20 +45,39 @@ export default function TicketsPage() {
       setLoading(true)
       setError(null)
       try {
+        console.log("Fetching event data for ID:", id)
         const [eventRes, tiersRes] = await Promise.all([
           fetch(`/api/events/${id}`),
           fetch(`/api/events/${id}/pricing-tiers`),
         ])
-        if (!eventRes.ok) throw new Error("Failed to fetch event details")
-        if (!tiersRes.ok) throw new Error("Failed to fetch pricing tiers")
+        
+        console.log("Event response status:", eventRes.status)
+        console.log("Tiers response status:", tiersRes.status)
+        
+        if (!eventRes.ok) {
+          const errorText = await eventRes.text()
+          console.error("Event API error:", errorText)
+          throw new Error(`Failed to fetch event details: ${eventRes.status}`)
+        }
+        if (!tiersRes.ok) {
+          const errorText = await tiersRes.text()
+          console.error("Tiers API error:", errorText)
+          throw new Error(`Failed to fetch pricing tiers: ${tiersRes.status}`)
+        }
+        
         const { event, team1, team2 } = await eventRes.json()
         const pricingTiers = await tiersRes.json()
+        
+        console.log("Event data:", { event, team1, team2 })
+        console.log("Pricing tiers:", pricingTiers)
+        
         setEventData({
           event: { ...event, pricingTiers: pricingTiers || [] },
           team1,
           team2,
         })
       } catch (e: unknown) {
+        console.error("Error in fetchEventData:", e)
         setError(e instanceof Error ? e.message : "An unknown error occurred.")
       } finally {
         setLoading(false)
@@ -78,25 +90,6 @@ export default function TicketsPage() {
   const total = selectedTiers.reduce((sum, tier) => sum + (quantities[tier.id] || 0) * tier.price, 0)
   const canSubmit = email && confirmEmail && email === confirmEmail && payment
 
-  useEffect(() => {
-    if (stripe && total > 0 && !paymentRequest) {
-      const pr = stripe.paymentRequest({
-        country: 'LT',
-        currency: 'eur',
-        total: {
-          label: 'Bilietai',
-          amount: Math.round(total * 100),
-        },
-        requestPayerName: true,
-        requestPayerEmail: true,
-      })
-      pr.canMakePayment().then(result => {
-        setCanMakePayment(!!result)
-      })
-      setPaymentRequest(pr)
-    }
-  }, [stripe, total, paymentRequest])
-
   const handleQuantityChange = (tierId: string, delta: number, max: number) => {
     setQuantities(q => {
       const next = { ...q }
@@ -105,44 +98,38 @@ export default function TicketsPage() {
     })
   }
 
-  async function handleCardPayment(e: React.FormEvent) {
-    e.preventDefault()
-    setProcessing(true)
-    setPaymentError(null)
-    try {
-      // Call your backend to create a PaymentIntent
-      const res = await fetch('/api/stripe/create-payment-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: Math.round(total * 100),
-          email,
-        }),
-      })
-      const { clientSecret, error } = await res.json()
-      if (error) throw new Error(error)
-      if (!stripe || !elements) throw new Error('Stripe not loaded')
-      const cardElement = elements.getElement(CardElement)
-      if (!cardElement) throw new Error('CardElement not found')
-      const result = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: cardElement,
-          billing_details: { email },
-        },
-      })
-      if (result.error) throw new Error(result.error.message)
-      // Payment successful
-      // TODO: Show success UI or redirect
-    } catch (err: any) {
-      setPaymentError(err.message)
-    } finally {
-      setProcessing(false)
-    }
-  }
-
-  if (loading) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Loading...</div>
-  if (error) return <div className="bg-main flex items-center justify-center min-h-screen text-red-500">{error}</div>
-  if (!eventData) return <div className="bg-main flex items-center justify-center min-h-screen text-white">Event not found.</div>
+  if (loading) return (
+    <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-white">
+      <div className="text-center">
+        <div className="text-2xl font-bold mb-4">Loading...</div>
+        <div className="text-[#B0B8D9]">Fetching event details</div>
+      </div>
+    </div>
+  )
+  
+  if (error) return (
+    <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-red-500">
+      <div className="text-center">
+        <div className="text-2xl font-bold mb-4">Error</div>
+        <div className="text-lg">{error}</div>
+        <Button 
+          className="mt-4 btn-main"
+          onClick={() => window.location.reload()}
+        >
+          Try Again
+        </Button>
+      </div>
+    </div>
+  )
+  
+  if (!eventData) return (
+    <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-white">
+      <div className="text-center">
+        <div className="text-2xl font-bold mb-4">Event not found</div>
+        <div className="text-[#B0B8D9]">The event you are looking for doesn&apos;t exist</div>
+      </div>
+    </div>
+  )
 
   const { event, team1, team2 } = eventData
 
@@ -168,28 +155,34 @@ export default function TicketsPage() {
           {/* Ticket selection */}
           <Card className="bg-[#070F40] border border-[#232B5D] col-span-2 p-8">
             <h2 className="text-2xl font-bold mb-8">Pasirinkite bilietus</h2>
-            <div className="divide-y divide-[#232B5D]">
-              {event.pricingTiers.map(tier => (
-                <div key={tier.id} className="flex flex-col md:flex-row md:items-center py-6 gap-6 md:gap-0">
-                  <div className="flex-1">
-                    <div className="text-lg font-bold mb-1">{tier.name}</div>
-                    <div className="text-[#B0B8D9] text-sm mb-2">{tier.description}</div>
-                    <div className="text-2xl font-bold mb-1">{tier.price === 0 ? "Nemokamas" : `€ ${tier.price.toFixed(2)}`}</div>
-                    <div className="text-[#B0B8D9] text-xs">Remaining {tier.quantity}</div>
+            {event.pricingTiers && event.pricingTiers.length > 0 ? (
+              <div className="divide-y divide-[#232B5D]">
+                {event.pricingTiers.map(tier => (
+                  <div key={tier.id} className="flex flex-col md:flex-row md:items-center py-6 gap-6 md:gap-0">
+                    <div className="flex-1">
+                      <div className="text-lg font-bold mb-1">{tier.name}</div>
+                      <div className="text-[#B0B8D9] text-sm mb-2">{tier.description}</div>
+                      <div className="text-2xl font-bold mb-1">{tier.price === 0 ? "Nemokamas" : `€ ${tier.price.toFixed(2)}`}</div>
+                      <div className="text-[#B0B8D9] text-xs">Remaining {tier.quantity}</div>
+                    </div>
+                    <div className="flex items-center gap-4 mt-4 md:mt-0">
+                      <Button variant="ghost" className="text-2xl px-3 py-1" onClick={() => handleQuantityChange(tier.id, -1, tier.quantity)}>-</Button>
+                      <span className="text-xl font-bold w-6 text-center">{quantities[tier.id] || 0}</span>
+                      <Button variant="ghost" className="text-2xl px-3 py-1" onClick={() => handleQuantityChange(tier.id, 1, tier.quantity)} disabled={(quantities[tier.id] || 0) >= tier.quantity}>+</Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 mt-4 md:mt-0">
-                    <Button variant="ghost" className="text-2xl px-3 py-1" onClick={() => handleQuantityChange(tier.id, -1, tier.quantity)}>-</Button>
-                    <span className="text-xl font-bold w-6 text-center">{quantities[tier.id] || 0}</span>
-                    <Button variant="ghost" className="text-2xl px-3 py-1" onClick={() => handleQuantityChange(tier.id, 1, tier.quantity)} disabled={(quantities[tier.id] || 0) >= tier.quantity}>+</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-[#B0B8D9] text-lg">No pricing tiers available for this event</div>
+              </div>
+            )}
           </Card>
           {/* Order summary */}
           <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
             <div>
-              <div className="text-lg font-bold mb-2">{team1?.team_name} – {team2?.team_name}</div>
+              <div className="text-lg font-bold mb-2">{team1?.team_name || 'Team 1'} – {team2?.team_name || 'Team 2'}</div>
               <div className="text-[#B0B8D9] text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
               <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
             </div>
@@ -268,44 +261,56 @@ export default function TicketsPage() {
               ))}
             </div>
             {payment === "card" && (
-              <form onSubmit={handleCardPayment} className="mt-6">
-                <div className="bg-[#10194A] p-6 rounded-md border border-[#232B5D]">
-                  <div className="text-white font-bold mb-2">Įveskite kortelės duomenis</div>
-                  <div className="bg-[#232B5D] h-16 flex items-center px-4">
-                    <CardElement options={{
-                      style: {
-                        base: {
-                          color: '#fff',
-                          fontSize: '18px',
-                          fontFamily: 'inherit',
-                          backgroundColor: 'transparent',
-                          '::placeholder': {
-                            color: '#B0B8D9',
-                          },
-                        },
-                        invalid: {
-                          color: '#ff5252',
-                        },
-                      },
-                    }} />
+              <div className="mt-6 border border-[#232B5D] bg-[#10194A] p-6">
+                <h3 className="text-xl font-bold mb-4">Įveskite kortelės duomenis</h3>
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Card number"
+                    className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="MM/YY"
+                      className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="CVC"
+                      className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    />
                   </div>
-                  {paymentError && <div className="text-red-500 mt-2">{paymentError}</div>}
-                  <Button className="btn-main text-lg font-bold w-full mt-4" type="submit" disabled={!canSubmit || processing}>{processing ? 'Vykdoma...' : 'Confirm Payment'}</Button>
+                  <input
+                    type="text"
+                    placeholder="Cardholder name"
+                    className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                  />
                 </div>
-              </form>
+              </div>
             )}
             {payment === "wallet" && (
-              <div className="mt-6">
-                <div className="flex items-center gap-4 mb-2">
-                  <img src="/apple-pay-badge.svg" alt="Apple Pay" className="h-8" />
-                  <img src="/google-pay-badge.svg" alt="Google Pay" className="h-8" />
-                </div>
-                <div className="bg-[#232B5D] h-12 flex items-center justify-center text-[#B0B8D9]">
-                  {canMakePayment && paymentRequest ? (
-                    <PaymentRequestButtonElement options={{ paymentRequest }} />
-                  ) : (
-                    <span>Apple Pay / Google Pay (Stripe)</span>
-                  )}
+              <div className="mt-6 border border-[#232B5D] bg-[#10194A] p-6">
+                <h3 className="text-xl font-bold mb-4">Pasirinkite skaitmeninę piniginę</h3>
+                <div className="space-y-3">
+                  {[
+                    { id: "apple-pay", label: "Apple Pay", desc: "Apmokėkite naudodami Apple Pay" },
+                    { id: "google-pay", label: "Google Pay", desc: "Apmokėkite naudodami Google Pay" },
+                    { id: "paypal", label: "PayPal", desc: "Apmokėkite naudodami PayPal" },
+                  ].map(wallet => (
+                    <label key={wallet.id} className="flex items-center border border-[#232B5D] bg-transparent px-4 py-3 cursor-pointer transition-colors">
+                      <input
+                        type="radio"
+                        name="wallet"
+                        value={wallet.id}
+                        className="form-radio accent-main-orange mr-3 w-4 h-4"
+                      />
+                      <div>
+                        <div className="text-lg font-medium">{wallet.label}</div>
+                        <div className="text-[#B0B8D9] text-sm">{wallet.desc}</div>
+                      </div>
+                    </label>
+                  ))}
                 </div>
               </div>
             )}
@@ -318,7 +323,7 @@ export default function TicketsPage() {
               <span className="text-white font-bold">15:00 min.</span>
             </div>
             <div>
-              <div className="text-lg font-bold mb-2">{team1?.team_name} – {team2?.team_name}</div>
+              <div className="text-lg font-bold mb-2">{team1?.team_name || 'Team 1'} – {team2?.team_name || 'Team 2'}</div>
               <div className="text-[#B0B8D9] text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
               <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
             </div>

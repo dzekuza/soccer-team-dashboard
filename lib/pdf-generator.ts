@@ -3,6 +3,7 @@ import qr from "qrcode";
 import type { Team, TicketWithDetails } from "./types";
 import { formatCurrency } from "./utils";
 import fontkit from "@pdf-lib/fontkit";
+import { QRCodeService } from "./qr-code-service";
 
 // Helper to fetch image as Uint8Array
 async function fetchImage(url: string | undefined): Promise<Uint8Array | null> {
@@ -20,23 +21,26 @@ async function fetchImage(url: string | undefined): Promise<Uint8Array | null> {
 // Helper to replace unsupported Lithuanian characters with ASCII equivalents
 function replaceUnsupportedChars(str: string | undefined): string {
   if (!str) return "";
+
   return str
-    .replace(/ų/g, "u")
-    .replace(/ū/g, "u")
+    .replace(/ą/g, "a")
     .replace(/č/g, "c")
-    .replace(/š/g, "s")
-    .replace(/ž/g, "z")
+    .replace(/ę/g, "e")
     .replace(/ė/g, "e")
     .replace(/į/g, "i")
-    .replace(/ą/g, "a")
-    .replace(/Ų/g, "U")
-    .replace(/Ū/g, "U")
+    .replace(/š/g, "s")
+    .replace(/ų/g, "u")
+    .replace(/ū/g, "u")
+    .replace(/ž/g, "z")
+    .replace(/Ą/g, "A")
     .replace(/Č/g, "C")
-    .replace(/Š/g, "S")
-    .replace(/Ž/g, "Z")
+    .replace(/Ę/g, "E")
     .replace(/Ė/g, "E")
     .replace(/Į/g, "I")
-    .replace(/Ą/g, "A");
+    .replace(/Š/g, "S")
+    .replace(/Ų/g, "U")
+    .replace(/Ū/g, "U")
+    .replace(/Ž/g, "Z");
 }
 
 // Don't replace characters if we have a good font
@@ -105,260 +109,114 @@ export async function generateTicketPDF(
     color: ticketColors.text,
   });
 
-  // Ticket type badge
-  const ticketTypeText = `${
-    ticket.tier?.name?.toUpperCase() || "NORMAL"
-  } BILIETAS`;
-  page.drawText(ticketTypeText, {
-    x: 40,
-    y: height - 60,
-    size: 12,
-    font: customFont,
-    color: ticketColors.text,
-  });
-
-  // Price (top right)
-  const priceText = typeof ticket.tier?.price === "number"
-    ? `€${ticket.tier.price.toFixed(2)}`
-    : "€0.00";
-  const priceWidth = customFont.widthOfTextAtSize(priceText, 18);
-  page.drawText(priceText, {
-    x: width - priceWidth - 40,
-    y: height - 35,
-    size: 18,
-    font: customFont,
-    color: ticketColors.text,
-  });
-
-  // Seat info (top right)
-  const seatText = "Vieta nenurodyta";
-  const seatWidth = customFont.widthOfTextAtSize(seatText, 12);
-  page.drawText(seatText, {
-    x: width - seatWidth - 40,
-    y: height - 58,
-    size: 12,
-    font: customFont,
-    color: ticketColors.text,
-  });
-
-  // === MAIN BODY SECTION ===
-  const bodyY = height - headerHeight;
+  // === TICKET BODY SECTION ===
+  const bodyY = height - headerHeight - 20;
   const bodyHeight = 280;
+  const bodyX = 40;
+  const bodyWidth = width - 80;
 
-  // Main body background
+  // Background for body section
   page.drawRectangle({
-    x: 0,
+    x: bodyX,
     y: bodyY - bodyHeight,
-    width: width,
+    width: bodyWidth,
     height: bodyHeight,
     color: white,
   });
 
-  // === TEAMS SECTION ===
-  const teamsY = bodyY - 80;
-  const logoSize = 64;
+  // === EVENT DETAILS ===
+  let currentY = bodyY - 30;
 
-  // Team 1
-  const team1Name = team1?.team_name || "Komanda 1";
-  let team1LogoUrl = team1?.logo
-    ? (team1.logo.startsWith("http")
-      ? team1.logo
-      : SUPABASE_TEAM_LOGO_BASE_URL + team1.logo.replace(/^\/+/, ""))
-    : undefined;
-
-  if (team1LogoUrl) {
-    const logoBytes = await fetchImage(team1LogoUrl);
-    if (logoBytes) {
-      try {
-        const logoImage = await pdfDoc.embedPng(logoBytes);
-        page.drawImage(logoImage, {
-          x: 120,
-          y: teamsY - logoSize,
-          width: logoSize,
-          height: logoSize,
-        });
-      } catch {}
-    }
-  }
-
-  // Team 1 name
-  const team1Width = customFont.widthOfTextAtSize(team1Name, 16);
-  page.drawText(team1Name, {
-    x: 120 + (logoSize - team1Width) / 2,
-    y: teamsY - logoSize - 25,
-    size: 16,
-    font: customFont,
-    color: mainBlue,
-  });
-
-  // VS text
-  const vsText = "PRIEŠ";
-  const vsWidth = customFont.widthOfTextAtSize(vsText, 20);
-  page.drawText(vsText, {
-    x: (width - vsWidth) / 2,
-    y: teamsY - 35,
-    size: 20,
-    font: customFont,
-    color: darkGray,
-  });
-
-  // VS line
-  page.drawRectangle({
-    x: (width - 60) / 2,
-    y: teamsY - 50,
-    width: 60,
-    height: 2,
-    color: mediumGray,
-  });
-
-  // Team 2
-  const team2Name = team2?.team_name || "Komanda 2";
-  let team2LogoUrl = team2?.logo
-    ? (team2.logo.startsWith("http")
-      ? team2.logo
-      : SUPABASE_TEAM_LOGO_BASE_URL + team2.logo.replace(/^\/+/, ""))
-    : undefined;
-
-  if (team2LogoUrl) {
-    const logoBytes = await fetchImage(team2LogoUrl);
-    if (logoBytes) {
-      try {
-        const logoImage = await pdfDoc.embedPng(logoBytes);
-        page.drawImage(logoImage, {
-          x: width - 120 - logoSize,
-          y: teamsY - logoSize,
-          width: logoSize,
-          height: logoSize,
-        });
-      } catch {}
-    }
-  }
-
-  // Team 2 name
-  const team2Width = customFont.widthOfTextAtSize(team2Name, 16);
-  page.drawText(team2Name, {
-    x: width - 120 - logoSize + (logoSize - team2Width) / 2,
-    y: teamsY - logoSize - 25,
-    size: 16,
-    font: customFont,
-    color: mainBlue,
-  });
-
-  // === SEPARATOR LINE ===
-  page.drawRectangle({
-    x: 40,
-    y: teamsY - 140,
-    width: width - 80,
-    height: 1,
-    color: mediumGray,
-  });
-
-  // === MATCH DETAILS SECTION ===
-  const detailsY = teamsY - 180;
-  const detailSpacing = (width - 80) / 4;
-
-  // Date
-  page.drawText("DATA", {
-    x: 40,
-    y: detailsY + 15,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-  page.drawText(ticket.event.date || "", {
-    x: 40,
-    y: detailsY - 5,
+  // Date and time
+  const eventDate = ticket.event.date;
+  const eventTime = ticket.event.time;
+  page.drawText(`Data: ${eventDate}`, {
+    x: bodyX + 20,
+    y: currentY,
     size: 14,
     font: customFont,
     color: mainBlue,
   });
+  currentY -= 25;
 
-  // Time
-  page.drawText("LAIKAS", {
-    x: 40 + detailSpacing,
-    y: detailsY + 15,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-  page.drawText(ticket.event.time || "", {
-    x: 40 + detailSpacing,
-    y: detailsY - 5,
-    size: 14,
-    font: customFont,
-    color: mainBlue,
-  });
+  if (eventTime) {
+    page.drawText(`Laikas: ${eventTime}`, {
+      x: bodyX + 20,
+      y: currentY,
+      size: 14,
+      font: customFont,
+      color: mainBlue,
+    });
+    currentY -= 25;
+  }
 
   // Location
-  page.drawText("MIESTAS", {
-    x: 40 + detailSpacing * 2,
-    y: detailsY + 15,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-  page.drawText(replaceUnsupportedChars(ticket.event.location || ""), {
-    x: 40 + detailSpacing * 2,
-    y: detailsY - 5,
+  const eventLocation = ticket.event.location;
+  page.drawText(`Vieta: ${eventLocation}`, {
+    x: bodyX + 20,
+    y: currentY,
     size: 14,
     font: customFont,
     color: mainBlue,
   });
+  currentY -= 40;
 
-  // Venue
-  page.drawText("STADIONAS", {
-    x: 40,
-    y: detailsY - 40,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-  page.drawText(replaceUnsupportedChars(ticket.event.location || ""), {
-    x: 40,
-    y: detailsY - 60,
+  // === TEAM INFORMATION ===
+  if (team1 && team2) {
+    page.drawText(`${team1.team_name} vs ${team2.team_name}`, {
+      x: bodyX + 20,
+      y: currentY,
+      size: 18,
+      font: customFont,
+      color: mainBlue,
+    });
+    currentY -= 40;
+  }
+
+  // === TICKET HOLDER INFORMATION ===
+  page.drawText(`Bilieto savininkas: ${ticket.purchaserName}`, {
+    x: bodyX + 20,
+    y: currentY,
     size: 14,
     font: customFont,
     color: mainBlue,
+  });
+  currentY -= 25;
+
+  page.drawText(`El. paštas: ${ticket.purchaserEmail}`, {
+    x: bodyX + 20,
+    y: currentY,
+    size: 14,
+    font: customFont,
+    color: mainBlue,
+  });
+  currentY -= 40;
+
+  // === TICKET TYPE AND PRICE ===
+  const tierName = ticket.tier.name;
+  const tierPrice = ticket.tier.price;
+  page.drawText(`Bilieto tipas: ${tierName}`, {
+    x: bodyX + 20,
+    y: currentY,
+    size: 16,
+    font: customFont,
+    color: mainBlue,
+  });
+  currentY -= 25;
+
+  page.drawText(`Kaina: €${tierPrice.toFixed(2)}`, {
+    x: bodyX + 20,
+    y: currentY,
+    size: 16,
+    font: customFont,
+    color: orange,
   });
 
   // === QR CODE SECTION ===
-  const qrY = detailsY + 20; // Position QR code in visible area
+  const qrY = bodyY - 100;
 
-  // Gate info
-  page.drawText("VARTAI", {
-    x: 40,
-    y: qrY + 20,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-  page.drawText("A", {
-    x: 40,
-    y: qrY,
-    size: 14,
-    font: customFont,
-    color: mainBlue,
-  });
-
-  // Ticket ID
-  page.drawText("BILIETO ID", {
-    x: 40,
-    y: qrY - 25,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-  const ticketIdText = ticket.id.slice(0, 16) + "...";
-  page.drawText(ticketIdText, {
-    x: 40,
-    y: qrY - 45,
-    size: 10,
-    font: customFont,
-    color: darkGray,
-  });
-
-  // QR code contains only the ticket ID for simple scanning
-  const qrCodeValue = ticket.id;
+  // Generate enhanced QR code with comprehensive data
+  const qrCodeValue = await QRCodeService.updateTicketQRCode(ticket);
 
   try {
     // Generate QR code with better error correction and size
@@ -454,79 +312,45 @@ export async function generateTicketPDF(
       x: dotX,
       y: perfY,
       size: 2,
-      color: mediumGray,
+      color: lightGray,
     });
   }
 
-  // === STUB SECTION ===
-  const stubHeight = 50;
-  page.drawRectangle({
-    x: 0,
-    y: 0,
-    width: width,
-    height: stubHeight,
-    color: lightGray,
-  });
+  // === TICKET ID AND VALIDATION STATUS ===
+  const ticketId = ticket.id;
+  const validationStatus = ticket.isValidated ? "VALIDUOTAS" : "NEVALIDUOTAS";
+  const statusColor = ticket.isValidated ? orange : darkGray;
 
-  // Stub dashed border
-  const dashLength = 8;
-  const gapLength = 4;
-  for (let x = 0; x < width; x += dashLength + gapLength) {
-    page.drawRectangle({
-      x: x,
-      y: stubHeight,
-      width: Math.min(dashLength, width - x),
-      height: 1,
-      color: mediumGray,
-    });
-  }
-
-  // Stub content
-  const stubText = `${team1Name} vs ${team2Name}`;
-  page.drawText(stubText, {
-    x: 40,
-    y: 30,
-    size: 12,
-    font: customFont,
-    color: darkGray,
-  });
-
-  const stubDetails = `${ticket.event.date || ""}`;
-  page.drawText(stubDetails, {
-    x: 40,
-    y: 10,
+  page.drawText(`Bilieto ID: ${ticketId}`, {
+    x: bodyX + 20,
+    y: bodyY - bodyHeight + 20,
     size: 10,
     font: customFont,
     color: darkGray,
   });
 
-  // Stub right side
-  const stubType = ticket.tier?.name?.toUpperCase() || "NORMAL";
-  const stubTypeWidth = customFont.widthOfTextAtSize(stubType, 10);
-  page.drawText(stubType, {
-    x: width - stubTypeWidth - 40,
-    y: 30,
+  page.drawText(`Statusas: ${validationStatus}`, {
+    x: bodyX + 20,
+    y: bodyY - bodyHeight + 10,
     size: 10,
     font: customFont,
-    color: darkGray,
+    color: statusColor,
   });
 
-  const stubPriceWidth = customFont.widthOfTextAtSize(priceText, 12);
-  page.drawText(priceText, {
-    x: width - stubPriceWidth - 40,
-    y: 10,
+  // === FOOTER ===
+  const footerY = 30;
+  page.drawText("FK Banga - Bilietų sistema", {
+    x: bodyX + 20,
+    y: footerY,
     size: 12,
     font: customFont,
-    color: darkGray,
+    color: mainBlue,
   });
 
   const pdfBytes = await pdfDoc.save();
   return pdfBytes;
 }
 
-/**
- * Helper for browser: convert Uint8Array to Blob for download
- */
 export function uint8ArrayToPdfBlob(bytes: Uint8Array): Blob {
   return new Blob([bytes], { type: "application/pdf" });
 }
@@ -545,8 +369,16 @@ export async function generateSubscriptionPDF(subscription: {
 
   const font = await doc.embedFont(StandardFonts.Helvetica);
 
-  // QR code contains only the subscription ID for simple scanning
-  const qrCodeValue = subscription.id;
+  // Generate enhanced QR code for subscription
+  const qrCodeValue = await QRCodeService.updateSubscriptionQRCode({
+    id: subscription.id,
+    purchaser_name: subscription.purchaser_name,
+    purchaser_surname: subscription.purchaser_surname,
+    purchaser_email: subscription.purchaser_email,
+    valid_from: subscription.valid_from || new Date().toISOString(),
+    valid_to: subscription.valid_to || new Date().toISOString(),
+    created_at: new Date().toISOString(),
+  });
 
   try {
     // Generate QR code with better styling
@@ -603,7 +435,7 @@ export async function generateSubscriptionPDF(subscription: {
       error,
     );
 
-    // Fallback: draw placeholder
+    // Fallback: draw a placeholder
     page.drawRectangle({
       x: 35,
       y: 275,
@@ -613,39 +445,52 @@ export async function generateSubscriptionPDF(subscription: {
     });
 
     page.drawText("QR Code Error", {
-      x: 38,
-      y: 340,
+      x: 45,
+      y: 350,
       font,
       size: 10,
-      color: rgb(0.4, 0.4, 0.5),
+      color: rgb(0.4, 0.4, 0.5), // Dark gray
     });
   }
 
-  // Details
-  page.drawText("Subscription Confirmation", {
-    x: 30,
-    y: 240,
+  // Subscription details
+  page.drawText("PRENUMERATA", {
+    x: 38,
+    y: 400,
     font,
     size: 16,
-    color: rgb(0, 0, 0),
+    color: rgb(0.04, 0.09, 0.36), // Main blue
   });
 
-  const detailsY = 200;
-  const details = [
-    `Name: ${subscription.purchaser_name} ${subscription.purchaser_surname}`,
-    `Email: ${subscription.purchaser_email}`,
-    `ID: ${subscription.id}`,
-  ];
-
-  details.forEach((text, i) => {
-    page.drawText(text, {
-      x: 30,
-      y: detailsY - i * 20,
+  page.drawText(
+    `Savininkas: ${subscription.purchaser_name} ${subscription.purchaser_surname}`,
+    {
+      x: 38,
+      y: 380,
       font,
       size: 10,
-      color: rgb(0.2, 0.2, 0.2),
-    });
-  });
+      color: rgb(0.04, 0.09, 0.36), // Main blue
+    },
+  );
 
-  return doc.save();
+  if (subscription.valid_from && subscription.valid_to) {
+    page.drawText(`Galioja nuo: ${subscription.valid_from}`, {
+      x: 38,
+      y: 360,
+      font,
+      size: 8,
+      color: rgb(0.4, 0.4, 0.5), // Dark gray
+    });
+
+    page.drawText(`Galioja iki: ${subscription.valid_to}`, {
+      x: 38,
+      y: 345,
+      font,
+      size: 8,
+      color: rgb(0.4, 0.4, 0.5), // Dark gray
+    });
+  }
+
+  const pdfBytes = await doc.save();
+  return pdfBytes;
 }
