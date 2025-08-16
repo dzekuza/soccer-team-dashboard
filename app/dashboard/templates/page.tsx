@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -48,11 +48,7 @@ export default function TemplatesPage() {
   const { toast } = useToast();
   const bodyTextareaRef = useRef<HTMLTextAreaElement>(null);
 
-  useEffect(() => {
-    fetchTemplates();
-  }, []);
-
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/templates");
@@ -74,7 +70,11 @@ export default function TemplatesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   const handleSelectTemplate = (templateName: string) => {
     const template = templates.find((t) => t.name === templateName);

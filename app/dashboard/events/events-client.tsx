@@ -355,20 +355,91 @@ export default function EventsClient({
 
     if (!window.confirm(`Ar tikrai norite ištrinti renginį "${eventToDelete.title}"? Šio veiksmo atšaukti negalėsite.`)) return;
     setDeletingId(eventId);
+    
+    console.log('🗑️ Starting deletion of event:', eventId);
+    
+    // Check authentication status first
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) {
+      console.error('❌ Authentication error:', authError);
+      alert('Authentication error. Please log in again.');
+      return;
+    }
+    
+    if (!user) {
+      console.error('❌ No authenticated user found');
+      alert('Please log in to delete events.');
+      return;
+    }
+    
+    console.log('✅ User authenticated:', user.id);
+    
+    // Check user role
+    const { data: userProfile, error: profileError } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+      
+    if (profileError) {
+      console.error('❌ Error fetching user profile:', profileError);
+    } else {
+      console.log('👤 User role:', userProfile?.role);
+    }
+    
     try {
-      const { error } = await supabase
+      // First, delete all tickets associated with this event
+      console.log('📋 Deleting tickets for event:', eventId);
+      const { data: ticketsData, error: ticketsError } = await supabase
+        .from('tickets')
+        .delete()
+        .eq('event_id', eventId)
+        .select();
+
+      if (ticketsError) {
+        console.error('❌ Error deleting tickets:', ticketsError);
+        console.error('❌ Error details:', ticketsError.message, ticketsError.details, ticketsError.hint);
+        // Continue anyway, as the event deletion might still work
+      } else {
+        console.log('✅ Successfully deleted tickets:', ticketsData?.length || 0, 'tickets');
+      }
+
+      // Then, delete all pricing tiers associated with this event
+      console.log('💰 Deleting pricing tiers for event:', eventId);
+      const { data: tiersData, error: tiersError } = await supabase
+        .from('pricing_tiers')
+        .delete()
+        .eq('event_id', eventId)
+        .select();
+
+      if (tiersError) {
+        console.error('❌ Error deleting pricing tiers:', tiersError);
+        console.error('❌ Error details:', tiersError.message, tiersError.details, tiersError.hint);
+        // Continue anyway, as the event deletion might still work
+      } else {
+        console.log('✅ Successfully deleted pricing tiers:', tiersData?.length || 0, 'tiers');
+      }
+
+      // Finally, delete the event itself
+      console.log('🎫 Deleting event:', eventId);
+      const { data: eventData, error: eventError } = await supabase
         .from('events')
         .delete()
         .eq('id', eventId)
+        .select();
 
-      if (error) {
-        throw error;
+      if (eventError) {
+        console.error('❌ Error deleting event:', eventError);
+        console.error('❌ Error details:', eventError.message, eventError.details, eventError.hint);
+        throw eventError;
       }
       
+      console.log('✅ Successfully deleted event');
       setEvents(events.filter(e => e.id !== eventId));
       alert('Renginys sėkmingai ištrintas.');
 
     } catch (err) {
+      console.error('❌ Error in handleDeleteEvent:', err);
       const errorMessage = err instanceof Error ? err.message : "Nepavyko ištrinti renginio.";
       alert(errorMessage);
     } finally {

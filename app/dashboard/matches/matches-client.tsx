@@ -76,7 +76,7 @@ export function MatchesClient({ initialMatches }: MatchesClientProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">My Matches</h1>
-          <p className="text-gray-600">Manage and view your team's matches.</p>
+          <p className="text-gray-600">Manage and view your team&apos;s matches.</p>
         </div>
         <Button onClick={handleCreate}>
           <Plus className="h-4 w-4 mr-2" />

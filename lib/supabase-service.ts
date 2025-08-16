@@ -614,6 +614,25 @@ export const supabaseService = {
     }
   },
 
+  deleteSubscription: async (id: string): Promise<boolean> => {
+    try {
+      const { error } = await supabaseAdmin
+        .from("subscriptions")
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error("Error deleting subscription:", error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Supabase Service: Error in deleteSubscription:", error);
+      return false;
+    }
+  },
+
   // Teams
   getTeams: async (): Promise<Team[]> => {
     try {

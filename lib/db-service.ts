@@ -349,5 +349,25 @@ export const dbService = {
       console.error('Error in validateTicket:', error);
       return { success: false };
     }
+  },
+
+  // Delete ticket
+  deleteTicket: async (ticketId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('tickets')
+        .delete()
+        .eq('id', ticketId);
+
+      if (error) {
+        console.error('Error deleting ticket:', error);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error in deleteTicket:', error);
+      return false;
+    }
   }
 }

@@ -60,6 +60,36 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
     }
   }
 
+  const handleDeleteSubscription = async (subscriptionId: string) => {
+    if (!confirm("Ar tikrai norite ištrinti šią prenumeratą? Šio veiksmo atšaukti negalėsite.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/subscriptions`, { 
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ subscriptionId }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete subscription.");
+      }
+      
+      toast({ title: "Sėkmė", description: "Prenumerata sėkmingai ištrinta." });
+      // Refresh the page to update the list
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko ištrinti prenumeratos.",
+        variant: "destructive",
+      });
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -107,6 +137,10 @@ export default function SubscriptionsClient({ initialSubscriptions }: Subscripti
                         <DropdownMenuItem onClick={() => handleResendEmail(sub.id)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
                           <Mail className="mr-2 h-4 w-4" />
                           <span>Siųsti iš naujo</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteSubscription(sub.id)} className="text-red-400 hover:text-red-300 hover:bg-red-900/20 focus:bg-red-900/20">
+                          <X className="mr-2 h-4 w-4" />
+                          <span>Ištrinti</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

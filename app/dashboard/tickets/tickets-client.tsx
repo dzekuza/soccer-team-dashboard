@@ -89,6 +89,29 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
     }
   }
 
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (!confirm("Ar tikrai norite ištrinti šį bilietą? Šio veiksmo atšaukti negalėsite.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/tickets/${ticketId}`, { method: "DELETE" });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete ticket.");
+      }
+      
+      toast({ title: "Sėkmė", description: "Bilietas sėkmingai ištrintas." });
+      fetchTickets(); // Refresh the list
+    } catch (error) {
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko ištrinti bilieto.",
+        variant: "destructive",
+      });
+    }
+  }
+
   const filteredTickets = tickets.filter(ticket => {
     const matchesEvent = ticket.event.title.toLowerCase().includes(eventNameFilter.toLowerCase())
     const matchesScan =
@@ -225,6 +248,10 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                         <DropdownMenuItem onClick={() => handleResendEmail(ticket.id)} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
                           <Mail className="mr-2 h-4 w-4" />
                           <span>Siųsti iš naujo</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleDeleteTicket(ticket.id)} className="text-red-400 hover:text-red-300 hover:bg-red-900/20 focus:bg-red-900/20">
+                          <X className="mr-2 h-4 w-4" />
+                          <span>Ištrinti</span>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

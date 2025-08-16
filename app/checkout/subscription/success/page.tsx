@@ -85,7 +85,7 @@ function SubscriptionSuccessContent() {
           <div className="text-yellow-500 text-6xl mb-4">❓</div>
           <h1 className="text-2xl font-bold mb-4 text-white">Subscription Not Found</h1>
           <p className="text-gray-300 mb-6">
-            We couldn't find your subscription details. This might take a few minutes to process.
+            We couldn&apos;t find your subscription details. This might take a few minutes to process.
           </p>
           <Button asChild className="bg-[#F15601] hover:bg-[#E04501] text-white">
             <Link href="/dashboard">Go to Dashboard</Link>
