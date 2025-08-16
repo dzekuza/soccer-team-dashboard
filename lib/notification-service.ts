@@ -55,7 +55,7 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
     );
 
     await resend.emails.send({
-      from: "info@resend.dev",
+      from: "bilietai@noriumuzikos.lt",
       to: ticket.purchaserEmail,
       subject: emailSubject,
       html: emailBody,
@@ -120,7 +120,7 @@ async function sendSubscriptionConfirmation(
     );
 
     await resend.emails.send({
-      from: "info@resend.dev",
+      from: "bilietai@noriumuzikos.lt",
       to: subscription.purchaser_email,
       subject: template.subject,
       html: emailBody,
@@ -152,7 +152,7 @@ async function sendBulkEmail(
 
   try {
     const payload: any = {
-      from: "info@resend.dev",
+      from: "bilietai@noriumuzikos.lt",
       to: "noreply@resend.dev",
       bcc: to,
       subject: subject,

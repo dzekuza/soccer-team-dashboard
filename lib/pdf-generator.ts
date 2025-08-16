@@ -74,7 +74,7 @@ export async function generateTicketPDF(
     }
   }
 
-  const ticketColors = getTicketTypeColors(ticket.tier.name || 'Normal');
+  const ticketColors = getTicketTypeColors(ticket.tier?.name || 'Normal');
 
   // Load custom font
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
@@ -98,14 +98,14 @@ export async function generateTicketPDF(
   });
 
   // Ticket type badge
-  const ticketTypeText = `${ticket.tier.name?.toUpperCase() || 'NORMAL'} BILIETAS`;
+  const ticketTypeText = `${ticket.tier?.name?.toUpperCase() || 'NORMAL'} BILIETAS`;
   page.drawText(ticketTypeText, {
     x: 40, y: height - 60, 
     size: 12, font: customFont, color: ticketColors.text,
   });
 
   // Price (top right)
-  const priceText = typeof ticket.tier.price === 'number' ? `€${ticket.tier.price.toFixed(2)}` : '€0.00';
+  const priceText = typeof ticket.tier?.price === 'number' ? `€${ticket.tier.price.toFixed(2)}` : '€0.00';
   const priceWidth = customFont.widthOfTextAtSize(priceText, 18);
   page.drawText(priceText, {
     x: width - priceWidth - 40, y: height - 35,
@@ -274,24 +274,91 @@ export async function generateTicketPDF(
     x: 40, y: qrY - 45,
     size: 10, font: customFont, color: darkGray,
   });
+  
+  // Create a structured QR code data object for verification
+  const qrCodeData = {
+    ticketId: ticket.id,
+    eventId: ticket.event.id,
+    eventTitle: ticket.event.title,
+    eventDate: ticket.event.date,
+    eventTime: ticket.event.time,
+    purchaserName: ticket.purchaserName,
+    purchaserEmail: ticket.purchaserEmail,
+    tierName: ticket.tier?.name || 'Unknown',
+    tierPrice: ticket.tier?.price || 0,
+    timestamp: new Date().toISOString(),
+    type: 'ticket'
+  };
 
-  // QR Code
-  const qrCodeValue = ticket.id;
+  // Convert to JSON string for QR code
+  const qrCodeValue = JSON.stringify(qrCodeData);
+  
   try {
-    const qrCodeDataUrl = await qr.toDataURL(qrCodeValue, { width: 120, margin: 1 })
-    const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0))
-    const qrImage = await pdfDoc.embedPng(qrImageBytes)
-    page.drawImage(qrImage, {
-      x: width - 160, y: qrY - 40, width: 120, height: 120,
-    })
+    // Generate QR code with better error correction and size
+    const qrCodeDataUrl = await qr.toDataURL(qrCodeValue, { 
+      width: 150, 
+      margin: 2,
+      errorCorrectionLevel: 'H', // High error correction
+      color: {
+        dark: '#0A165B', // Main blue color
+        light: '#FFFFFF'
+      }
+    });
     
-    // QR Code label
+    const qrImageBytes = Uint8Array.from(atob(qrCodeDataUrl.split(',')[1]), c => c.charCodeAt(0));
+    const qrImage = await pdfDoc.embedPng(qrImageBytes);
+    
+    // Draw QR code with better positioning and size
+    const qrSize = 140;
+    const qrX = width - qrSize - 40;
+    const qrYPos = qrY - 30;
+    
+    // Draw QR code background (white rectangle)
+    page.drawRectangle({
+      x: qrX - 10, y: qrYPos - 10,
+      width: qrSize + 20, height: qrSize + 40,
+      color: white
+    });
+    
+    // Draw QR code
+    page.drawImage(qrImage, {
+      x: qrX, y: qrYPos, 
+      width: qrSize, height: qrSize,
+    });
+    
+    // QR Code title
+    page.drawText('QR KODAS', {
+      x: qrX, y: qrYPos + qrSize + 15,
+      size: 12, font: customFont, color: mainBlue,
+    });
+    
+    // QR Code subtitle
     page.drawText('Skenuokite įėjimui', {
-      x: width - 150, y: qrY - 55,
+      x: qrX, y: qrYPos + qrSize + 5,
       size: 8, font: customFont, color: darkGray,
     });
+    
+    // Ticket ID below QR code
+    const ticketIdText = ticket.id.slice(0, 16) + '...';
+    page.drawText(ticketIdText, {
+      x: qrX, y: qrYPos - 15,
+      size: 8, font: customFont, color: darkGray,
+    });
+    
   } catch (error) {
-    console.error(`Error generating QR code for ticket ${ticket.id}:`, error)
+    console.error(`Error generating QR code for ticket ${ticket.id}:`, error);
+    
+    // Fallback: draw a placeholder
+    page.drawRectangle({
+      x: width - 180, y: qrY - 50,
+      width: 160, height: 160,
+      color: lightGray
+    });
+    
+    page.drawText('QR Code Error', {
+      x: width - 170, y: qrY + 60,
+      size: 10, font: customFont, color: darkGray,
+    });
   }
 
   // === PERFORATED EDGE EFFECT ===
@@ -339,7 +406,7 @@ export async function generateTicketPDF(
   });
 
   // Stub right side
-  const stubType = ticket.tier.name?.toUpperCase() || 'NORMAL';
+  const stubType = ticket.tier?.name?.toUpperCase() || 'NORMAL';
   const stubTypeWidth = customFont.widthOfTextAtSize(stubType, 10);
   page.drawText(stubType, {
     x: width - stubTypeWidth - 40, y: 30,
@@ -369,29 +436,94 @@ export async function generateSubscriptionPDF(subscription: {
   purchaser_surname: string;
   purchaser_email: string;
   qr_code_url: string;
+  valid_from?: string;
+  valid_to?: string;
 }) {
   const doc = await PDFDocument.create();
   const page = doc.addPage([226.77, 453.54]); // 80mm x 160mm
 
   const font = await doc.embedFont(StandardFonts.Helvetica);
 
-  // QR Code
-  const qrCodeValue = subscription.qr_code_url || subscription.id;
-  const qrImage = await qr.toDataURL(qrCodeValue, {
-    errorCorrectionLevel: "H",
-    type: "image/png",
-    width: 150,
-    margin: 1,
-  });
-  const qrImageBytes = Buffer.from(qrImage.split(",")[1], "base64");
-  const embeddedQrImage = await doc.embedPng(qrImageBytes);
+  // Create structured QR code data for subscription
+  const qrCodeData = {
+    subscriptionId: subscription.id,
+    purchaserName: subscription.purchaser_name,
+    purchaserSurname: subscription.purchaser_surname,
+    purchaserEmail: subscription.purchaser_email,
+    validFrom: subscription.valid_from,
+    validTo: subscription.valid_to,
+    timestamp: new Date().toISOString(),
+    type: 'subscription'
+  };
 
-  page.drawImage(embeddedQrImage, {
-    x: 38,
-    y: 280,
-    width: 150,
-    height: 150,
-  });
+  // Convert to JSON string for QR code
+  const qrCodeValue = JSON.stringify(qrCodeData);
+  
+  try {
+    // Generate QR code with better styling
+    const qrImage = await qr.toDataURL(qrCodeValue, {
+      errorCorrectionLevel: "H",
+      type: "image/png",
+      width: 150,
+      margin: 2,
+      color: {
+        dark: '#0A165B', // Main blue color
+        light: '#FFFFFF'
+      }
+    });
+    const qrImageBytes = Buffer.from(qrImage.split(",")[1], "base64");
+    const embeddedQrImage = await doc.embedPng(qrImageBytes);
+
+    // Draw QR code with background
+    page.drawRectangle({
+      x: 35, y: 275,
+      width: 160, height: 160,
+      color: rgb(1, 1, 1) // White background
+    });
+
+    page.drawImage(embeddedQrImage, {
+      x: 38,
+      y: 280,
+      width: 150,
+      height: 150,
+    });
+    
+    // QR Code label
+    page.drawText("QR KODAS", {
+      x: 38,
+      y: 270,
+      font,
+      size: 10,
+      color: rgb(0.04, 0.09, 0.36), // Main blue
+    });
+    
+    // Subscription ID below QR code
+    const subscriptionIdText = subscription.id.slice(0, 16) + '...';
+    page.drawText(subscriptionIdText, {
+      x: 38,
+      y: 250,
+      font,
+      size: 8,
+      color: rgb(0.4, 0.4, 0.5), // Dark gray
+    });
+  } catch (error) {
+    console.error(`Error generating QR code for subscription ${subscription.id}:`, error);
+    
+    // Fallback: draw placeholder
+    page.drawRectangle({
+      x: 35, y: 275,
+      width: 160, height: 160,
+      color: rgb(0.95, 0.95, 0.97) // Light gray
+    });
+    
+    page.drawText("QR Code Error", {
+      x: 38,
+      y: 340,
+      font,
+      size: 10,
+      color: rgb(0.4, 0.4, 0.5),
+    });
+  }
 
   // Details
   page.drawText("Subscription Confirmation", {
