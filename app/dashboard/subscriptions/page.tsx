@@ -1,5 +1,5 @@
 import { supabaseService } from "@/lib/supabase-service";
-import SubscriptionsClient from "./subscriptions-client";
+import { SubscriptionsClient } from "./subscriptions-client";
 
 export const revalidate = 0; // Revalidate data on every request
 
