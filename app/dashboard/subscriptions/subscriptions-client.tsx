@@ -96,17 +96,9 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
     setQrCodeUrl("")
     
     try {
-      // Generate enhanced QR code using the same service as PDF generation
-      const enhancedQRCodeUrl = await QRCodeService.updateSubscriptionQRCode({
-        id: subscription.id,
-        purchaser_name: subscription.purchaser_name || "",
-        purchaser_surname: subscription.purchaser_surname || "",
-        purchaser_email: subscription.purchaser_email || "",
-        valid_from: subscription.valid_from,
-        valid_to: subscription.valid_to,
-        created_at: subscription.createdAt,
-      })
-      setQrCodeUrl(enhancedQRCodeUrl)
+      // Generate QR code using subscription ID for consistency with PDF
+      const qrCodeUrl = await QRCodeService.generateLegacyQRCode(subscription.id)
+      setQrCodeUrl(qrCodeUrl)
     } catch (error) {
       console.error("Error generating QR code:", error)
       toast({

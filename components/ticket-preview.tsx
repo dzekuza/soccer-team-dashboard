@@ -21,12 +21,11 @@ export function TicketPreview({ ticket, onDownload }: TicketPreviewProps) {
     const generateQRCode = async () => {
       try {
         setIsLoadingQR(true)
-        // Use the enhanced QR code service to generate the same QR code as the PDF
-        const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(ticket)
-        setQrCodeUrl(enhancedQRCodeUrl)
+        // Generate QR code using ticket ID for consistency with PDF
+        const qrCodeUrl = await QRCodeService.generateLegacyQRCode(ticket.id)
+        setQrCodeUrl(qrCodeUrl)
       } catch (error) {
         console.error("Error generating QR code for preview:", error)
-        // Fallback to simple QR code if enhanced generation fails
         setQrCodeUrl("")
       } finally {
         setIsLoadingQR(false)

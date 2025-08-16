@@ -122,9 +122,9 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
     setQrCodeUrl("")
     
     try {
-      // Generate enhanced QR code using the same service as PDF generation
-      const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(ticket)
-      setQrCodeUrl(enhancedQRCodeUrl)
+      // Generate QR code using ticket ID for consistency with PDF
+      const qrCodeUrl = await QRCodeService.generateLegacyQRCode(ticket.id)
+      setQrCodeUrl(qrCodeUrl)
     } catch (error) {
       console.error("Error generating QR code:", error)
       toast({
@@ -143,9 +143,9 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
     setPreviewQrCodeUrl("")
     
     try {
-      // Generate enhanced QR code using the same service as PDF generation
-      const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(ticket)
-      setPreviewQrCodeUrl(enhancedQRCodeUrl)
+      // Generate QR code using ticket ID for consistency with PDF
+      const qrCodeUrl = await QRCodeService.generateLegacyQRCode(ticket.id)
+      setPreviewQrCodeUrl(qrCodeUrl)
     } catch (error) {
       console.error("Error generating QR code for preview:", error)
       // Don't show toast for preview errors, just log them
