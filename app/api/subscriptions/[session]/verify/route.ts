@@ -7,41 +7,48 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 // Initialize Supabase with the service role key for admin-level access
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { session_id: string } }
+  { params }: { params: { session: string } },
 ) {
   try {
-    const { session_id } = params;
+    const { session } = params;
 
-    if (!session_id) {
-      return NextResponse.json({ error: "Session ID is required" }, { status: 400 });
+    if (!session) {
+      return NextResponse.json({ error: "Session ID is required" }, {
+        status: 400,
+      });
     }
 
     // Retrieve the checkout session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(session_id);
+    const sessionData = await stripe.checkout.sessions.retrieve(session);
 
-    if (!session) {
+    if (!sessionData) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
     // Check if this is a subscription session
-    if (session.mode !== "subscription" || !session.subscription) {
-      return NextResponse.json({ error: "Invalid subscription session" }, { status: 400 });
+    if (sessionData.mode !== "subscription" || !sessionData.subscription) {
+      return NextResponse.json({ error: "Invalid subscription session" }, {
+        status: 400,
+      });
     }
 
     // Get subscription details from our database
     const { data: subscription, error } = await supabaseAdmin
-      .from('subscriptions')
-      .select('*')
-      .eq('stripe_subscription_id', session.subscription)
+      .from("subscriptions")
+      .select("*")
+      .eq("stripe_subscription_id", sessionData.subscription)
       .single();
 
     if (error || !subscription) {
-      return NextResponse.json({ error: "Subscription not found in database" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Subscription not found in database" },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({
@@ -52,12 +59,11 @@ export async function POST(
       end_date: subscription.valid_to,
       purchaser_name: subscription.purchaser_name,
     });
-
   } catch (error: any) {
     console.error("Error verifying subscription session:", error);
     return NextResponse.json(
       { error: "Failed to verify subscription session" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -8,9 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { CreateEventDialog } from "@/components/create-event-dialog"
 import { Badge } from "@/components/ui/badge"
-import { CalendarDays, Ticket, Users, DollarSign, TrendingUp, Clock } from "lucide-react"
+import { CalendarDays, Ticket, Users, Euro, TrendingUp, Clock } from "lucide-react"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
+import { formatCurrency } from "@/lib/utils"
 
 interface OverviewClientProps {
   initialStats: EventStats;
@@ -27,13 +28,6 @@ export default function OverviewClient({
   const [recentTickets, setRecentTickets] = useState<TicketWithDetails[]>(initialRecentTickets)
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>(initialRecentActivity)
   const router = useRouter()
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-    }).format(amount)
-  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -65,7 +59,7 @@ export default function OverviewClient({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Iš viso pajamų</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <Euro className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(stats.revenue || 0)}</div>

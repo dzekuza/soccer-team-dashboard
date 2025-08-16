@@ -5,6 +5,7 @@ import type {
   EmailTemplate,
   Event,
   EventWithTiers,
+  Fan,
   PricingTier,
   Subscription,
   Team,
@@ -756,6 +757,195 @@ export const supabaseService = {
         data: null,
         error: error instanceof Error ? error : new Error("Unknown error"),
       };
+    }
+  },
+
+  // Delete subscription
+  deleteSubscription: async (id: string): Promise<{ error: Error | null }> => {
+    try {
+      const { error } = await supabaseAdmin
+        .from("subscriptions")
+        .delete()
+        .eq("id", id);
+
+      if (error) {
+        console.error("Supabase Service: Error deleting subscription:", error);
+        return { error: new Error(error.message) };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error("Supabase Service: Error in deleteSubscription:", error);
+      return {
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  },
+
+  // Delete all subscriptions
+  deleteAllSubscriptions: async (): Promise<{ error: Error | null }> => {
+    try {
+      const { error } = await supabaseAdmin
+        .from("subscriptions")
+        .delete()
+        .neq("id", "00000000-0000-0000-0000-000000000000"); // Delete all except dummy ID
+
+      if (error) {
+        console.error(
+          "Supabase Service: Error deleting all subscriptions:",
+          error,
+        );
+        return { error: new Error(error.message) };
+      }
+
+      return { error: null };
+    } catch (error) {
+      console.error(
+        "Supabase Service: Error in deleteAllSubscriptions:",
+        error,
+      );
+      return {
+        error: error instanceof Error ? error : new Error("Unknown error"),
+      };
+    }
+  },
+
+  // Get fans data
+  getFans: async (): Promise<Fan[]> => {
+    try {
+      // Get all tickets with purchaser information
+      const { data: tickets, error: ticketsError } = await supabaseAdmin
+        .from("tickets")
+        .select(`
+          purchaser_name,
+          purchaser_email,
+          pricing_tier:pricing_tiers(price)
+        `);
+
+      if (ticketsError) {
+        console.error("Error fetching tickets for fans:", ticketsError);
+        throw new Error(`Failed to fetch tickets: ${ticketsError.message}`);
+      }
+
+      // Get all subscriptions
+      const { data: subscriptions, error: subscriptionsError } =
+        await supabaseAdmin
+          .from("subscriptions")
+          .select("purchaser_email, valid_to");
+
+      if (subscriptionsError) {
+        console.error(
+          "Error fetching subscriptions for fans:",
+          subscriptionsError,
+        );
+        throw new Error(
+          `Failed to fetch subscriptions: ${subscriptionsError.message}`,
+        );
+      }
+
+      // Group tickets by purchaser
+      const fanMap = new Map<string, Fan>();
+
+      // Process tickets
+      tickets?.forEach((ticket) => {
+        const email = ticket.purchaser_email;
+        const name = ticket.purchaser_name || "Nenurodyta";
+        const price = (ticket.pricing_tier as any)?.price || 0;
+
+        if (fanMap.has(email)) {
+          const fan = fanMap.get(email)!;
+          fan.total_tickets += 1;
+          fan.money_spent += price;
+        } else {
+          fanMap.set(email, {
+            name,
+            email,
+            total_tickets: 1,
+            money_spent: price,
+            has_valid_subscription: false, // Will be updated below
+          });
+        }
+      });
+
+      // Process subscriptions to check validity
+      const now = new Date();
+      subscriptions?.forEach((subscription) => {
+        const email = subscription.purchaser_email;
+        const isValid = new Date(subscription.valid_to) > now;
+
+        if (fanMap.has(email)) {
+          const fan = fanMap.get(email)!;
+          fan.has_valid_subscription = isValid;
+        } else {
+          // Create fan entry for subscription-only users
+          fanMap.set(email, {
+            name: "Prenumeratos vartotojas",
+            email,
+            total_tickets: 0,
+            money_spent: 0,
+            has_valid_subscription: isValid,
+          });
+        }
+      });
+
+      return Array.from(fanMap.values());
+    } catch (error) {
+      console.error("Supabase Service: Error in getFans:", error);
+      throw error;
+    }
+  },
+
+  // Register user with corporation
+  registerUserWithCorporation: async (data: {
+    userId: string;
+    email: string;
+    name: string;
+    organizationName: string;
+  }): Promise<{ userId: string; corporationId: string }> => {
+    try {
+      // Create corporation
+      const { data: corporation, error: corpError } = await supabaseAdmin
+        .from("teams")
+        .insert({
+          team_name: data.organizationName,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (corpError) {
+        console.error("Error creating corporation:", corpError);
+        throw new Error(`Failed to create corporation: ${corpError.message}`);
+      }
+
+      // Update user profile with corporation info
+      const { error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .upsert({
+          id: data.userId,
+          email: data.email,
+          full_name: data.name,
+          team_id: corporation.id,
+          updated_at: new Date().toISOString(),
+        });
+
+      if (profileError) {
+        console.error("Error updating user profile:", profileError);
+        throw new Error(
+          `Failed to update user profile: ${profileError.message}`,
+        );
+      }
+
+      return {
+        userId: data.userId,
+        corporationId: corporation.id,
+      };
+    } catch (error) {
+      console.error(
+        "Supabase Service: Error in registerUserWithCorporation:",
+        error,
+      );
+      throw error;
     }
   },
 };

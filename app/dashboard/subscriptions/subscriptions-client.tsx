@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { CreateSubscriptionDialog } from "@/components/create-subscription-dialog"
 import type { Subscription } from "@/lib/types"
-import { Download, Plus, Mail, MoreHorizontal, QrCode, Calendar, X, Search } from "lucide-react"
+import { Download, Plus, Mail, MoreHorizontal, QrCode, Calendar, X, Search, Trash2 } from "lucide-react"
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { QRCodeService } from "@/lib/qr-code-service"
 import { useToast } from "@/components/ui/use-toast"
@@ -111,6 +111,71 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
     }
   }
 
+  const handleDeleteSubscription = async (subscriptionId: string) => {
+    if (!confirm("Ar tikrai norite ištrinti šią prenumeratą? Šio veiksmo atšaukti negalėsite.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/subscriptions/delete?id=${subscriptionId}`, { 
+        method: "DELETE" 
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete subscription.");
+      }
+
+      toast({ 
+        title: "Sėkmingai", 
+        description: "Prenumerata buvo ištrinta.", 
+      });
+      
+      // Refresh the subscriptions list
+      fetchSubscriptions();
+    } catch (error) {
+      console.error("Error deleting subscription:", error);
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko ištrinti prenumeratos.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  const handleDeleteAllSubscriptions = async () => {
+    const subscriptionCount = subscriptions.length;
+    if (!confirm(`Ar tikrai norite ištrinti VISAS ${subscriptionCount} prenumeratas? Šio veiksmo atšaukti negalėsite.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/subscriptions/delete-all`, { 
+        method: "DELETE" 
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete all subscriptions.");
+      }
+
+      toast({ 
+        title: "Sėkmingai", 
+        description: `Visos ${subscriptionCount} prenumeratos buvo ištrintos.`, 
+      });
+      
+      // Refresh the subscriptions list
+      fetchSubscriptions();
+    } catch (error) {
+      console.error("Error deleting all subscriptions:", error);
+      toast({
+        title: "Klaida",
+        description: error instanceof Error ? error.message : "Nepavyko ištrinti visų prenumeratų.",
+        variant: "destructive",
+      });
+    }
+  }
+
   const filteredSubscriptions = subscriptions.filter(subscription => {
     const matchesName = subscription.purchaser_name?.toLowerCase().includes(nameFilter.toLowerCase()) || false
     const matchesEmail = (subscription.purchaser_email || "").toLowerCase().includes(emailFilter.toLowerCase())
@@ -134,10 +199,20 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
             className="w-full sm:w-64"
           />
         </div>
-        <Button onClick={() => setIsCreateOpen(true)} className="bg-[#F15601] hover:bg-[#E04501]">
-          <Plus className="h-4 w-4 mr-2" />
-          Sukurti prenumeratą
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleDeleteAllSubscriptions} 
+            variant="destructive"
+            className="bg-red-600 hover:bg-red-700"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Ištrinti visas
+          </Button>
+          <Button onClick={() => setIsCreateOpen(true)} className="bg-[#F15601] hover:bg-[#E04501]">
+            <Plus className="h-4 w-4 mr-2" />
+            Sukurti prenumeratą
+          </Button>
+        </div>
       </div>
 
       <div className="hidden md:block">
@@ -185,6 +260,13 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
                         <DropdownMenuItem onClick={() => handleResendEmail(subscription.id)}>
                           <Mail className="h-4 w-4 mr-2" />
                           Siųsti el. laišką
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          onClick={() => handleDeleteSubscription(subscription.id)}
+                          className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Ištrinti
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

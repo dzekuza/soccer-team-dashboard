@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { supabaseService } from "@/lib/supabase-service";
 import { QRCodeService } from "@/lib/qr-code-service";
+import type { TicketWithDetails } from "@/lib/types";
 
 export async function POST(request: NextRequest) {
   const cookieStore = await cookies();
@@ -21,8 +23,8 @@ export async function POST(request: NextRequest) {
     const { ticketIds } = await request.json();
 
     if (!ticketIds || !Array.isArray(ticketIds)) {
-      return NextResponse.json({ 
-        error: "Ticket IDs array is required" 
+      return NextResponse.json({
+        error: "Ticket IDs array is required",
       }, { status: 400 });
     }
 
@@ -45,15 +47,16 @@ export async function POST(request: NextRequest) {
         if (error || !ticket) {
           errors.push({
             ticketId,
-            error: "Ticket not found"
+            error: "Ticket not found",
           });
           continue;
         }
 
         // Generate enhanced QR code
-        const ticketWithDetails = {
+        const ticketWithDetails: TicketWithDetails = {
           id: ticket.id,
           eventId: ticket.event_id,
+          tierId: ticket.pricing_tier_id,
           purchaserName: ticket.purchaser_name,
           purchaserEmail: ticket.purchaser_email,
           isValidated: ticket.is_validated,
@@ -64,7 +67,9 @@ export async function POST(request: NextRequest) {
           tier: ticket.pricing_tier,
         };
 
-        const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(ticketWithDetails);
+        const enhancedQRCodeUrl = await QRCodeService.updateTicketQRCode(
+          ticketWithDetails,
+        );
 
         // Update ticket with new QR code
         const { error: updateError } = await supabase
@@ -78,19 +83,19 @@ export async function POST(request: NextRequest) {
         if (updateError) {
           errors.push({
             ticketId,
-            error: `Failed to update QR code: ${updateError.message}`
+            error: `Failed to update QR code: ${updateError.message}`,
           });
         } else {
           results.push({
             ticketId,
             success: true,
-            message: "QR code updated successfully"
+            message: "QR code updated successfully",
           });
         }
       } catch (error) {
         errors.push({
           ticketId,
-          error: error instanceof Error ? error.message : "Unknown error"
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
@@ -102,13 +107,14 @@ export async function POST(request: NextRequest) {
       summary: {
         total: ticketIds.length,
         successful: results.length,
-        failed: errors.length
-      }
+        failed: errors.length,
+      },
     });
-
   } catch (error) {
     console.error("Error updating QR codes:", error);
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const message = error instanceof Error
+      ? error.message
+      : "Internal Server Error";
     return NextResponse.json({
       error: "Failed to update QR codes",
       details: message,
@@ -146,26 +152,27 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter tickets that have legacy QR codes (just IDs)
-    const ticketsNeedingUpdate = tickets.filter(ticket => {
+    const ticketsNeedingUpdate = tickets.filter((ticket) => {
       // Check if QR code URL is just a simple ID or legacy format
-      return !ticket.qr_code_url || 
-             ticket.qr_code_url.length < 100 || // Legacy QR codes are shorter
-             ticket.qr_code_url.startsWith('data:image/png;base64,') === false;
+      return !ticket.qr_code_url ||
+        ticket.qr_code_url.length < 100 || // Legacy QR codes are shorter
+        ticket.qr_code_url.startsWith("data:image/png;base64,") === false;
     });
 
     return NextResponse.json({
       ticketsNeedingUpdate: ticketsNeedingUpdate.length,
       totalTickets: tickets.length,
-      tickets: ticketsNeedingUpdate.map(t => ({
+      tickets: ticketsNeedingUpdate.map((t) => ({
         id: t.id,
         createdAt: t.created_at,
-        hasLegacyQR: !t.qr_code_url || t.qr_code_url.length < 100
-      }))
+        hasLegacyQR: !t.qr_code_url || t.qr_code_url.length < 100,
+      })),
     });
-
   } catch (error) {
     console.error("Error fetching tickets for QR update:", error);
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const message = error instanceof Error
+      ? error.message
+      : "Internal Server Error";
     return NextResponse.json({
       error: "Failed to fetch tickets",
       details: message,
