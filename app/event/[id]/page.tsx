@@ -3,42 +3,20 @@
 import { useEffect, useState } from "react"
 import { useParams } from "next/navigation"
 import Image from "next/image"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import type { EventWithTiers, Team, PricingTier } from "@/lib/types"
 import { useCart } from "@/context/cart-context"
 import { CartSheet } from "@/components/cart-sheet"
-import { EventHeader } from "@/components/event-header"
+import { PublicNavigation } from "@/components/public-navigation"
 import { cn } from "@/lib/utils"
 import { useToast } from "@/components/ui/use-toast"
-import {
-  CheckCircleIcon,
-  CreditCardIcon,
-  UserIcon,
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-} from "@heroicons/react/24/outline"
-import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { loadStripe } from "@stripe/stripe-js"
-import Link from "next/link"
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-)
+import { Minus, Plus } from "lucide-react"
 
 interface EventData {
   event: EventWithTiers
   team1: Team | null
   team2: Team | null
 }
-
-const steps = [
-  { id: "01", name: "Apie varžybąs", icon: CheckCircleIcon },
-  { id: "02", name: "Bilietai", icon: CreditCardIcon },
-  { id: "03", name: "Duomenys", icon: UserIcon },
-]
 
 export default function EventPage() {
   const { id } = useParams()
@@ -47,20 +25,7 @@ export default function EventPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
-  const { cart, addToCart, updateQuantity } = useCart()
-  const [currentStep, setCurrentStep] = useState("01")
-  const [selectedTier, setSelectedTier] = useState<PricingTier | null>(null)
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-  })
-
-  useEffect(() => {
-    if (eventData?.event?.pricingTiers?.[0]) {
-      setSelectedTier(eventData.event.pricingTiers[0])
-    }
-  }, [eventData])
+  const { cart, addToCart, updateQuantity, removeFromCart } = useCart()
 
   useEffect(() => {
     if (!id) return
@@ -98,93 +63,25 @@ export default function EventPage() {
     fetchEventData()
   }, [id])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-  const handlePurchase = async () => {
-    if (!selectedTier || !eventData) {
-      toast({
-        title: "Klaida",
-        description: "Pasirinkite bilieto kainos lygį.",
-        variant: "destructive",
-      });
-      return
-    }
-
-    if (!formData.firstName || !formData.lastName || !formData.email) {
-      toast({
-        title: "Klaida",
-        description: "Užpildykite visus savo duomenis.",
-        variant: "destructive",
-      });
-      setCurrentStep("03")
-      return
-    }
-
-    try {
-      const response = await fetch("/api/checkout/tickets", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          eventId: eventData.event.id,
-          tierId: selectedTier.id,
-          quantity: 1, // For now, we handle one ticket at a time
-          purchaserName: formData.firstName,
-          purchaserSurname: formData.lastName,
-          purchaserEmail: formData.email,
-        }),
-      })
-
-      const { sessionId, error } = await response.json()
-
-      if (error) {
-        throw new Error(error)
-      }
-
-      const stripe = await stripePromise
-      if (stripe) {
-        const { error } = await stripe.redirectToCheckout({ sessionId })
-        if (error) {
-          console.error("Stripe redirect error:", error)
-          toast({
-            title: "Mokėjimo klaida",
-            description: error.message,
-            variant: "destructive",
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Failed to create checkout session:", error)
-      toast({
-        title: "Klaida",
-        description: error instanceof Error ? error.message : "Nežinoma klaida",
-        variant: "destructive",
-      });
-    }
-  }
-
   const handleAddToCart = () => {
-    if (!selectedTier || !eventData) return
-    const { event, team1, team2 } = eventData
-    addToCart({
-      id: selectedTier.id,
-      name: selectedTier.name,
-      price: selectedTier.price,
-      quantity: 1,
-      eventId: event.id,
-      eventTitle: event.title,
-      image: event.coverImageUrl || "/placeholder.jpg",
-      color:
-        team1 && team2
-          ? `${team1.team_name} vs ${team2.team_name}`
-          : "Renginys",
-      category: "Bilietai",
-    })
-    setIsCartSheetOpen(true)
+    if (!eventData) return
+    
+    // Check if there are any items in cart
+    const hasItems = cart.length > 0
+
+    if (hasItems) {
+      setIsCartSheetOpen(true)
+      toast({
+        title: "Krepšelis atidarytas",
+        description: "Jūsų krepšelis yra paruoštas",
+      })
+    } else {
+      toast({
+        title: "Klaida",
+        description: "Pasirinkite bent vieną bilietą",
+        variant: "destructive",
+      })
+    }
   }
 
   const getQuantityInCart = (tierId: string) => {
@@ -192,252 +89,278 @@ export default function EventPage() {
     return item ? item.quantity : 0
   }
 
+  const handleQuantityChange = (tierId: string, newQuantity: number) => {
+    const currentQuantity = getQuantityInCart(tierId)
+    
+    if (newQuantity === 0) {
+      // Remove from cart if quantity is 0
+      removeFromCart(tierId)
+    } else if (currentQuantity === 0 && newQuantity > 0) {
+      // Add new item to cart
+      const tier = eventData?.event.pricingTiers?.find(t => t.id === tierId)
+      if (tier && eventData) {
+        addToCart({
+          id: tier.id,
+          name: tier.name,
+          price: tier.price,
+          quantity: newQuantity,
+          eventId: eventData.event.id,
+          eventTitle: eventData.event.title,
+          image: eventData.event.coverImageUrl || "/Banga-1.png",
+          color: `${eventData.team1?.team_name || 'TBD'} vs ${eventData.team2?.team_name || 'TBD'}`,
+          category: "Bilietai",
+        })
+      }
+    } else {
+      // Update existing item quantity
+      updateQuantity(tierId, newQuantity - currentQuantity)
+    }
+  }
+
+  const getTotalPrice = () => {
+    return eventData?.event.pricingTiers?.reduce((total, tier) => {
+      const quantity = getQuantityInCart(tier.id)
+      return total + (tier.price * quantity)
+    }, 0) || 0
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const day = date.getDate()
+    const month = date.toLocaleDateString('lt-LT', { month: 'long' })
+    const year = date.getFullYear()
+    const dayOfWeek = date.toLocaleDateString('lt-LT', { weekday: 'long' })
+    return { day, month, year, dayOfWeek }
+  }
+
   if (loading)
     return (
-      <div className="bg-main flex items-center justify-center min-h-screen text-white">
+      <div className="bg-[#0A165B] flex items-center justify-center min-h-screen text-white">
         Kraunama...
       </div>
     )
   if (error)
     return (
-      <div className="bg-main flex items-center justify-center min-h-screen text-red-500">
+      <div className="bg-[#0A165B] flex items-center justify-center min-h-screen text-red-500">
         {error}
       </div>
     )
   if (!eventData)
     return (
-      <div className="bg-main flex items-center justify-center min-h-screen text-white">
-        Event not found.
+      <div className="bg-[#0A165B] flex items-center justify-center min-h-screen text-white">
+        Renginys nerastas.
       </div>
     )
 
   const { event, team1, team2 } = eventData
+  const dateInfo = formatDate(event.date)
 
   return (
-    <div className="bg-main text-white min-h-screen">
+    <div className="bg-[#0A165B] text-white min-h-screen">
+      <PublicNavigation currentPage="events" />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
 
-      {/* Cover Image Section */}
-      {event.coverImageUrl && (
-        <div className="relative w-full h-64 md:h-80 lg:h-96 overflow-hidden">
-          <Image
-            src={event.coverImageUrl}
-            alt={event.title}
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/40" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              {/* Team Logos and Names */}
-              <div className="flex items-center justify-center gap-8 mb-6">
-                <div className="flex flex-col items-center">
-                  <Image 
-                    src={team1?.logo || '/placeholder-logo.svg'} 
-                    alt={team1?.team_name || 'Komanda 1'} 
-                    width={80}
-                    height={80}
-                    className="object-contain w-20 h-20 mb-3" 
-                  />
-                  <span className="text-white font-bold text-lg">
-                    {team1?.team_name || 'Komanda 1'}
-                  </span>
-                </div>
-                <div className="text-4xl md:text-5xl font-bold text-white/80">VS</div>
-                <div className="flex flex-col items-center">
-                  <Image 
-                    src={team2?.logo || '/placeholder-logo.svg'} 
-                    alt={team2?.team_name || 'Komanda 2'} 
-                    width={80}
-                    height={80}
-                    className="object-contain w-20 h-20 mb-3" 
-                  />
-                  <span className="text-white font-bold text-lg">
-                    {team2?.team_name || 'Komanda 2'}
-                  </span>
-                </div>
+      {/* Event Banner */}
+      <div className="relative w-full h-64 md:h-80 overflow-hidden">
+        <Image
+          src={event.coverImageUrl || '/Banga-1.png'}
+          alt={event.title}
+          fill
+          className="object-cover"
+          priority
+        />
+        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            {/* Team Logos and Names */}
+            <div className="flex items-center justify-center gap-8 mb-6">
+              <div className="flex flex-col items-center">
+                <Image 
+                  src={team1?.logo || '/Banga-1.png'} 
+                  alt={team1?.team_name || 'Komanda 1'} 
+                  width={80}
+                  height={80}
+                  className="object-contain w-20 h-20 mb-3" 
+                />
+                <span className="text-white font-bold text-lg">
+                  {team1?.team_name || 'Banga'}
+                </span>
               </div>
+              <div className="text-4xl md:text-5xl font-bold text-white/80">VS</div>
+              <div className="flex flex-col items-center">
+                <Image 
+                  src={team2?.logo || '/placeholder-logo.svg'} 
+                  alt={team2?.team_name || 'Komanda 2'} 
+                  width={80}
+                  height={80}
+                  className="object-contain w-20 h-20 mb-3" 
+                />
+                <span className="text-white font-bold text-lg">
+                  {team2?.team_name || 'K. Žalgiris'}
+                </span>
+              </div>
+            </div>
+            
+            <div className="text-white/90 text-lg">
+              {event.time}, {dateInfo.dayOfWeek} {dateInfo.day}, {dateInfo.month}
+            </div>
+            <div className="text-white/90 text-lg">
+              {event.location}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content - Two Column Layout */}
+      <div className="w-full px-4 md:px-8 lg:px-16 pb-20 lg:pb-0">
+        <div className="grid grid-cols-1 lg:grid-cols-2">
+          
+          {/* Left Column - Event Information */}
+          <div>
+            <div className="bg-[#0A165B] border-l border-t border-b border-[#232C62] p-6 h-full">
+              <h2 className="text-white text-xl font-bold mb-4">APIE RENGINĮ</h2>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                {event.description || `Svarbus mačas tarp FK "Banga" ir "${team2?.team_name || 'Kauno Žalgiris'}" ${event.location} stadione ${dateInfo.day} ${dateInfo.month}. Namų komanda sieks atsigauti po nesėkmių ir stiprinti savo poziciją lygos lentelėje, įrodant savo stiprybę prieš vieną iš čempionato lyderių ir atkurti gerbėjų pasitikėjimą.`}
+              </p>
               
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-                {event.title}
-              </h1>
-              <div className="flex items-center justify-center gap-4 text-white/90">
-                <div className="flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5" />
-                  <span>{event.date}</span>
-                </div>
-                {event.time && (
-                  <div className="flex items-center gap-2">
-                    <ClockIcon className="h-5 w-5" />
-                    <span>{event.time}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <MapPinIcon className="h-5 w-5" />
-                  <span>{event.location}</span>
+              <div className="space-y-4">
+                <h3 className="text-white text-lg font-semibold">Rungtynių informacija</h3>
+                <div className="space-y-3 text-gray-300">
+                  <div><strong>Data:</strong> {dateInfo.year} m. {dateInfo.month} {dateInfo.day} d. ({dateInfo.dayOfWeek})</div>
+                  <div><strong>Laikas:</strong> {event.time}</div>
+                  <div><strong>Vieta:</strong> {event.location}</div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      <main className="container mx-auto px-4 py-8 md:py-12">
-        {/* 2x1 Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column - Event Description */}
-          <div className="space-y-6">
-            <Card className="bg-main-div-bg border-main-border">
-              <CardHeader>
-                <CardTitle className="text-white">Apie Renginį</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                  {event.description}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Event Details Card */}
-            <Card className="bg-main-div-bg border-main-border">
-              <CardHeader>
-                <CardTitle className="text-white">Renginio Informacija</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <CalendarIcon className="h-5 w-5 text-blue-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Data</p>
-                    <p className="text-white font-medium">{event.date}</p>
-                  </div>
-                </div>
-                {event.time && (
-                  <div className="flex items-center gap-3">
-                    <ClockIcon className="h-5 w-5 text-blue-400" />
-                    <div>
-                      <p className="text-sm text-gray-400">Laikas</p>
-                      <p className="text-white font-medium">{event.time}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center gap-3">
-                  <MapPinIcon className="h-5 w-5 text-blue-400" />
-                  <div>
-                    <p className="text-sm text-gray-400">Vieta</p>
-                    <p className="text-white font-medium">{event.location}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
           {/* Right Column - Ticket Selection */}
-          <div className="space-y-6">
-            <Card className="bg-main-div-bg border-main-border">
-              <CardHeader>
-                <CardTitle className="text-white">Bilietų Pasirinkimas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Team Display */}
-                <div className="flex items-center justify-center gap-6 mb-6">
-                  <div className="flex flex-col items-center">
-                    <Image 
-                      src={team1?.logo || '/placeholder-logo.svg'} 
-                      alt={team1?.team_name || 'Komanda 1'} 
-                      width={64}
-                      height={64}
-                      className="object-contain w-16 h-16 mb-2" 
-                    />
-                    <span className="text-white font-semibold text-center">
-                      {team1?.team_name || 'Komanda 1'}
-                    </span>
-                  </div>
-                  <div className="text-2xl font-bold text-white">VS</div>
-                  <div className="flex flex-col items-center">
-                    <Image 
-                      src={team2?.logo || '/placeholder-logo.svg'} 
-                      alt={team2?.team_name || 'Komanda 2'} 
-                      width={64}
-                      height={64}
-                      className="object-contain w-16 h-16 mb-2" 
-                    />
-                    <span className="text-white font-semibold text-center">
-                      {team2?.team_name || 'Komanda 2'}
-                    </span>
+          <div>
+            <div className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full">
+              <h2 className="text-white text-xl font-bold mb-6">BILIETAI</h2>
+              
+              {/* Ticket Types */}
+              <div className="space-y-4 mb-6">
+                {event.pricingTiers?.map((tier) => {
+                  const quantity = getQuantityInCart(tier.id)
+                  const soldQuantity = tier.soldQuantity || 0
+                  const totalQuantity = tier.quantity || 0
+                  const remaining = Math.max(0, totalQuantity - soldQuantity)
+                  
+                  return (
+                    <div key={tier.id} className="border border-[#232C62] p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-white font-semibold text-lg">{tier.name}</h3>
+                          <p className="text-gray-400 text-sm mt-1">
+                            {tier.description || getTierDescription(tier.name)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-white font-bold text-xl">
+                            €{tier.price.toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleQuantityChange(tier.id, Math.max(0, quantity - 1))}
+                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <span className="text-white font-semibold min-w-[2rem] text-center">
+                            {quantity}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleQuantityChange(tier.id, quantity + 1)}
+                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        <div className="text-gray-400 text-sm">
+                          Liko {remaining}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Event Details Summary */}
+              <div className="border-t border-[#232C62] pt-4 mb-6">
+                <div className="text-center text-gray-300 space-y-1">
+                  <div className="font-semibold">{team1?.team_name || 'FK „Banga"'} - {team2?.team_name || '„K. Žalgiris"'}</div>
+                  <div>{dateInfo.year} m. {dateInfo.month} {dateInfo.day} d. ({dateInfo.dayOfWeek}), {event.time} EEST</div>
+                  <div>{event.location}</div>
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              <div className="border-t border-[#232C62] pt-4 mb-6">
+                <h3 className="text-white font-semibold mb-3">Užsakymo suvestinė</h3>
+                <div className="space-y-2">
+                  {event.pricingTiers?.map((tier) => {
+                    const quantity = getQuantityInCart(tier.id)
+                    if (quantity === 0) return null
+                    
+                    return (
+                      <div key={tier.id} className="flex justify-between text-gray-300">
+                        <span>{quantity} x {tier.name}</span>
+                        <span>€{(tier.price * quantity).toFixed(2)}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+                <div className="border-t border-[#232C62] pt-2 mt-3">
+                  <div className="flex justify-between text-white font-bold text-lg">
+                    <span>SUMA</span>
+                    <span>€{getTotalPrice().toFixed(2)}</span>
                   </div>
                 </div>
+              </div>
 
-                {/* Pricing Tiers */}
-                {event.pricingTiers && event.pricingTiers.length > 0 ? (
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">Pasirinkite bilietą:</h3>
-                    {event.pricingTiers.map((tier) => {
-                      const soldQuantity = tier.soldQuantity || 0
-                      const totalQuantity = tier.quantity || 0
-                      const availableQuantity = Math.max(0, totalQuantity - soldQuantity)
-                      const inCart = getQuantityInCart(tier.id)
-                      
-                      return (
-                        <div
-                          key={tier.id}
-                          className={cn(
-                            "border rounded-lg p-4 cursor-pointer transition-all",
-                            selectedTier?.id === tier.id
-                              ? "border-blue-500 bg-blue-500/10"
-                              : "border-main-border hover:border-gray-600"
-                          )}
-                          onClick={() => setSelectedTier(tier)}
-                        >
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <h4 className="text-white font-semibold">{tier.name}</h4>
-                              {tier.description && (
-                                <p className="text-gray-400 text-sm mt-1">{tier.description}</p>
-                              )}
-                            </div>
-                            <div className="text-right">
-                              <p className="text-2xl font-bold text-white">€{tier.price}</p>
-                              <p className="text-sm text-gray-400">
-                                Liko: {availableQuantity} bilietų
-                              </p>
-                            </div>
-                          </div>
-                          
-                          {inCart > 0 && (
-                            <div className="mt-2 p-2 bg-green-500/20 border border-green-500/30 rounded">
-                              <p className="text-green-400 text-sm">
-                                Krepšelyje: {inCart} vnt.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-400">Bilietų informacija neprieinama</p>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                {selectedTier && (
-                  <div className="pt-6">
-                    <Button
-                      onClick={handleAddToCart}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-lg text-lg transition-colors duration-200"
-                      disabled={selectedTier.quantity - selectedTier.soldQuantity <= 0}
-                    >
-                      Pridėti į krepšelį
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+              {/* Add to Cart Button - Desktop Only */}
+              <div className="hidden lg:block">
+                <Button
+                  onClick={handleAddToCart}
+                  className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold py-3 text-lg rounded-none"
+                >
+                  Pridėti į krepšelį
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* Fixed Add to Cart Button - Mobile Only */}
+      <div className="fixed bottom-0 left-0 right-0 bg-[#0A165B] border-t border-[#232C62] p-4 lg:hidden z-50">
+        <Button
+          onClick={handleAddToCart}
+          className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold py-4 text-lg rounded-none"
+        >
+          Pridėti į krepšelį
+        </Button>
+      </div>
     </div>
   )
+}
+
+// Helper function to get tier descriptions
+function getTierDescription(tierName: string): string {
+  const descriptions: Record<string, string> = {
+    'Suaugusiųjų': 'Standartinis bilietas asmenims nuo 18 metų be nuolaidų',
+    'Studento': '-30% nuolaida galioja studentams su pažymėjimu',
+    'Moksleivio': '-50% nuolaida moksleiviams iki 18 metų su pažymėjimu',
+    'Lengvatinis': 'Vaikai iki 12 m, senjorai, neįgalieji, Ukrainos piliečiai. Reikalingas dokumentas.',
+  }
+  return descriptions[tierName] || 'Standartinis bilietas'
 } 

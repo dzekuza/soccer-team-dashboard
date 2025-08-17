@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/lib/auth-context"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase-browser"
 import { Button } from "@/components/ui/button"
@@ -18,7 +19,17 @@ export default function Register() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { user, isLoading: authLoading } = useAuth()
   const supabase = createClient()
+
+  useEffect(() => {
+    if (authLoading) return // Wait for auth to load
+
+    if (user) {
+      // User is already logged in, redirect to dashboard
+      router.push('/dashboard')
+    }
+  }, [user, authLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,6 +69,23 @@ export default function Register() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Kraunama...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If user is logged in, don't render the register form
+  if (user) {
+    return null
   }
 
   return (

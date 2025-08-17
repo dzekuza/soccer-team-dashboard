@@ -35,6 +35,7 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
 
   return (
     <Card className="group flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card text-card-foreground">
+      {/* Cover Image */}
       <div className="relative">
         <Image 
           src={event.coverImageUrl || '/placeholder.jpg'} 
@@ -43,7 +44,6 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
           height={200} 
           className="w-full h-48 object-cover" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         
         {/* Delete button in top-right corner */}
         <Button
@@ -55,18 +55,17 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
         >
           <Trash2 className="w-4 h-4" />
         </Button>
-        
-        <div className="absolute bottom-0 left-0 p-4">
-          <CardTitle className="text-white text-xl font-bold">
-            <Link href={`/dashboard/events/${event.id}`} className="hover:underline">
-              {event.title}
-            </Link>
-          </CardTitle>
-        </div>
       </div>
       
+      {/* Event Title - Now below the image */}
       <CardHeader className="pt-4">
-        <div className="flex items-center justify-around text-center">
+        <CardTitle className="text-xl font-bold">
+          <Link href={`/dashboard/events/${event.id}`} className="hover:underline">
+            {event.title}
+          </Link>
+        </CardTitle>
+        
+        <div className="flex items-center justify-around text-center mt-4">
           <div className="flex flex-col items-center gap-2">
             {team1 ? (
               <Image src={team1.logo || '/placeholder-logo.svg'} alt={team1.team_name} width={48} height={48} />

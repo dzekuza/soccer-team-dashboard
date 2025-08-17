@@ -26,10 +26,7 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className={cn(
-                "w-full flex flex-col",
-                "p-6 rounded-xl",
-                "bg-main-div-bg",
-                "border border-main-border",
+                "w-full flex flex-col h-full"
             )}
         >
             <div className="flex items-center gap-2 mb-4">
@@ -43,7 +40,6 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                 className={cn(
                     "flex-1 overflow-y-auto",
                     "min-h-0",
-                    "-mx-6 px-6",
                     "space-y-4"
                 )}
             >
@@ -61,9 +57,9 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                             }}
                             className={cn(
                                 "flex items-center gap-4",
-                                "p-4 rounded-lg",
-                                "bg-black/20",
-                                "border border-main-border/50"
+                                "p-4",
+                                "bg-[#0A165B]",
+                                "border-b border-[#232C62]"
                             )}
                         >
                             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-black/10">
@@ -85,7 +81,7 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                         onClick={() =>
                                             removeFromCart(item.id)
                                         }
-                                        className="p-2 rounded-md hover:bg-white/10 transition-colors"
+                                        className="p-2 hover:bg-white/10 transition-colors"
                                     >
                                         <X className="w-4 h-4 text-gray-400" />
                                     </motion.button>
@@ -101,7 +97,7 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                                     -1
                                                 )
                                             }
-                                            className="p-2 rounded-md hover:bg-white/10 transition-colors"
+                                            className="p-2 hover:bg-white/10 transition-colors"
                                         >
                                             <Minus className="w-4 h-4 text-white" />
                                         </motion.button>
@@ -120,7 +116,7 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                                                     1
                                                 )
                                             }
-                                            className="p-2 rounded-md hover:bg-white/10 transition-colors"
+                                            className="p-2 hover:bg-white/10 transition-colors"
                                         >
                                             <Plus className="w-4 h-4 text-white" />
                                         </motion.button>
@@ -146,13 +142,13 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                     </div>
                 )}
             </motion.div>
-            {cart.length > 0 &&
+            
+            {cart.length > 0 && (
                 <motion.div
                     layout
                     className={cn(
-                        "pt-4 mt-6",
-                        "border-t border-main-border",
-                        "bg-main-div-bg"
+                        "mt-auto pt-4",
+                        "border-t border-[#232C62]"
                     )}
                 >
                     <div className="flex items-center justify-between">
@@ -167,7 +163,7 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                         </motion.span>
                     </div>
                 </motion.div>
-            }
+            )}
         </motion.div>
     );
 }

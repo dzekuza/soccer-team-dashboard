@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp } from "lucide-react"
+import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp, Tag } from "lucide-react"
 import { createClient } from "@/lib/supabase-browser"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./ui/button"
@@ -29,6 +30,7 @@ export function DashboardSidebar() {
     { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
     { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
     { name: "Prenumeratos tipai", href: "/dashboard/subscription-types", icon: BadgeCheck },
+    { name: "Kuponai", href: "/dashboard/coupons", icon: Tag },
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: QrCode },
     { name: "Eksportas", href: "/dashboard/export", icon: Download },
@@ -45,8 +47,14 @@ export function DashboardSidebar() {
       {/* Desktop Sidebar */}
       <aside className="hidden md:block w-64 p-4 border-r fixed h-full bg-sidebar">
         <div className="flex items-center mb-8">
-          <Link href="/" className="text-2xl font-bold">
-            TeamUp
+          <Link href="/" className="flex items-center">
+            <Image 
+              src="/Banga-1.png" 
+              alt="FK Banga" 
+              width={48} 
+              height={48} 
+              className="object-contain"
+            />
           </Link>
         </div>
         <nav>

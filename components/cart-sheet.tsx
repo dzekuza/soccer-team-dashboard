@@ -5,7 +5,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/com
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
-import { Trash2 } from "lucide-react"
+import { Trash2, Minus, Plus, X } from "lucide-react"
 
 interface CartSheetProps {
   open: boolean
@@ -19,52 +19,112 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col bg-gray-900 text-white border-gray-800">
-        <SheetHeader>
-          <SheetTitle>Jūsų krepšelis</SheetTitle>
-        </SheetHeader>
+      <SheetContent className="flex flex-col bg-[#0A165B] text-white border-[#232C62] w-[400px] sm:w-[450px] p-0">
+        {/* Header */}
+        <div className="flex flex-row items-center justify-between border-b border-[#232C62] p-4">
+          <SheetTitle className="text-white text-xl font-bold">Jūsų krepšelis</SheetTitle>
+        </div>
+
         {cart.length > 0 ? (
           <>
-            <div className="flex-1 overflow-y-auto pr-4 -mr-6">
-              <ul className="space-y-4">
+            {/* Cart Items */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="space-y-0">
                 {cart.map(item => (
-                  <li key={item.id} className="flex items-start gap-4">
-                    <Image src={item.image} alt={item.name} width={64} height={64} className="rounded-md object-cover" />
-                    <div className="flex-1">
-                      <p className="font-semibold">{item.eventTitle}</p>
-                      <p className="text-sm text-gray-400">{item.name}</p>
-                      <p className="text-sm">{item.price.toFixed(2)} €</p>
+                  <div key={item.id} className="flex items-start gap-4 p-4 border-b border-[#232C62] bg-[#0A165B]">
+                    {/* Item Image */}
+                    <div className="flex-shrink-0">
+                      <Image 
+                        src={item.image} 
+                        alt={item.name} 
+                        width={60} 
+                        height={60} 
+                        className="rounded-full object-cover w-[60px] h-[60px]" 
+                      />
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Button size="icon" variant="ghost" onClick={() => updateQuantity(item.id, -1)}>-</Button>
-                        <span>{item.quantity}</span>
-                        <Button size="icon" variant="ghost" onClick={() => updateQuantity(item.id, 1)}>+</Button>
-                        <Button variant="ghost" size="icon" onClick={() => removeFromCart(item.id)}>
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                    
+                    {/* Item Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-semibold text-white text-base">{item.eventTitle}</p>
+                          <p className="text-gray-400 text-sm">{item.name}</p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-red-500 hover:bg-red-500/10 p-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
                         </Button>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div className="text-white font-bold text-lg">
+                          {item.price.toFixed(2)} €
+                        </div>
+                        
+                        {/* Quantity Controls */}
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, -1)}
+                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <span className="text-white font-semibold min-w-[2rem] text-center">
+                            {item.quantity}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => updateQuantity(item.id, 1)}
+                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
-            <SheetFooter className="mt-auto border-t border-gray-800 pt-4">
+
+            {/* Footer */}
+            <div className="border-t border-[#232C62] p-4">
               <div className="w-full space-y-4">
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Viso:</span>
-                  <span>{total.toFixed(2)} €</span>
+                {/* Total */}
+                <div className="flex justify-between items-center">
+                  <span className="text-white font-bold text-lg">Viso:</span>
+                  <span className="text-white font-bold text-lg">{total.toFixed(2)} €</span>
                 </div>
-                <div className="flex gap-4">
-                    <Button variant="outline" onClick={clearCart} className="w-full border-gray-700 hover:bg-gray-800">Išvalyti</Button>
-                    <Button asChild className="w-full bg-orange-600 hover:bg-orange-700">
-                      <Link href="/checkout">Apmokėti</Link>
-                    </Button>
+                
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <Button 
+                    variant="outline" 
+                    onClick={clearCart} 
+                    className="flex-1 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                  >
+                    Išvalyti
+                  </Button>
+                  <Button 
+                    asChild 
+                    className="flex-1 bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold rounded-none"
+                  >
+                    <Link href="/checkout">Apmokėti</Link>
+                  </Button>
                 </div>
               </div>
-            </SheetFooter>
+            </div>
           </>
         ) : (
           <div className="flex flex-col items-center justify-center h-full">
-            <p>Jūsų krepšelis yra tuščias.</p>
+            <p className="text-white text-lg">Jūsų krepšelis yra tuščias.</p>
           </div>
         )}
       </SheetContent>

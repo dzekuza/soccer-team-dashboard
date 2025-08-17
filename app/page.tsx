@@ -2,22 +2,23 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-// import { useAuth } from '@/lib/auth-context'
+import { useAuth } from '@/lib/auth-context'
 
 export default function HomePage() {
   const router = useRouter()
-  // const { user, loading } = useAuth()
+  const { user, isLoading } = useAuth()
 
   useEffect(() => {
-    // if (!loading) {
-    //   if (user) {
-    //     router.push('/dashboard/overview')
-    //   } else {
-    //     router.push('/login')
-    //   }
-    // }
-    router.push('/login');
-  }, [router])
+    if (isLoading) return // Wait for auth to load
+
+    if (user) {
+      // User is logged in, redirect to dashboard
+      router.push('/dashboard')
+    } else {
+      // User is not logged in, redirect to public events page
+      router.push('/events')
+    }
+  }, [user, isLoading, router])
 
   return (
     <div className="flex h-screen items-center justify-center">
