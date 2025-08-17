@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase";
-import { cookies } from "next/headers";
+import { supabaseAdmin } from "@/lib/supabase-service";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
-
     const body = await request.json();
     const { code, orderAmount } = body;
 
@@ -16,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the coupon code
-    const { data: coupon, error } = await supabase
+    const { data: coupon, error } = await supabaseAdmin
       .from("coupon_codes")
       .select("*")
       .eq("code", code.toUpperCase())

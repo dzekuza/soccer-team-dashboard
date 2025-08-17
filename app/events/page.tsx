@@ -78,14 +78,17 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B]">
+    <div className="min-h-screen bg-[#0A165B] text-white">
       <PublicNavigation currentPage="events" />
-
+      
       {/* Main Content */}
-      <div className="w-full px-4 md:px-8 lg:px-16 py-4 md:py-8">
-
+      <div className="w-full">
+        <div className="text-center py-8 border-b border-[#232C62]">
+          <h1 className="text-3xl md:text-4xl font-bold text-white">Renginiai</h1>
+        </div>
+        
         {/* Events Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {events.map((eventData) => {
             const { event, team1, team2 } = eventData
             const dateInfo = formatDate(event.date)
@@ -143,14 +146,14 @@ export default function EventsPage() {
         </div>
 
         {events.length === 0 && !loading && (
-          <div className="text-center py-8 md:py-16">
-            <p className="text-white text-lg md:text-xl">Nėra renginių</p>
+          <div className="text-center py-8">
+            <p className="text-white text-lg">Nėra renginių</p>
           </div>
         )}
         
         {/* Debug info */}
-        <div className="text-center py-2 md:py-4">
-          <p className="text-white text-xs md:text-sm">Debug: Loaded {events.length} events</p>
+        <div className="text-center py-2">
+          <p className="text-white text-xs">Debug: Loaded {events.length} events</p>
         </div>
       </div>
     </div>

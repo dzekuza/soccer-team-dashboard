@@ -111,7 +111,7 @@ export default function CheckoutPage() {
             <PublicNavigation currentPage="tickets" />
             
             {/* Main Content */}
-            <div className="w-full px-4 md:px-8 lg:px-16 flex flex-col flex-1">
+            <div className="w-full flex flex-col flex-1">
                 <div className="text-center py-8 border-b border-[#232C62]">
                     <h1 className="text-3xl md:text-4xl font-bold text-white">Apmokėjimas</h1>
                 </div>
