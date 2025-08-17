@@ -280,6 +280,22 @@ export async function POST(req: NextRequest) {
           console.log(`✅ Shop order created successfully: ${order.id}`);
           console.log(`📦 Order items created: ${orderItems.length} items`);
           
+          // Send confirmation email to customer
+          try {
+            await notificationService.sendShopOrderConfirmation(order.id);
+            console.log(`📧 Shop order confirmation email sent to customer: ${customerEmail}`);
+          } catch (err) {
+            console.error(`❌ Failed to send shop order confirmation email:`, err);
+          }
+          
+          // Send notification email to admin
+          try {
+            await notificationService.sendShopOrderNotificationToAdmin(order.id);
+            console.log(`📧 Shop order notification email sent to admin`);
+          } catch (err) {
+            console.error(`❌ Failed to send shop order notification to admin:`, err);
+          }
+          
         } catch (error) {
           console.error("❌ Error processing shop order:", error);
         }

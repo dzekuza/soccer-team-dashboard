@@ -1139,4 +1139,44 @@ export const supabaseService = {
       throw error;
     }
   },
+
+  // Shop Orders
+  getShopOrderById: async (orderId: string): Promise<any> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("shop_orders")
+        .select("*")
+        .eq("id", orderId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching shop order:", error);
+        throw new Error(`Failed to fetch shop order: ${error.message}`);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Supabase Service: Error in getShopOrderById:", error);
+      throw error;
+    }
+  },
+
+  getShopOrderItems: async (orderId: string): Promise<any[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("shop_order_items")
+        .select("*")
+        .eq("order_id", orderId);
+
+      if (error) {
+        console.error("Error fetching shop order items:", error);
+        throw new Error(`Failed to fetch shop order items: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Supabase Service: Error in getShopOrderItems:", error);
+      throw error;
+    }
+  },
 };

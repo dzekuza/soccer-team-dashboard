@@ -143,6 +143,123 @@ interface BulkEmailPayload {
   textBody?: string;
 }
 
+async function sendShopOrderConfirmation(orderId: string): Promise<void> {
+  try {
+    const order = await supabaseService.getShopOrderById(orderId);
+    if (!order || !order.customer_email) {
+      throw new Error("Order not found or is missing customer email address.");
+    }
+
+    const template = await supabaseService.getEmailTemplateByName(
+      "shop_order_confirmation",
+    );
+    if (!template) {
+      throw new Error("Shop order confirmation email template not found.");
+    }
+
+    const orderItems = await supabaseService.getShopOrderItems(orderId);
+    
+    // Create order items HTML
+    const itemsHtml = orderItems.map(item => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product_name}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.unit_price}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.total_price}</td>
+      </tr>
+    `).join('');
+
+    const emailBody = template.body_html
+      .replace(/{{customer_name}}/g, order.customer_name)
+      .replace(/{{order_number}}/g, order.order_number)
+      .replace(/{{total_amount}}/g, `€${order.total_amount}`)
+      .replace(/{{order_items}}/g, itemsHtml)
+      .replace(/{{delivery_address}}/g, formatDeliveryAddress(order.delivery_address));
+
+    const emailSubject = template.subject.replace(
+      /{{order_number}}/g,
+      order.order_number,
+    );
+
+    await resend.emails.send({
+      from: "bilietai@noriumuzikos.lt",
+      to: order.customer_email,
+      subject: emailSubject,
+      html: emailBody,
+    });
+  } catch (error) {
+    console.error(`Failed to send shop order confirmation for ${orderId}:`, error);
+    throw error;
+  }
+}
+
+async function sendShopOrderNotificationToAdmin(orderId: string): Promise<void> {
+  try {
+    const order = await supabaseService.getShopOrderById(orderId);
+    if (!order) {
+      throw new Error("Order not found.");
+    }
+
+    const template = await supabaseService.getEmailTemplateByName(
+      "shop_order_admin_notification",
+    );
+    if (!template) {
+      throw new Error("Shop order admin notification email template not found.");
+    }
+
+    const orderItems = await supabaseService.getShopOrderItems(orderId);
+    
+    // Create order items HTML
+    const itemsHtml = orderItems.map(item => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product_name}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.unit_price}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.total_price}</td>
+      </tr>
+    `).join('');
+
+    const emailBody = template.body_html
+      .replace(/{{customer_name}}/g, order.customer_name)
+      .replace(/{{customer_email}}/g, order.customer_email)
+      .replace(/{{customer_phone}}/g, order.customer_phone || 'N/A')
+      .replace(/{{order_number}}/g, order.order_number)
+      .replace(/{{total_amount}}/g, `€${order.total_amount}`)
+      .replace(/{{order_items}}/g, itemsHtml)
+      .replace(/{{delivery_address}}/g, formatDeliveryAddress(order.delivery_address));
+
+    const emailSubject = template.subject.replace(
+      /{{order_number}}/g,
+      order.order_number,
+    );
+
+    // Send to admin email (you can configure this in environment variables)
+    const adminEmail = process.env.ADMIN_EMAIL || "info@gvozdovic.com";
+
+    await resend.emails.send({
+      from: "bilietai@noriumuzikos.lt",
+      to: adminEmail,
+      subject: emailSubject,
+      html: emailBody,
+    });
+  } catch (error) {
+    console.error(`Failed to send shop order admin notification for ${orderId}:`, error);
+    throw error;
+  }
+}
+
+function formatDeliveryAddress(address: any): string {
+  if (!address) return 'N/A';
+  
+  const parts = [];
+  if (address.street) parts.push(address.street);
+  if (address.city) parts.push(address.city);
+  if (address.postalCode) parts.push(address.postalCode);
+  if (address.country) parts.push(address.country);
+  
+  return parts.join(', ') || 'N/A';
+}
+
 async function sendBulkEmail(
   { to, subject, htmlBody, textBody }: BulkEmailPayload,
 ): Promise<void> {
@@ -176,5 +293,7 @@ async function sendBulkEmail(
 export const notificationService = {
   sendTicketConfirmation,
   sendSubscriptionConfirmation,
+  sendShopOrderConfirmation,
+  sendShopOrderNotificationToAdmin,
   sendBulkEmail,
 };
