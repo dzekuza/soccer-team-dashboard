@@ -3,24 +3,25 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { CheckCircle, CreditCard, Mail, Home, Calendar } from "lucide-react";
+import { CheckCircle, Package, Mail, Home, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/context/cart-context";
 
-interface Subscription {
+interface Order {
   id: string;
-  subscription_type_id: string;
-  purchaser_name: string;
-  purchaser_email: string;
-  valid_from: string;
-  valid_to: string;
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  total_amount: number;
   status: string;
   created_at: string;
 }
 
-function SubscriptionSuccessContent() {
+function ShopCheckoutSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const { cart, clearCart } = useCart();
+  const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -36,42 +37,74 @@ function SubscriptionSuccessContent() {
       return;
     }
 
-    // Fetch subscription for this session
-    const fetchSubscription = async (retryCount = 0) => {
+    // Fetch order from database (created by webhook)
+    const fetchOrder = async (retryCount = 0) => {
       setIsLoading(true);
       try {
-        const res = await fetch(`/api/subscriptions?session_id=${sessionId}`);
-        if (!res.ok) throw new Error("Nepavyko gauti prenumeratos");
-        const data = await res.json();
+        // Wait a bit for webhook to process
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        if (data.subscription) {
-          setSubscription(data.subscription);
-        } else if (retryCount < 3) {
-          // Retry after 2 seconds if no subscription found
-          setTimeout(() => fetchSubscription(retryCount + 1), 2000);
-          return;
-        } else {
-          setError("Prenumerata dar nebuvo sukurta. Bandykite dar kartą po kelios sekundės.");
+        const response = await fetch(`/api/shop/orders?session_id=${sessionId}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (retryCount < 3) {
+            console.log(`Retrying order fetch (${retryCount + 1}/3)...`);
+            setTimeout(() => fetchOrder(retryCount + 1), 2000);
+            return;
+          }
+          throw new Error(data.error || 'Failed to fetch order');
         }
+
+        if (data.orders && data.orders.length > 0) {
+          setOrder(data.orders[0]);
+        } else {
+          // If no order found, create a mock order for display
+          const customerName = searchParams.get("customer_name") || "Klientas";
+          const customerEmail = searchParams.get("customer_email") || "";
+          setOrder({
+            id: "pending",
+            order_number: "Processing...",
+            customer_name: customerName,
+            customer_email: customerEmail,
+            total_amount: 0,
+            status: "processing",
+            created_at: new Date().toISOString()
+          });
+        }
+        
+        // Clear cart after successful order creation
+        clearCart();
+        
+        // Clear session storage
+        sessionStorage.removeItem("deliveryAddress");
+        sessionStorage.removeItem("couponCode");
+        sessionStorage.removeItem("couponDiscount");
+        sessionStorage.removeItem("cartItems");
+        
       } catch (err) {
+        console.error('Error creating order:', err);
         if (retryCount < 3) {
           // Retry after 2 seconds on error
-          setTimeout(() => fetchSubscription(retryCount + 1), 2000);
+          setTimeout(() => createOrder(retryCount + 1), 2000);
           return;
         }
-        setError("Nepavyko gauti prenumeratos");
+        setError("Nepavyko sukurti užsakymo. Susisiekite su palaikymu.");
       } finally {
         setIsLoading(false);
       }
     };
-    fetchSubscription();
-  }, [searchParams, router]);
+
+            fetchOrder();
+  }, [searchParams, router, cart, clearCart]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('lt-LT', {
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -81,16 +114,16 @@ function SubscriptionSuccessContent() {
         <div className="bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg p-8">
           <div className="text-center">
             <div className="text-green-500 text-6xl mb-4">✅</div>
-            <h1 className="text-3xl font-bold mb-4 text-white">Prenumeratos pirkimas sėkmingas!</h1>
+            <h1 className="text-3xl font-bold mb-4 text-white">Mokėjimas sėkmingas!</h1>
             <p className="text-gray-300 mb-6">
-              Ačiū už prenumeratos pirkimą. Jūsų prenumerata buvo aktyvuota ir galioja nuo šiandien.
+              Ačiū už pirkimą. Jūsų mokėjimas buvo sėkmingas ir užsakymas buvo sukurtas.
             </p>
           </div>
 
           {isLoading && (
             <div className="text-center mb-6">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F15601] mx-auto mb-2"></div>
-              <p className="text-gray-300 text-sm">Kuriama prenumerata...</p>
+              <p className="text-gray-300 text-sm">Kuriamas užsakymas...</p>
             </div>
           )}
 
@@ -100,44 +133,37 @@ function SubscriptionSuccessContent() {
             </div>
           )}
 
-          {subscription && (
+          {order && (
             <div className="space-y-4 mb-6">
               <div className="border-t border-gray-700 pt-4">
-                <h2 className="font-semibold mb-4 text-white">Prenumeratos informacija</h2>
+                <h2 className="font-semibold mb-4 text-white">Užsakymo informacija</h2>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <CreditCard className="h-4 w-4 text-[#F15601]" />
+                    <Package className="h-4 w-4 text-[#F15601]" />
                     <div className="flex-1">
-                      <span className="text-gray-400 text-sm">Prenumeratos ID:</span>
-                      <span className="ml-2 font-medium text-white">#{subscription.id}</span>
+                      <span className="text-gray-400 text-sm">Užsakymo numeris:</span>
+                      <span className="ml-2 font-medium text-white">#{order.order_number}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Mail className="h-4 w-4 text-[#F15601]" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Klientas:</span>
-                      <span className="ml-2 font-medium text-white">{subscription.purchaser_name}</span>
+                      <span className="ml-2 font-medium text-white">{order.customer_name}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Calendar className="h-4 w-4 text-[#F15601]" />
+                    <ShoppingBag className="h-4 w-4 text-[#F15601]" />
                     <div className="flex-1">
-                      <span className="text-gray-400 text-sm">Galioja nuo:</span>
-                      <span className="ml-2 font-medium text-white">{formatDate(subscription.valid_from)}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Calendar className="h-4 w-4 text-[#F15601]" />
-                    <div className="flex-1">
-                      <span className="text-gray-400 text-sm">Galioja iki:</span>
-                      <span className="ml-2 font-medium text-white">{formatDate(subscription.valid_to)}</span>
+                      <span className="text-gray-400 text-sm">Suma:</span>
+                      <span className="ml-2 font-medium text-white">€{order.total_amount.toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="h-4 w-4 text-[#F15601]" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Statusas:</span>
-                      <span className="ml-2 font-medium text-white">Aktyvuota</span>
+                      <span className="ml-2 font-medium text-white">Laukia apdorojimo</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -154,9 +180,9 @@ function SubscriptionSuccessContent() {
 
           <div className="flex flex-col space-y-3">
             <Button asChild className="w-full bg-[#F15601] hover:bg-[#E04501] text-white">
-              <a href="/subscriptions">
-                <Calendar className="h-4 w-4 mr-2" />
-                Peržiūrėti prenumeratas
+              <a href="/shop">
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                Grįžti į parduotuvę
               </a>
             </Button>
             <Button asChild variant="outline" className="w-full text-white border-gray-600 hover:bg-gray-700">
@@ -172,10 +198,10 @@ function SubscriptionSuccessContent() {
   );
 }
 
-export default function SubscriptionSuccessPage() {
+export default function ShopCheckoutSuccessPage() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SubscriptionSuccessContent />
+      <ShopCheckoutSuccessContent />
     </Suspense>
   );
-} 
+}

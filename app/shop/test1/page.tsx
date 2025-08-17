@@ -85,7 +85,7 @@ export default function TestProductPage() {
       {/* Main Content */}
       <div className="w-full">
         {/* Back Button */}
-        <div className="p-4 border-b border-[#232C62]">
+        <div className="px-6 py-4 border-b border-[#232C62]">
           <Link 
             href="/shop" 
             className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"

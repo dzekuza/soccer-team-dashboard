@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { PublicNavigation } from "@/components/public-navigation"
 import { Button } from "@/components/ui/button"
@@ -11,107 +11,98 @@ import { useToast } from "@/components/ui/use-toast"
 import { Minus, Plus, ShoppingCart, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import { createClient } from "@/lib/supabase-browser"
+import { Database } from "@/lib/types"
 
-interface Product {
-  id: string
-  name: string
-  description: string
-  price: number
-  image: string
-  category: string
-  attributes: {
-    size: string[]
-    color: string[]
+type Product = Database['public']['Tables']['products']['Row'] & {
+  product_categories: {
+    name: string
+  } | null
+  attributes?: {
+    size?: string[]
+    color?: string[]
   }
 }
-
-const products: Product[] = [
-  {
-    id: "kit-home-2024",
-    name: "FK Banga Namų Komplektas 2024",
-    description: "Oficialus FK Banga namų komplektas 2024 sezonui. Kokybiškas, patogus ir stilingu. Šis komplektas yra sukurtas iš aukščiausios kokybės medžiagų, užtikrinančių patogumą ir funkcionalumą. Puikus tiek žaidimui, tiek kasdieniam dėvėjimui.",
-    price: 89.99,
-    image: "/Banga-1.png",
-    category: "Komplektai",
-    attributes: {
-      size: ["XS", "S", "M", "L", "XL", "XXL"],
-      color: ["Mėlynas", "Baltas"]
-    }
-  },
-  {
-    id: "kit-away-2024",
-    name: "FK Banga Išvykos Komplektas 2024",
-    description: "Oficialus FK Banga išvykos komplektas 2024 sezonui. Elegantiškas ir funkcionalus. Šis komplektas puikiai tinka tiek rungtynėms, tiek kasdieniam dėvėjimui. Kokybiškos medžiagos ir modernus dizainas.",
-    price: 89.99,
-    image: "/Banga-1.png",
-    category: "Komplektai",
-    attributes: {
-      size: ["XS", "S", "M", "L", "XL", "XXL"],
-      color: ["Baltas", "Juodas"]
-    }
-  },
-  {
-    id: "scarf-official",
-    name: "Oficialus FK Banga Šalikas",
-    description: "Oficialus FK Banga šalikas su klubo logotipu. Puikus dovana gerbėjams. Šiltas ir patogus šalikas, puikiai tinkantis tiek žiemos sezonui, tiek kaip stilingu papildymas prie bet kokio drabužių komplekto.",
-    price: 24.99,
-    image: "/Banga-1.png",
-    category: "Atributika",
-    attributes: {
-      size: ["Standartinis"],
-      color: ["Mėlynas", "Baltas", "Oranžinis"]
-    }
-  },
-  {
-    id: "cap-official",
-    name: "Oficialus FK Banga Kepurė",
-    description: "Oficialus FK Banga kepurė su klubo logotipu. Stilingu ir patogus. Puikus aksesuaras tiek vasaros, tiek žiemos sezonui. Kokybiškos medžiagos ir patvarus dizainas.",
-    price: 19.99,
-    image: "/Banga-1.png",
-    category: "Atributika",
-    attributes: {
-      size: ["S", "M", "L", "XL"],
-      color: ["Mėlynas", "Juodas"]
-    }
-  },
-  {
-    id: "hoodie-official",
-    name: "FK Banga Oficialus Džemperis",
-    description: "Oficialus FK Banga džemperis su klubo logotipu. Šiltas ir patogus. Puikus pasirinkimas šaltam sezonui. Kokybiškos medžiagos ir modernus dizainas.",
-    price: 49.99,
-    image: "/Banga-1.png",
-    category: "Atributika",
-    attributes: {
-      size: ["S", "M", "L", "XL", "XXL"],
-      color: ["Mėlynas", "Juodas", "Pilkas"]
-    }
-  },
-  {
-    id: "t-shirt-official",
-    name: "FK Banga Oficialus Marškinėliai",
-    description: "Oficialus FK Banga marškinėliai su klubo logotipu. Lengvas ir patogus. Puikus pasirinkimas vasaros sezonui. Kokybiškos medžiagos ir patvarus spausdinimas.",
-    price: 29.99,
-    image: "/Banga-1.png",
-    category: "Atributika",
-    attributes: {
-      size: ["XS", "S", "M", "L", "XL", "XXL"],
-      color: ["Baltas", "Mėlynas", "Juodas"]
-    }
-  }
-]
 
 export default function ProductPage() {
   const params = useParams()
   const productId = params.id as string
   
-  const product = products.find(p => p.id === productId)
+  const [product, setProduct] = useState<Product | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   
   const { toast } = useToast()
   const { cart, addToCart } = useCart()
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
-  const [selectedSize, setSelectedSize] = useState(product?.attributes.size[0] || "")
-  const [selectedColor, setSelectedColor] = useState(product?.attributes.color[0] || "")
+  const [selectedSize, setSelectedSize] = useState("")
+  const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
+  
+  const supabase = createClient()
+
+  useEffect(() => {
+    if (productId) {
+      fetchProduct()
+      fetchRelatedProducts()
+    }
+  }, [productId])
+
+  const fetchProduct = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_categories(name)
+        `)
+        .eq('id', productId)
+        .eq('is_active', true)
+        .single()
+
+      if (error) {
+        console.error('Error fetching product:', error)
+        setProduct(null)
+      } else {
+        setProduct(data)
+        // Set default selections if product has attributes
+        if (data.attributes && data.attributes.size && data.attributes.size.length > 0) {
+          setSelectedSize(data.attributes.size[0])
+        }
+        if (data.attributes && data.attributes.color && data.attributes.color.length > 0) {
+          setSelectedColor(data.attributes.color[0])
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching product:', error)
+      setProduct(null)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchRelatedProducts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          product_categories(name)
+        `)
+        .eq('is_active', true)
+        .neq('id', productId)
+        .limit(4)
+
+      if (error) {
+        console.error('Error fetching related products:', error)
+      } else {
+        setRelatedProducts(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching related products:', error)
+    }
+  }
 
   const getQuantityInCart = () => {
     const item = cart.find(item => item.id === productId)
@@ -124,14 +115,14 @@ export default function ProductPage() {
     if (quantity > 0) {
       addToCart({
         id: product.id,
-        name: `${product.name} (${selectedSize}, ${selectedColor})`,
+        name: `${product.name}${selectedSize ? ` (${selectedSize})` : ''}${selectedColor ? ` (${selectedColor})` : ''}`,
         price: product.price,
         quantity: quantity,
         eventId: "shop",
         eventTitle: "Parduotuvė",
-        image: product.image,
-        color: `${selectedSize} | ${selectedColor}`,
-        category: product.category,
+        image: product.image_url || "/placeholder.jpg",
+        color: `${selectedSize || 'N/A'} | ${selectedColor || 'N/A'}`,
+        category: product.product_categories?.name || "Nekategorizuotas",
       })
       
       toast({
@@ -145,6 +136,28 @@ export default function ProductPage() {
     if (newQuantity >= 1) {
       setQuantity(newQuantity)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0A165B] text-white">
+        <PublicNavigation currentPage="parduotuve" />
+        <div className="w-full">
+          <div className="p-4 border-b border-[#232C62]">
+            <Link 
+              href="/shop" 
+              className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Grįžti į parduotuvę
+            </Link>
+          </div>
+          <div className="text-center py-16">
+            <p className="text-white text-xl">Kraunama...</p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (!product) {
@@ -193,14 +206,14 @@ export default function ProductPage() {
           <div className="border-r border-[#232C62]">
             <div className="relative">
               <Image
-                src={product.image}
+                src={product.image_url || "/placeholder.jpg"}
                 alt={product.name}
                 width={600}
                 height={600}
                 className="w-full h-96 lg:h-[600px] object-cover"
               />
               <div className="absolute top-4 left-4 bg-[#F15601] text-white px-3 py-1 text-sm font-semibold">
-                {product.category}
+                {product.product_categories?.name || "Nekategorizuotas"}
               </div>
             </div>
           </div>
@@ -216,6 +229,11 @@ export default function ProductPage() {
                 <div className="text-[#F15601] font-bold text-3xl lg:text-4xl">
                   €{product.price.toFixed(2)}
                 </div>
+                {product.compare_price && product.compare_price > product.price && (
+                  <div className="text-gray-400 line-through text-lg">
+                    €{product.compare_price.toFixed(2)}
+                  </div>
+                )}
               </div>
 
               {/* Product Description */}
@@ -226,46 +244,63 @@ export default function ProductPage() {
               </div>
 
               {/* Size Selection */}
-              <div>
-                <Label className="text-white text-lg font-semibold mb-3 block">Dydis:</Label>
-                <div className="flex flex-wrap gap-2">
-                  {product.attributes.size.map((size) => (
-                    <Button
-                      key={size}
-                      variant="outline"
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 text-base rounded-none ${
-                        selectedSize === size
-                          ? "bg-[#F15601] text-white border-[#F15601]"
-                          : "border-[#232C62] text-white hover:bg-white/10"
-                      }`}
-                    >
-                      {size}
-                    </Button>
-                  ))}
+              {product.attributes?.size && product.attributes.size.length > 0 && (
+                <div>
+                  <Label className="text-white text-lg font-semibold mb-3 block">Dydis:</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {product.attributes.size.map((size) => (
+                      <Button
+                        key={size}
+                        variant="outline"
+                        onClick={() => setSelectedSize(size)}
+                        className={`px-4 py-2 text-base rounded-none ${
+                          selectedSize === size
+                            ? "bg-[#F15601] text-white border-[#F15601]"
+                            : "border-[#232C62] text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {size}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Color Selection */}
-              <div>
-                <Label className="text-white text-lg font-semibold mb-3 block">Spalva:</Label>
-                <div className="flex flex-wrap gap-2">
-                  {product.attributes.color.map((color) => (
-                    <Button
-                      key={color}
-                      variant="outline"
-                      onClick={() => setSelectedColor(color)}
-                      className={`px-4 py-2 text-base rounded-none ${
-                        selectedColor === color
-                          ? "bg-[#F15601] text-white border-[#F15601]"
-                          : "border-[#232C62] text-white hover:bg-white/10"
-                      }`}
-                    >
-                      {color}
-                    </Button>
-                  ))}
+              {product.attributes?.color && product.attributes.color.length > 0 && (
+                <div>
+                  <Label className="text-white text-lg font-semibold mb-3 block">Spalva:</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {product.attributes.color.map((color) => (
+                      <Button
+                        key={color}
+                        variant="outline"
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-4 py-2 text-base rounded-none ${
+                          selectedColor === color
+                            ? "bg-[#F15601] text-white border-[#F15601]"
+                            : "border-[#232C62] text-white hover:bg-white/10"
+                        }`}
+                      >
+                        {color}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Stock Status */}
+              {product.stock_quantity <= product.low_stock_threshold && product.stock_quantity > 0 && (
+                <div className="text-yellow-400 text-sm">
+                  ⚠️ Likę tik {product.stock_quantity} vnt.
+                </div>
+              )}
+              
+              {product.stock_quantity === 0 && !product.allow_backorders && (
+                <div className="text-red-400 text-sm">
+                  ❌ Išparduota
+                </div>
+              )}
 
               {/* Quantity Selection */}
               <div>
@@ -300,10 +335,11 @@ export default function ProductPage() {
               <div className="pt-4">
                 <Button
                   onClick={handleAddToCart}
-                  className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-bold py-4 text-xl rounded-none"
+                  disabled={product.stock_quantity === 0 && !product.allow_backorders}
+                  className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-bold py-4 text-xl rounded-none disabled:opacity-50"
                 >
                   <ShoppingCart className="w-6 h-6 mr-3" />
-                  Pridėti į krepšelį
+                  {product.stock_quantity === 0 && !product.allow_backorders ? "Išparduota" : "Pridėti į krepšelį"}
                 </Button>
               </div>
 
@@ -321,66 +357,70 @@ export default function ProductPage() {
                     Peržiūrėti krepšelį
                   </Button>
                 </div>
-                             )}
-             </div>
-           </div>
-         </div>
+              )}
+            </div>
+          </div>
+        </div>
 
-         {/* You Might Also Like Section */}
-         <div className="border-t border-[#232C62]">
-           <div className="p-6 lg:p-8">
-             <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6">
-               Jums taip pat gali patikt
-             </h2>
-             
-             {/* Related Products Grid */}
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-               {products
-                 .filter(p => p.id !== productId)
-                 .slice(0, 4)
-                 .map((relatedProduct) => (
-                   <Link 
-                     key={relatedProduct.id} 
-                     href={`/shop/${relatedProduct.id}`}
-                     className="block border border-[#232C62] hover:border-white transition-colors"
-                   >
-                     {/* Product Image */}
-                     <div className="relative">
-                       <Image
-                         src={relatedProduct.image}
-                         alt={relatedProduct.name}
-                         width={400}
-                         height={400}
-                         className="w-full aspect-square object-cover"
-                       />
-                       <div className="absolute top-2 left-2 bg-[#F15601] text-white px-2 py-1 text-sm font-semibold">
-                         {relatedProduct.category}
-                       </div>
-                     </div>
-       
-                     {/* Product Details */}
-                     <div className="p-4 space-y-3">
-                       <div>
-                         <h3 className="text-white text-lg font-semibold leading-tight">
-                           {relatedProduct.name}
-                         </h3>
-                         <p className="text-gray-400 text-sm mt-1 line-clamp-2">
-                           {relatedProduct.description}
-                         </p>
-                       </div>
-                       
-                       <div className="text-right">
-                         <div className="text-white font-bold text-xl">
-                           €{relatedProduct.price.toFixed(2)}
-                         </div>
-                       </div>
-                     </div>
-                   </Link>
-                 ))}
-             </div>
-           </div>
-         </div>
-       </div>
-     </div>
-   )
- }
+        {/* You Might Also Like Section */}
+        {relatedProducts.length > 0 && (
+          <div className="border-t border-[#232C62]">
+            <div className="p-6 lg:p-8">
+              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6">
+                Jums taip pat gali patikt
+              </h2>
+              
+              {/* Related Products Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {relatedProducts.map((relatedProduct) => (
+                  <Link 
+                    key={relatedProduct.id} 
+                    href={`/shop/${relatedProduct.id}`}
+                    className="block border border-[#232C62] hover:border-white transition-colors"
+                  >
+                    {/* Product Image */}
+                    <div className="relative">
+                      <Image
+                        src={relatedProduct.image_url || "/placeholder.jpg"}
+                        alt={relatedProduct.name}
+                        width={400}
+                        height={400}
+                        className="w-full aspect-square object-cover"
+                      />
+                      <div className="absolute top-2 left-2 bg-[#F15601] text-white px-2 py-1 text-sm font-semibold">
+                        {relatedProduct.product_categories?.name || "Nekategorizuotas"}
+                      </div>
+                    </div>
+      
+                    {/* Product Details */}
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <h3 className="text-white text-lg font-semibold leading-tight">
+                          {relatedProduct.name}
+                        </h3>
+                        <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+                          {relatedProduct.short_description || relatedProduct.description}
+                        </p>
+                      </div>
+                      
+                      <div className="text-right">
+                        <div className="text-white font-bold text-xl">
+                          €{relatedProduct.price.toFixed(2)}
+                        </div>
+                        {relatedProduct.compare_price && relatedProduct.compare_price > relatedProduct.price && (
+                          <div className="text-gray-400 text-sm line-through">
+                            €{relatedProduct.compare_price.toFixed(2)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

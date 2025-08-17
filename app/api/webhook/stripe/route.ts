@@ -210,9 +210,82 @@ export async function POST(req: NextRequest) {
             );
           }
         }
+      } else if (session.mode === "payment" && session.metadata?.purchaseType === "shop") {
+        console.log(`🛒 Processing shop purchase for session: ${session.id}`);
+        
+        try {
+          // Extract order details from metadata
+          const customerName = session.metadata.purchaserName;
+          const customerEmail = session.metadata.purchaserEmail;
+          const customerPhone = session.metadata.purchaserPhone;
+          const deliveryAddress = JSON.parse(session.metadata.deliveryAddress || "{}");
+          const cartItems = JSON.parse(session.metadata.cart || "[]");
+          const couponCode = session.metadata.couponId;
+          
+          if (!customerName || !customerEmail || !cartItems || cartItems.length === 0) {
+            console.error("❌ Missing required order data in metadata");
+            return;
+          }
+
+          // Calculate totals
+          const subtotal = cartItems.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+          const totalAmount = subtotal; // No discount handling in webhook for now
+
+          // Create the order
+          const { data: order, error: orderError } = await supabaseAdmin
+            .from('shop_orders')
+            .insert({
+              customer_name: customerName,
+              customer_email: customerEmail,
+              customer_phone: customerPhone,
+              delivery_address: deliveryAddress,
+              subtotal,
+              discount_amount: 0,
+              total_amount: totalAmount,
+              coupon_code: couponCode,
+              coupon_discount: 0,
+              stripe_session_id: session.id,
+              created_by: null // System-created order
+            })
+            .select()
+            .single();
+
+          if (orderError) {
+            console.error("❌ Failed to create shop order:", orderError);
+            return;
+          }
+
+          // Create order items
+          const orderItems = cartItems.map((item: any) => ({
+            order_id: order.id,
+            product_id: item.id,
+            variant_id: null,
+            product_name: item.name,
+            product_sku: item.id,
+            variant_attributes: item.color ? { color: item.color } : null,
+            quantity: item.quantity,
+            unit_price: item.price,
+            total_price: item.price * item.quantity
+          }));
+
+          const { error: itemsError } = await supabaseAdmin
+            .from('shop_order_items')
+            .insert(orderItems);
+
+          if (itemsError) {
+            console.error("❌ Failed to create shop order items:", itemsError);
+            return;
+          }
+
+          console.log(`✅ Shop order created successfully: ${order.id}`);
+          console.log(`📦 Order items created: ${orderItems.length} items`);
+          
+        } catch (error) {
+          console.error("❌ Error processing shop order:", error);
+        }
       } else {
         console.log(
-          `⚠️  Unhandled checkout session: mode=${session.mode}, eventId=${eventId}, tierId=${tierId}, quantity=${quantity}, subscriptionTypeId=${subscriptionTypeId}`,
+          `⚠️  Unhandled checkout session: mode=${session.mode}, eventId=${eventId}, tierId=${tierId}, quantity=${quantity}, subscriptionTypeId=${subscriptionTypeId}, purchaseType=${session.metadata?.purchaseType}`,
         );
       }
     } else {

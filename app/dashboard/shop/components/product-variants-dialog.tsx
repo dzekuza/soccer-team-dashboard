@@ -14,6 +14,7 @@ import { Switch } from "@/components/ui/switch"
 import { Plus, Edit, Trash2, Package } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Database } from "@/lib/types"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 type Product = Database['public']['Tables']['products']['Row']
 type ProductVariant = Database['public']['Tables']['product_variants']['Row']
@@ -340,11 +341,12 @@ export function ProductVariantsDialog({ product, open, onOpenChange }: ProductVa
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="image_url">Nuotraukos URL</Label>
-                    <Input
-                      id="image_url"
+                    <Label>Variantų nuotrauka</Label>
+                    <ImageUpload
                       value={formData.image_url}
-                      onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                      onChange={(value) => setFormData({ ...formData, image_url: value as string })}
+                      multiple={false}
+                      maxFiles={1}
                     />
                   </div>
 

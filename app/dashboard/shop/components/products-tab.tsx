@@ -16,6 +16,7 @@ import { Plus, Edit, Trash2, Eye, Package, Layers } from "lucide-react"
 import { useToast } from "@/components/ui/use-toast"
 import { Database } from "@/lib/types"
 import { ProductVariantsDialog } from "./product-variants-dialog"
+import { ImageUpload } from "@/components/ui/image-upload"
 
 type Product = Database['public']['Tables']['products']['Row']
 type ProductCategory = Database['public']['Tables']['product_categories']['Row']
@@ -42,8 +43,9 @@ export function ProductsTab() {
     cost_price: "",
     sku: "",
     barcode: "",
-         category_id: "none",
+    category_id: "none",
     image_url: "",
+    gallery_urls: [] as string[],
     stock_quantity: "0",
     low_stock_threshold: "5",
     min_order_quantity: "1",
@@ -113,7 +115,8 @@ export function ProductsTab() {
         min_order_quantity: parseInt(formData.min_order_quantity),
         max_order_quantity: formData.max_order_quantity ? parseInt(formData.max_order_quantity) : null,
         weight_grams: formData.weight_grams ? parseInt(formData.weight_grams) : null,
-                 category_id: formData.category_id === "none" ? null : formData.category_id,
+        category_id: formData.category_id === "none" ? null : formData.category_id,
+        gallery_urls: formData.gallery_urls,
       }
 
       if (editingProduct) {
@@ -193,8 +196,9 @@ export function ProductsTab() {
       cost_price: product.cost_price?.toString() || "",
       sku: product.sku || "",
       barcode: product.barcode || "",
-             category_id: product.category_id || "none",
+      category_id: product.category_id || "none",
       image_url: product.image_url || "",
+      gallery_urls: product.gallery_urls || [],
       stock_quantity: product.stock_quantity.toString(),
       low_stock_threshold: product.low_stock_threshold.toString(),
       min_order_quantity: product.min_order_quantity.toString(),
@@ -220,6 +224,7 @@ export function ProductsTab() {
       barcode: "",
       category_id: "none",
       image_url: "",
+      gallery_urls: [],
       stock_quantity: "0",
       low_stock_threshold: "5",
       min_order_quantity: "1",
@@ -238,7 +243,7 @@ export function ProductsTab() {
     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const getCategoryName = (categoryId: string | null) => {
+  const getCategoryName = (categoryId: string | null | undefined) => {
     if (!categoryId) return "Nekategorizuotas"
     const category = categories.find(c => c.id === categoryId)
     return category?.name || "Nežinoma kategorija"
@@ -265,13 +270,13 @@ export function ProductsTab() {
               Pridėti produktą
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingProduct ? "Redaguoti produktą" : "Pridėti naują produktą"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Pavadinimas *</Label>
@@ -355,24 +360,38 @@ export function ProductsTab() {
                     <SelectTrigger>
                       <SelectValue placeholder="Pasirinkite kategoriją" />
                     </SelectTrigger>
-                                         <SelectContent>
-                       <SelectItem value="none">Nekategorizuotas</SelectItem>
-                       {categories.map((category) => (
-                         <SelectItem key={category.id} value={category.id}>
-                           {category.name}
-                         </SelectItem>
-                       ))}
-                     </SelectContent>
+                    <SelectContent>
+                      <SelectItem value="none">Nekategorizuotas</SelectItem>
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Nuotraukos URL</Label>
-                  <Input
-                    id="image_url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  />
-                </div>
+              </div>
+
+              {/* Main Image Upload */}
+              <div className="space-y-2">
+                <Label>Pagrindinė nuotrauka</Label>
+                <ImageUpload
+                  value={formData.image_url}
+                  onChange={(value) => setFormData({ ...formData, image_url: value as string })}
+                  multiple={false}
+                  maxFiles={1}
+                />
+              </div>
+
+              {/* Gallery Images Upload */}
+              <div className="space-y-2">
+                <Label>Galerijos nuotraukos</Label>
+                <ImageUpload
+                  value={formData.gallery_urls}
+                  onChange={(value) => setFormData({ ...formData, gallery_urls: value as string[] })}
+                  multiple={true}
+                  maxFiles={10}
+                />
               </div>
 
               <div className="grid grid-cols-3 gap-4">
@@ -525,50 +544,50 @@ export function ProductsTab() {
                         )}
                       </div>
                     </TableCell>
-                                         <TableCell className="text-right">
-                       <div className="flex items-center justify-end space-x-2">
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => {
-                             setSelectedProduct(product)
-                             setVariantsDialogOpen(true)
-                           }}
-                           title="Valdyti variantus"
-                         >
-                           <Layers className="h-4 w-4" />
-                         </Button>
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleEdit(product)}
-                         >
-                           <Edit className="h-4 w-4" />
-                         </Button>
-                         <Button
-                           variant="ghost"
-                           size="sm"
-                           onClick={() => handleDelete(product.id)}
-                         >
-                           <Trash2 className="h-4 w-4" />
-                         </Button>
-                       </div>
-                     </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProduct(product)
+                            setVariantsDialogOpen(true)
+                          }}
+                          title="Valdyti variantus"
+                        >
+                          <Layers className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEdit(product)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(product.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           )}
-                 </CardContent>
-       </Card>
+        </CardContent>
+      </Card>
 
-       {selectedProduct && (
-         <ProductVariantsDialog
-           product={selectedProduct}
-           open={variantsDialogOpen}
-           onOpenChange={setVariantsDialogOpen}
-         />
-       )}
-     </div>
-   )
- }
+      {selectedProduct && (
+        <ProductVariantsDialog
+          product={selectedProduct}
+          open={variantsDialogOpen}
+          onOpenChange={setVariantsDialogOpen}
+        />
+      )}
+    </div>
+  )
+}

@@ -84,7 +84,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                       {item.items?.map((dropdownItem) => (
                         <DropdownMenuItem key={dropdownItem.href} className="rounded-none hover:bg-transparent focus:bg-transparent">
                           <Link 
-                            href={dropdownItem.href}
+                            href={dropdownItem.href || "#"}
                             target={dropdownItem.external ? "_blank" : "_self"}
                             className="text-white hover:text-[#F15601] w-full"
                           >
@@ -100,7 +100,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
               return (
                 <Link 
                   key={item.href}
-                  href={item.href}
+                  href={item.href || "#"}
                   target={item.external ? "_blank" : "_self"}
                   className={`transition-colors ${
                     currentPage === item.page 
@@ -173,7 +173,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                     {item.items?.map((dropdownItem) => (
                       <Link 
                         key={dropdownItem.href}
-                        href={dropdownItem.href}
+                        href={dropdownItem.href || "#"}
                         target={dropdownItem.external ? "_blank" : "_self"}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`text-base py-2 px-8 transition-colors ${
@@ -192,7 +192,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
               return (
                 <Link 
                   key={item.href}
-                  href={item.href}
+                  href={item.href || "#"}
                   target={item.external ? "_blank" : "_self"}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-lg py-3 px-4 transition-colors ${

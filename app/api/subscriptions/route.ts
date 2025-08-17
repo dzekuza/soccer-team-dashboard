@@ -58,6 +58,29 @@ export async function GET(request: NextRequest) {
   );
 
   try {
+    // Check for session_id parameter
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get("session_id");
+
+    if (sessionId) {
+      // Fetch subscription by session ID (no auth required for success page)
+      const { data: subscription, error } = await supabase
+        .from("user_subscriptions")
+        .select("*")
+        .eq("stripe_session_id", sessionId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching subscription by session ID:", error);
+        return NextResponse.json({ error: "Subscription not found" }, {
+          status: 404,
+        });
+      }
+
+      return NextResponse.json({ subscription });
+    }
+
+    // Regular authenticated request for all subscriptions
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

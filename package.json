@@ -81,6 +81,7 @@
     "react-big-calendar": "^1.19.3",
     "react-day-picker": "8.10.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.54.1",
     "react-qr-code": "^2.0.16",
     "react-resizable-panels": "^3.0.3",

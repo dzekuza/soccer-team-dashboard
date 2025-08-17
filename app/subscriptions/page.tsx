@@ -139,7 +139,7 @@ export default function SubscriptionsPage() {
             <div className="bg-[#0A165B] border-l border-t border-b border-[#232C62] p-6 h-full">
               <h2 className="text-white text-xl font-bold mb-4">APIE ABONEMENTUS</h2>
               <p className="text-gray-300 leading-relaxed">
-                Svarbus abonementų pasiūlymas FK "Banga" gerbėjams. Su mūsų abonementais galėsite lankytis visuose namų rungtynių sezone, gauti specialius pasiūlymus ir būti pirmieji, kurie sužinos apie naujienas. Abonementai suteikia ne tik patogumą, bet ir finansinę naudą, nes kaina yra žemesnė nei atskirų bilietų suma. Pasirinkite jums tinkamiausią abonementą ir tapkite tikru FK "Banga" gerbėju!
+                Svarbus abonementų pasiūlymas FK &quot;Banga&quot; gerbėjams. Su mūsų abonementais galėsite lankytis visuose namų rungtynių sezone, gauti specialius pasiūlymus ir būti pirmieji, kurie sužinos apie naujienas. Abonementai suteikia ne tik patogumą, bet ir finansinę naudą, nes kaina yra žemesnė nei atskirų bilietų suma. Pasirinkite jums tinkamiausią abonementą ir tapkite tikru FK &quot;Banga&quot; gerbėju!
               </p>
             </div>
           </div>

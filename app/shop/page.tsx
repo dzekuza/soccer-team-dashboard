@@ -31,6 +31,7 @@ export default function ShopPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("name")
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
   const { toast } = useToast()
   const { addToCart } = useCart()
   const supabase = createClient()
@@ -127,10 +128,17 @@ export default function ShopPage() {
     })
   }
 
-  const getCategoryName = (categoryId: string | null) => {
+  const getCategoryName = (categoryId: string | null | undefined) => {
     if (!categoryId) return "Nekategorizuotas"
     const category = categories.find(c => c.id === categoryId)
     return category?.name || "Nežinoma kategorija"
+  }
+
+  const getProductImage = (product: Product) => {
+    if (hoveredProduct === (product.id || null) && product.gallery_urls && product.gallery_urls.length > 0) {
+      return product.gallery_urls[0]
+    }
+    return product.image_url || "/placeholder.jpg"
   }
 
   return (
@@ -140,7 +148,7 @@ export default function ShopPage() {
       
       {/* Header */}
       <div className="bg-gradient-to-r from-[#0A165B] to-[#1a237e] py-12">
-        <div className="container mx-auto px-4">
+        <div className="px-6">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold mb-4">FK Banga Parduotuvė</h1>
             <p className="text-xl text-gray-300 mb-8">
@@ -190,14 +198,14 @@ export default function ShopPage() {
       </div>
 
       {/* Products Grid */}
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-xl text-gray-300">Kraunama...</div>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 px-6">
               <h2 className="text-2xl font-bold">
                 Produktai ({products.length})
               </h2>
@@ -216,90 +224,109 @@ export default function ShopPage() {
                 <p className="text-gray-400">Pabandykite pakeisti paieškos kriterijus</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {products.map((product) => (
-                  <Card key={product.id} className="bg-white/5 border-white/10 hover:bg-white/10 transition-colors">
-                    <CardHeader className="p-0">
-                      <div className="relative">
-                        <img
-                          src={product.image_url || "/placeholder.jpg"}
-                          alt={product.name}
-                          className="w-full h-48 object-cover rounded-t-lg"
-                        />
-                        {product.is_featured && (
-                          <div className="absolute top-2 left-2">
-                            <Badge className="bg-[#F15601] text-white">
-                              <Star className="w-3 h-3 mr-1" />
-                              Išskirtas
-                            </Badge>
-                          </div>
-                        )}
-                        {product.compare_price && product.compare_price > product.price && (
-                          <div className="absolute top-2 right-2">
-                            <Badge variant="destructive">
-                              -{Math.round(((product.compare_price - product.price) / product.compare_price) * 100)}%
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <div className="space-y-3">
-                        <div>
-                          <Badge variant="outline" className="text-xs mb-2">
-                            {getCategoryName(product.category_id)}
-                          </Badge>
-                          <CardTitle className="text-lg font-semibold line-clamp-2">
-                            {product.name}
-                          </CardTitle>
-                        </div>
-                        
-                        <p className="text-gray-300 text-sm line-clamp-2">
-                          {product.short_description || product.description}
-                        </p>
-                        
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="text-xl font-bold text-[#F15601]">
-                              €{product.price.toFixed(2)}
+                  <Link 
+                    key={product.id || 'unknown'} 
+                    href={`/shop/${product.id || ''}`}
+                    className="block"
+                  >
+                    <Card 
+                      className="bg-transparent border-white/10 hover:bg-white/5 transition-colors rounded-none border-r border-b cursor-pointer"
+                      onMouseEnter={() => setHoveredProduct(product.id || null)}
+                      onMouseLeave={() => setHoveredProduct(null)}
+                    >
+                      <CardHeader className="p-0">
+                        <div className="relative">
+                          <img
+                            src={getProductImage(product)}
+                            alt={product.name}
+                            className="w-full aspect-square object-cover transition-all duration-300"
+                          />
+                          {product.is_featured && (
+                            <div className="absolute top-2 left-2">
+                              <Badge className="bg-[#F15601] text-white">
+                                <Star className="w-3 h-3 mr-1" />
+                                Išskirtas
+                              </Badge>
                             </div>
-                            {product.compare_price && product.compare_price > product.price && (
-                              <div className="text-sm text-gray-400 line-through">
-                                €{product.compare_price.toFixed(2)}
-                              </div>
-                            )}
+                          )}
+                          {product.compare_price && product.compare_price > product.price && (
+                            <div className="absolute top-2 right-2">
+                              <Badge variant="destructive">
+                                -{Math.round(((product.compare_price - product.price) / product.compare_price) * 100)}%
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div>
+                            <Badge variant="outline" className="text-xs mb-2">
+                              {getCategoryName(product.category_id)}
+                            </Badge>
+                            <CardTitle className="text-lg font-semibold line-clamp-2">
+                              {product.name}
+                            </CardTitle>
                           </div>
                           
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => handleAddToCart(product)}
-                              className="bg-[#F15601] hover:bg-[#F15601]/90"
-                            >
-                              <ShoppingCart className="w-4 h-4" />
-                            </Button>
-                            <Link href={`/shop/${product.id}`}>
-                              <Button size="sm" variant="outline">
+                          <p className="text-gray-300 text-sm line-clamp-2">
+                            {product.short_description || product.description}
+                          </p>
+                          
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xl font-bold text-[#F15601]">
+                                €{product.price.toFixed(2)}
+                              </div>
+                              {product.compare_price && product.compare_price > product.price && (
+                                <div className="text-sm text-gray-400 line-through">
+                                  €{product.compare_price.toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleAddToCart(product);
+                                }}
+                                className="bg-[#F15601] hover:bg-[#F15601]/90"
+                              >
+                                <ShoppingCart className="w-4 h-4" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                              >
                                 Peržiūrėti
                               </Button>
-                            </Link>
+                            </div>
                           </div>
+                          
+                          {product.stock_quantity <= product.low_stock_threshold && product.stock_quantity > 0 && (
+                            <div className="text-yellow-400 text-sm">
+                              ⚠️ Likę tik {product.stock_quantity} vnt.
+                            </div>
+                          )}
+                          
+                          {product.stock_quantity === 0 && !product.allow_backorders && (
+                            <div className="text-red-400 text-sm">
+                              ❌ Išparduota
+                            </div>
+                          )}
                         </div>
-                        
-                        {product.stock_quantity <= product.low_stock_threshold && product.stock_quantity > 0 && (
-                          <div className="text-yellow-400 text-sm">
-                            ⚠️ Likę tik {product.stock_quantity} vnt.
-                          </div>
-                        )}
-                        
-                        {product.stock_quantity === 0 && !product.allow_backorders && (
-                          <div className="text-red-400 text-sm">
-                            ❌ Išparduota
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  </Link>
                 ))}
               </div>
             )}
