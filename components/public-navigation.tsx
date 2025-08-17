@@ -70,7 +70,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className={`flex items-center gap-1 transition-colors ${
+                        className={`flex items-center gap-1 transition-colors bg-transparent hover:bg-transparent focus:bg-transparent ${
                           currentPage === item.page 
                             ? "text-[#F15601] border-b-2 border-[#F15601]" 
                             : "text-white hover:text-[#F15601] hover:border-b-2 hover:border-[#F15601]"
@@ -82,7 +82,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="bg-[#0A165B] border-[#232C62] rounded-none">
                       {item.items?.map((dropdownItem) => (
-                        <DropdownMenuItem key={dropdownItem.href} className="rounded-none">
+                        <DropdownMenuItem key={dropdownItem.href} className="rounded-none hover:bg-transparent focus:bg-transparent">
                           <Link 
                             href={dropdownItem.href}
                             target={dropdownItem.external ? "_blank" : "_self"}

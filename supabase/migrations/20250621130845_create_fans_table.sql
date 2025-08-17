@@ -15,11 +15,18 @@ CREATE TABLE public.fans (
 COMMENT ON TABLE public.fans IS 'Stores core information about customers (fans) who purchase tickets or subscriptions.';
 
 -- 2. Create a trigger to automatically update the 'updated_at' column.
--- This requires the 'moddatetime' function, which should exist in your project.
-CREATE TRIGGER handle_updated_at
-BEFORE UPDATE ON public.fans
-FOR EACH ROW
-EXECUTE PROCEDURE moddatetime();
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER handle_updated_at                                                
+BEFORE UPDATE ON public.fans                                                    
+FOR EACH ROW                                                                    
+EXECUTE PROCEDURE update_updated_at_column();
 
 -- 3. Enable Row Level Security (RLS) on the table.
 ALTER TABLE public.fans ENABLE ROW LEVEL SECURITY;

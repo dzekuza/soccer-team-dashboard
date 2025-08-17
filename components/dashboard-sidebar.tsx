@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp, Tag } from "lucide-react"
+import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp, Tag, ShoppingBag } from "lucide-react"
 import { createClient } from "@/lib/supabase-browser"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./ui/button"
@@ -31,6 +31,7 @@ export function DashboardSidebar() {
     { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
     { name: "Prenumeratos tipai", href: "/dashboard/subscription-types", icon: BadgeCheck },
     { name: "Kuponai", href: "/dashboard/coupons", icon: Tag },
+    { name: "Parduotuvė", href: "/dashboard/shop", icon: ShoppingBag },
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: QrCode },
     { name: "Eksportas", href: "/dashboard/export", icon: Download },
