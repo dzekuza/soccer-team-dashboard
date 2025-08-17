@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { createClient } from "@/lib/supabase-browser"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -39,11 +39,7 @@ export function AttributesTab() {
   // Options input state
   const [optionsInput, setOptionsInput] = useState("")
 
-  useEffect(() => {
-    fetchAttributes()
-  }, [])
-
-  const fetchAttributes = async () => {
+  const fetchAttributes = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('product_attributes')
@@ -62,7 +58,11 @@ export function AttributesTab() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchAttributes()
+  }, [fetchAttributes])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

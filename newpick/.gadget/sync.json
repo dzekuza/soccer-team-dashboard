@@ -1,0 +1,9 @@
+{
+  "application": "newpick",
+  "environment": "development",
+  "environments": {
+    "development": {
+      "filesVersion": "125"
+    }
+  }
+}

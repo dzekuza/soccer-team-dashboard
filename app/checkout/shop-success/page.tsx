@@ -86,7 +86,7 @@ function ShopCheckoutSuccessContent() {
         console.error('Error creating order:', err);
         if (retryCount < 3) {
           // Retry after 2 seconds on error
-          setTimeout(() => createOrder(retryCount + 1), 2000);
+          setTimeout(() => fetchOrder(retryCount + 1), 2000);
           return;
         }
         setError("Nepavyko sukurti užsakymo. Susisiekite su palaikymu.");

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp, Tag, ShoppingBag } from "lucide-react"
+import { Home, Calendar, Ticket, Users, BarChart2, Settings, LogOut, User as UserIcon, QrCode, Download, Megaphone, BadgeCheck, ChevronDown, ChevronUp, Tag, ShoppingBag, HelpCircle } from "lucide-react"
 import { createClient } from "@/lib/supabase-browser"
 import { useAuth } from "@/hooks/use-auth"
 import { Button } from "./ui/button"
@@ -37,6 +37,7 @@ export function DashboardSidebar() {
     { name: "Eksportas", href: "/dashboard/export", icon: Download },
     { name: "Šablonai", href: "/dashboard/templates", icon: Settings },
     { name: "Rinkodara", href: "/dashboard/marketing", icon: Megaphone },
+    { name: "Pagalba", href: "/dashboard/help", icon: HelpCircle },
   ]
 
   // Dropdown state for My Team
@@ -180,6 +181,7 @@ export function DashboardMobileMenu() {
     { name: "Renginiai", href: "/dashboard/events", icon: Calendar },
     { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
     { name: "QR skait.", href: "/dashboard/scanner", icon: QrCode },
+    { name: "Pagalba", href: "/dashboard/help", icon: HelpCircle },
   ];
 
   // Actions for modal
@@ -188,6 +190,7 @@ export function DashboardMobileMenu() {
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "Eksportas", href: "/dashboard/export", icon: Ticket },
     { name: "Šablonai", href: "/dashboard/templates", icon: Settings },
+    { name: "Pagalba", href: "/dashboard/help", icon: HelpCircle },
     { name: "Atsijungti", action: async () => await supabase.auth.signOut(), icon: LogOut },
   ];
 

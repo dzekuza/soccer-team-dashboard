@@ -1,0 +1,91 @@
+{
+  "dependencies": {
+    "@fastify/request-context": "^5.0.0",
+    "@gadget-client/newpick": "link:../client",
+    "@gadgetinc/api-client-core": "0.15.45",
+    "@types/node": "^22.13.14",
+    "fastify": "^4.24.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist-esm/index.js",
+      "require": "./dist-cjs/index.js"
+    },
+    "./ai": {
+      "import": "./dist-esm/ai/index.js",
+      "require": "./dist-cjs/ai/index.js"
+    },
+    "./auth": {
+      "import": "./dist-esm/auth/index.js",
+      "require": "./dist-cjs/auth/index.js"
+    },
+    "./bigcommerce": {
+      "import": "./dist-esm/bigcommerce/index.js",
+      "require": "./dist-cjs/bigcommerce/index.js"
+    },
+    "./react-router": {
+      "import": "./dist-esm/react-router/index.js",
+      "require": "./dist-cjs/react-router/index.js"
+    },
+    "./remix": {
+      "import": "./dist-esm/remix/index.js",
+      "require": "./dist-cjs/remix/index.js"
+    },
+    "./shopify": {
+      "import": "./dist-esm/shopify/index.js",
+      "require": "./dist-cjs/shopify/index.js"
+    },
+    "./vite": {
+      "import": "./dist-esm/vite/index.js",
+      "require": "./dist-cjs/vite/index.js"
+    }
+  },
+  "files": [
+    "./dist-cjs/**/*",
+    "./dist-esm/**/*"
+  ],
+  "gadget": {
+    "applicationName": "newpick",
+    "environmentName": "Development",
+    "environmentVersion": "123"
+  },
+  "main": "./dist-cjs/index.js",
+  "module": "./dist-esm/index.js",
+  "name": "gadget-server",
+  "peerDependencies": {
+    "shopify-api-node": "*",
+    "vite": "^4.4.9 || ^5.3.5"
+  },
+  "private": true,
+  "scripts": {},
+  "types": "./dist-cjs/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "ai": [
+        "./dist-cjs/ai/index.d.ts"
+      ],
+      "auth": [
+        "./dist-cjs/auth/index.d.ts"
+      ],
+      "bigcommerce": [
+        "./dist-cjs/bigcommerce/index.d.ts"
+      ],
+      "react-router": [
+        "./dist-cjs/react-router/index.d.ts"
+      ],
+      "remix": [
+        "./dist-cjs/remix/index.d.ts"
+      ],
+      "shopify": [
+        "./dist-cjs/shopify/index.d.ts"
+      ],
+      "vite": [
+        "./dist-cjs/vite/index.d.ts"
+      ]
+    }
+  },
+  "version": "1.4.0-development.123"
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useSearchParams } from "next/navigation"
 import type { SubscriptionType } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
@@ -27,16 +27,7 @@ export function SubscriptionCheckoutClient() {
     email: ''
   })
 
-  useEffect(() => {
-    if (typeId) {
-      fetchSubscriptionType()
-    } else {
-      setError('Prenumeratos tipas nenurodytas')
-      setIsLoading(false)
-    }
-  }, [typeId])
-
-  const fetchSubscriptionType = async () => {
+  const fetchSubscriptionType = useCallback(async () => {
     try {
       const response = await fetch('/api/subscription-types/public')
       if (!response.ok) throw new Error('Nepavyko užkrauti prenumeratos tipų')
@@ -53,7 +44,16 @@ export function SubscriptionCheckoutClient() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [typeId])
+
+  useEffect(() => {
+    if (typeId) {
+      fetchSubscriptionType()
+    } else {
+      setError('Prenumeratos tipas nenurodytas')
+      setIsLoading(false)
+    }
+  }, [typeId, fetchSubscriptionType])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,0 +1,46 @@
+{
+  "name": "@gadget-client/newpick",
+  "version": "1.4.0-development.123",
+  "files": [
+    "dist-cjs",
+    "dist-esm",
+    "types",
+    "types-esm"
+  ],
+  "source": "src/index.ts",
+  "types": "types/index.d.ts",
+  "main": "dist-cjs/index.js",
+  "module": "dist-esm/index.js",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./types-esm/index.d.ts",
+        "default": "./dist-esm/index.js"
+      },
+      "require": {
+        "types": "./types/index.d.ts",
+        "default": "./dist-cjs/index.js"
+      }
+    }
+  },
+  "private": true,
+  "dependencies": {
+    "@gadgetinc/api-client-core": "0.15.45",
+    "tiny-graphql-query-compiler": "^0.2.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^22.13.14",
+    "@urql/core": "^4.0.10",
+    "graphql": "^16.8.1",
+    "wonka": "^6.3.2"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "gadget": {
+    "applicationName": "newpick",
+    "environmentName": "Development",
+    "environmentVersion": "123"
+  }
+}

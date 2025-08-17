@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -50,11 +50,7 @@ export default function CouponsPage() {
     is_active: true
   })
 
-  useEffect(() => {
-    fetchCoupons()
-  }, [])
-
-  const fetchCoupons = async () => {
+  const fetchCoupons = useCallback(async () => {
     try {
       const response = await fetch('/api/coupons')
       if (!response.ok) throw new Error('Failed to fetch coupons')
@@ -71,7 +67,11 @@ export default function CouponsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchCoupons()
+  }, [fetchCoupons])
 
   const resetForm = () => {
     setFormData({
