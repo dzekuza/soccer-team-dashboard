@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useMemo } from "react"
-import { HelpCircle, Calendar, Ticket, Users, BarChart2, QrCode, Download, Megaphone, BadgeCheck, Tag, ShoppingBag, BookOpen, Settings, Search, X } from "lucide-react"
+import React, { useState, useMemo } from "react"
+import { HelpCircle, Search, X } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
+import { Icon } from "./icon-map"
 
 interface HelpItem {
   question: string
@@ -15,7 +16,7 @@ interface HelpItem {
 
 interface HelpSection {
   title: string
-  icon: any
+  icon: string
   description: string
   items: HelpItem[]
 }
@@ -27,6 +28,8 @@ interface HelpClientProps {
 export default function HelpClient({ helpSections }: HelpClientProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [expandedSections, setExpandedSections] = useState<string[]>([])
+
+
 
   // Filter sections and items based on search query
   const filteredSections = useMemo(() => {
@@ -125,7 +128,7 @@ export default function HelpClient({ helpSections }: HelpClientProps) {
                   }}
                 >
                   <div className="flex items-center space-x-3">
-                    <section.icon className="h-4 w-4 text-blue-600" />
+                    <Icon name={section.icon} className="h-4 w-4 text-blue-600" />
                     <div className="text-left">
                       <div className="font-medium">{section.title}</div>
                       <div className="text-xs text-gray-500">{section.items.length} klausimai</div>
@@ -145,7 +148,7 @@ export default function HelpClient({ helpSections }: HelpClientProps) {
             <CardTitle className="text-sm font-medium">
               {searchQuery ? "Rasta rezultatų" : "Iš viso instrukcijų"}
             </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
+            <Icon name="BookOpen" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -159,7 +162,7 @@ export default function HelpClient({ helpSections }: HelpClientProps) {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Kategorijos</CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
+            <Icon name="Settings" className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -190,7 +193,7 @@ export default function HelpClient({ helpSections }: HelpClientProps) {
               <CardHeader>
                 <div className="flex items-center space-x-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
-                    <section.icon className="h-5 w-5 text-blue-600" />
+                    <Icon name={section.icon} className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
                     <CardTitle className="text-xl">{section.title}</CardTitle>

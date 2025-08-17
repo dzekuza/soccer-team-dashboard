@@ -218,7 +218,7 @@ export default function StandingsClient() {
               </div>
               <div className="flex gap-2 justify-end pt-2">
                 <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
-                <Button type="submit">Savee</Button>
+                <Button type="submit">Save</Button>
               </div>
             </form>
           )}

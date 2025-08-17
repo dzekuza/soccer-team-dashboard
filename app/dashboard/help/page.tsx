@@ -1,11 +1,10 @@
-import { HelpCircle, Calendar, Ticket, Users, BarChart2, QrCode, Download, Megaphone, BadgeCheck, Tag, ShoppingBag, BookOpen, Settings } from "lucide-react"
 import HelpClient from "./help-client"
 
 export default function HelpPage() {
   const helpSections = [
     {
       title: "Renginių valdymas",
-      icon: Calendar,
+      icon: "Calendar",
       description: "Kaip kurti ir valdyti renginius",
       items: [
         {
@@ -24,7 +23,7 @@ export default function HelpPage() {
     },
     {
       title: "Bilietų valdymas",
-      icon: Ticket,
+      icon: "Ticket",
       description: "Bilietų generavimas ir valdymas",
       items: [
         {
@@ -43,7 +42,7 @@ export default function HelpPage() {
     },
     {
       title: "Prenumeratų valdymas",
-      icon: BadgeCheck,
+      icon: "BadgeCheck",
       description: "Prenumeratų tipų ir valdymas",
       items: [
         {
@@ -62,7 +61,7 @@ export default function HelpPage() {
     },
     {
       title: "Gerbėjų valdymas",
-      icon: Users,
+      icon: "Users",
       description: "Gerbėjų duomenų valdymas",
       items: [
         {
@@ -81,7 +80,7 @@ export default function HelpPage() {
     },
     {
       title: "QR skaitytuvas",
-      icon: QrCode,
+      icon: "QrCode",
       description: "Bilietų tikrinimas",
       items: [
         {
@@ -100,7 +99,7 @@ export default function HelpPage() {
     },
     {
       title: "Parduotuvės valdymas",
-      icon: ShoppingBag,
+      icon: "ShoppingBag",
       description: "Prekių ir atributų valdymas",
       items: [
         {
@@ -119,7 +118,7 @@ export default function HelpPage() {
     },
     {
       title: "Kuponų valdymas",
-      icon: Tag,
+      icon: "Tag",
       description: "Nuolaidų kuponų kūrimas",
       items: [
         {
@@ -138,7 +137,7 @@ export default function HelpPage() {
     },
     {
       title: "Rinkodaros įrankiai",
-      icon: Megaphone,
+      icon: "Megaphone",
       description: "Rinkodaros kampanijų valdymas",
       items: [
         {
@@ -157,7 +156,7 @@ export default function HelpPage() {
     },
     {
       title: "Eksportas ir ataskaitos",
-      icon: Download,
+      icon: "Download",
       description: "Duomenų eksportavimas",
       items: [
         {
@@ -176,7 +175,7 @@ export default function HelpPage() {
     },
     {
       title: "Sistemos nustatymai",
-      icon: Settings,
+      icon: "Settings",
       description: "Sistemos konfigūracija",
       items: [
         {
@@ -195,7 +194,7 @@ export default function HelpPage() {
     },
     {
       title: "Komandos valdymas",
-      icon: Users,
+      icon: "Users",
       description: "Žaidėjų ir rungtynių valdymas",
       items: [
         {
@@ -214,7 +213,7 @@ export default function HelpPage() {
     },
     {
       title: "Šablonų valdymas",
-      icon: Settings,
+      icon: "Settings",
       description: "El. laiškų ir pranešimų šablonai",
       items: [
         {
