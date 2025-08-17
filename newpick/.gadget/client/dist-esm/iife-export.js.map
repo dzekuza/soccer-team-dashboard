@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../src/iife-export.ts"],
-  "sourcesContent": ["import { NewpickClient } from \".\";\n\ndeclare global {\n  interface Window {\n    /**\n     * The Gadget client constructor\n     *\n     * @example\n     * ```ts\n     * const api = new NewpickClient();\n     * ```\n     */\n    NewpickClient: typeof NewpickClient;\n\n    /**\n     * The Gadget client for NewpickClient\n     * @deprecated Use window.NewpickClient instead\n     */\n    Gadget: typeof NewpickClient;\n  }\n}\n\n// add the client to the window\nwindow.NewpickClient = NewpickClient;\n\nconst previousValue: any = window.Gadget;\n\n// add the client to the window at the old .Gadget property for backwards compatibility -- the NewpickClient property should be preferred instead\nwindow.Gadget = NewpickClient;\n(window.Gadget as any).previousValue = previousValue;\n"],
-  "mappings": "AAAA,SAAS,qBAAqB;AAuB9B,OAAO,gBAAgB;AAEvB,MAAM,gBAAqB,OAAO;AAGlC,OAAO,SAAS;AACf,OAAO,OAAe,gBAAgB;",
-  "names": []
-}

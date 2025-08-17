@@ -1,1 +1,0 @@
-{"version":3,"sources":["/var/gadget/codegen/framework-1755447407303-u2nWpV/src/react-router/constants.ts"],"sourcesContent":["export const BuildDirectory = \".gadget/remix-dist/build\";\nexport const AppDirectory = \"web\";\n"],"names":["AppDirectory","BuildDirectory"],"mappings":";;;;;;;;;;;IACaA,YAAY;eAAZA;;IADAC,cAAc;eAAdA;;;AAAN,MAAMA,iBAAiB;AACvB,MAAMD,eAAe"}
