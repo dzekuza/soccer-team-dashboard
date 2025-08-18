@@ -1,6 +1,9 @@
 import { Resend } from "resend";
 import { supabaseService } from "./supabase-service";
-import { generateSubscriptionPDF, generateTicketPDF } from "./pdf-generator";
+import { generateSubscriptionPDF } from "./pdf-generator";
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
+import { renderTicketHtml } from "./ticket-html";
 import { createClient } from "@supabase/supabase-js";
 import type { Subscription, Team, Ticket } from "./types";
 
@@ -33,11 +36,25 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
       team2 = await supabaseService.getTeamById(ticket.event.team2Id);
     }
 
-    const pdfBytes = await generateTicketPDF(
-      { ...ticket, qrCodeUrl: ticket.id },
-      team1 || undefined,
-      team2 || undefined,
-    );
+    // Generate HTML and print to PDF via headless Chromium
+    const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
+    const html = await renderTicketHtml({ ticket: { ...ticket, qrCodeUrl: ticket.id } as any, origin });
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: { width: 1600, height: 700, deviceScaleFactor: 2 },
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBytes = await page.pdf({
+      printBackground: true,
+      width: '1600px',
+      height: '700px',
+      pageRanges: '1',
+      preferCSSPageSize: true,
+    });
+    await browser.close();
     const fileName = `ticket-${ticket.id}.pdf`;
 
     const eventDate = new Date(ticket.event.date).toLocaleDateString("lt-LT");

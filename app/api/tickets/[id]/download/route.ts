@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { generateTicketPDF } from "@/lib/pdf-generator"
 import { createClient } from '@supabase/supabase-js'
 import type { Team, TicketWithDetails } from "@/lib/types"
+import chromium from "@sparticuz/chromium"
+import puppeteer from "puppeteer-core"
+import { renderTicketHtml } from "@/lib/ticket-html"
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
@@ -79,8 +81,26 @@ export async function GET(_request: NextRequest, { params }: { params: { id: str
     console.log("Team 1:", team1);
     console.log("Team 2:", team2);
 
-    const pdfBytes = await generateTicketPDF(ticket, team1 || undefined, team2 || undefined)
-    
+    const origin = new URL(_request.url).origin
+    const html = await renderTicketHtml({ ticket, origin })
+
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: { width: 1600, height: 700, deviceScaleFactor: 2 },
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    })
+    const page = await browser.newPage()
+    await page.setContent(html, { waitUntil: 'networkidle0' })
+    const pdfBytes = await page.pdf({
+      printBackground: true,
+      width: '1600px',
+      height: '700px',
+      pageRanges: '1',
+      preferCSSPageSize: true,
+    })
+    await browser.close()
+
     // Return the PDF file directly
     return new NextResponse(pdfBytes, {
       status: 200,
