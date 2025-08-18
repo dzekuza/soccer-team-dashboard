@@ -292,7 +292,6 @@ export async function generateTicketPDF(
       width: qrSize + 20,
       height: qrSize + 20,
       color: white,
-      borderRadius: 12,
     });
     page.drawImage(qrImg, {
       x: cardX,
@@ -330,7 +329,7 @@ export async function generateTicketPDF(
 }
 
 export function uint8ArrayToPdfBlob(bytes: Uint8Array): Blob {
-  return new Blob([bytes], { type: "application/pdf" });
+  return new Blob([bytes as any], { type: "application/pdf" });
 }
 
 export async function generateSubscriptionPDF(subscription: {

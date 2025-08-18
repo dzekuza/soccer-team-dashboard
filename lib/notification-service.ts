@@ -83,7 +83,7 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
         height: "700px",
         pageRanges: "1",
         preferCSSPageSize: true,
-      });
+      }) as any;
 
       await browser.close();
       fileName = `ticket-${ticket.id}.pdf`;

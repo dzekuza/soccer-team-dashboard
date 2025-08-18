@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const filename = `subscription-${subscription.id}.pdf`;
 
     // Return PDF as response
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(pdfBytes as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

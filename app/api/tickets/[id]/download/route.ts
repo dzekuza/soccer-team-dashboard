@@ -134,7 +134,7 @@ export async function GET(
     await browser.close();
 
     // Return the PDF file for download
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as any, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
