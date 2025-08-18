@@ -7,6 +7,7 @@ export interface ScrapedFixture {
     teams: string[]; // [home, away]
     date: string | null;
     time: string | null;
+    location: string | null;
     link: string;
 }
 
@@ -52,7 +53,7 @@ export async function scrapeFromUrl(
             }
         });
 
-        const fixtures = await page.evaluate((teamKeywordsIn) => {
+        const fixtures = await page.evaluate((teamKeywordsIn: string[]) => {
             const strip = (s: string) =>
                 (s || "")
                     .toLowerCase()
@@ -140,6 +141,7 @@ export async function scrapeFromUrl(
                         teams: [home, away],
                         date,
                         time,
+                        location: venue,
                         link: window.location.href,
                     });
                 }

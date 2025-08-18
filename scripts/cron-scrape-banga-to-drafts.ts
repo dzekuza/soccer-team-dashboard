@@ -149,6 +149,7 @@ async function main() {
             const { team1, team2 } = extractTeams(fixture.teams);
             const date = parseDate(fixture.date);
             const time = normalize(fixture.time);
+            const location = normalize(fixture.location);
 
             if (!team1 || !team2) {
                 console.log(
@@ -171,11 +172,12 @@ async function main() {
                     teams: fixture.teams,
                     date: fixture.date,
                     time: fixture.time,
+                    location: fixture.location,
                 },
                 title: `${team1} vs ${team2}`,
                 date: date,
                 time: time,
-                location: null,
+                location: location,
                 team1_name: team1,
                 team2_name: team2,
             };
