@@ -150,8 +150,8 @@ export default function ShopPage() {
       <div className="bg-gradient-to-r from-[#0A165B] to-[#1a237e] py-12">
         <div className="px-6">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4">FK Banga Parduotuvė</h1>
-            <p className="text-xl text-gray-300 mb-8">
+            <h1 className="h1-public mb-4">FK Banga Parduotuvė</h1>
+            <p className="subheading-public mb-8">
               Oficialūs komandos drabužiai, aksesuarai ir suvenyrai
             </p>
             
@@ -206,16 +206,9 @@ export default function ShopPage() {
         ) : (
           <>
             <div className="flex items-center justify-between mb-6 px-6">
-              <h2 className="text-2xl font-bold">
+              <h2 className="h2-public">
                 Produktai ({products.length})
               </h2>
-              <Button
-                onClick={() => setIsCartSheetOpen(true)}
-                className="bg-[#F15601] hover:bg-[#F15601]/90"
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Krepšelis
-              </Button>
             </div>
 
             {products.length === 0 ? (
@@ -275,41 +268,15 @@ export default function ShopPage() {
                             {product.short_description || product.description}
                           </p>
                           
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="text-xl font-bold text-[#F15601]">
-                                €{product.price.toFixed(2)}
+                          <div>
+                            <div className="text-xl font-bold text-[#F15601]">
+                              €{product.price.toFixed(2)}
+                            </div>
+                            {product.compare_price && product.compare_price > product.price && (
+                              <div className="text-sm text-gray-400 line-through">
+                                €{product.compare_price.toFixed(2)}
                               </div>
-                              {product.compare_price && product.compare_price > product.price && (
-                                <div className="text-sm text-gray-400 line-through">
-                                  €{product.compare_price.toFixed(2)}
-                                </div>
-                              )}
-                            </div>
-                            
-                            <div className="flex items-center space-x-2" onClick={(e) => e.stopPropagation()}>
-                              <Button
-                                size="sm"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  handleAddToCart(product);
-                                }}
-                                className="bg-[#F15601] hover:bg-[#F15601]/90"
-                              >
-                                <ShoppingCart className="w-4 h-4" />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                }}
-                              >
-                                Peržiūrėti
-                              </Button>
-                            </div>
+                            )}
                           </div>
                           
                           {product.stock_quantity <= product.low_stock_threshold && product.stock_quantity > 0 && (

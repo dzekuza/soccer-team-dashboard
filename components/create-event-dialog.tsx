@@ -37,9 +37,18 @@ interface CreateEventDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onEventCreated: () => void
+  draft?: {
+    id?: string;
+    title?: string;
+    date?: string;
+    time?: string;
+    location?: string;
+    team1_name?: string;
+    team2_name?: string;
+  } | null
 }
 
-export function CreateEventDialog({ open, onOpenChange, onEventCreated }: CreateEventDialogProps) {
+export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }: CreateEventDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -84,6 +93,24 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
       });
   }, [open]);
 
+  // Prefill from draft when dialog opens
+  useEffect(() => {
+    if (open && draft) {
+      setFormData((prev) => ({
+        ...prev,
+        title: draft.title || prev.title,
+        date: draft.date ? new Date(draft.date) : prev.date,
+        time: draft.time || prev.time,
+        location: draft.location || prev.location,
+      }))
+      // try to preselect teams by name
+      const t1 = teams.find(t => t.team_name?.toLowerCase() === (draft.team1_name||'').toLowerCase())
+      const t2 = teams.find(t => t.team_name?.toLowerCase() === (draft.team2_name||'').toLowerCase())
+      if (t1) setTeam1Id(t1.id)
+      if (t2) setTeam2Id(t2.id)
+    }
+  }, [open, draft, teams])
+
   const addPricingTier = () => {
     setPricingTiers([...pricingTiers, { name: "", price: 0, quantity: 0 }])
   }
@@ -102,7 +129,6 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
     const newErrors: Record<string, string> = {}
 
     if (!formData.title.trim()) newErrors.title = "Title is required"
-    if (!formData.description.trim()) newErrors.description = "Description is required"
     if (!formData.date) newErrors.date = "Date is required"
     if (!formData.time) newErrors.time = "Time is required"
     if (!formData.location.trim()) newErrors.location = "Location is required"
@@ -227,7 +253,8 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
         location: formData.location,
         team1_id: team1Id || null,
         team2_id: team2Id || null,
-        cover_image_url: coverImageUrl || null,
+        // Fallback to default public cover if user didn't upload
+        cover_image_url: coverImageUrl || "/bg%20qr.jpg",
       },
       pricingTiers: pricingTiers,
     };
@@ -244,6 +271,16 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated }: Create
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to create event');
+      }
+
+      // Mark draft as used if we created from a draft
+      if (draft?.id) {
+        try {
+          await supabase
+            .from('event_drafts')
+            .update({ used_at: new Date().toISOString() })
+            .eq('id', draft.id);
+        } catch {}
       }
 
       setApiSuccess("Event created successfully!");

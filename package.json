@@ -17,7 +17,12 @@
     "print-tickets-migration": "tsx scripts/print-tickets-migration.ts",
     "test-webhook": "tsx scripts/test-webhook.ts",
     "check-tickets-table": "tsx scripts/check-tickets-table.ts",
-    "test-webhook-endpoint": "tsx scripts/test-webhook-endpoint.ts"
+    "test-webhook-endpoint": "tsx scripts/test-webhook-endpoint.ts",
+    "scrape:banga": "tsx scripts/scrape-banga-fixtures.ts",
+    "send-pdf-previews": "tsx scripts/send-pdf-previews.ts",
+    "export-ticket-preview": "tsx scripts/export-ticket-preview.ts",
+    "ensure:event-drafts": "tsx scripts/ensure-event-drafts-table.ts",
+    "cron:scrape-banga": "pnpm ensure:event-drafts && tsx scripts/cron-scrape-banga-to-drafts.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
@@ -109,6 +114,8 @@
     "eslint": "8.57.0",
     "eslint-config-next": "14.2.4",
     "postcss": "^8.5",
+    "@sparticuz/chromium": "^123.0.1",
+    "puppeteer-core": "^23.11.1",
     "supabase": "^2.26.9",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",

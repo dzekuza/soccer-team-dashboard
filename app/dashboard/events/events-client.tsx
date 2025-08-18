@@ -343,8 +343,26 @@ export default function EventsClient({
   const [tickets, setTickets] = useState<TicketWithDetails[]>(initialTickets)
   const [teams, setTeams] = useState<Team[]>(initialTeams)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [draftToPrefill, setDraftToPrefill] = useState<any | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [view, setView] = useState<'grid' | 'calendar'>('grid')
+  const [view, setView] = useState<'grid' | 'calendar' | 'drafts'>('grid')
+  const [drafts, setDrafts] = useState<any[]>([])
+  const [showUsedDrafts, setShowUsedDrafts] = useState(false)
+  const [teamDraftFilter, setTeamDraftFilter] = useState<'all'|'banga'|'banga-b'>('all')
+  const [dateFilter, setDateFilter] = useState<'all'|'future'|'past'>('future')
+
+  React.useEffect(() => {
+    fetch('/api/events/drafts')
+      .then(async (r) => {
+        try {
+          const data = await r.json()
+          setDrafts(Array.isArray(data) ? data : [])
+        } catch {
+          setDrafts([])
+        }
+      })
+      .catch(() => setDrafts([]))
+  }, [])
   const [selectedEvent, setSelectedEvent] = useState<EventWithTiers | null>(null)
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
 
@@ -568,10 +586,11 @@ export default function EventsClient({
           Sukurti renginį
         </Button>
       </div>
-      <Tabs value={view} onValueChange={(v: string) => setView(v as 'grid' | 'calendar')} className="mb-4">
+      <Tabs value={view} onValueChange={(v: string) => setView(v as any)} className="mb-4">
         <TabsList>
           <TabsTrigger value="grid">Tinklelio vaizdas</TabsTrigger>
           <TabsTrigger value="calendar">Kalendoriaus vaizdas</TabsTrigger>
+          <TabsTrigger value="drafts">Juodraščiai</TabsTrigger>
         </TabsList>
       </Tabs>
       {view === 'grid' ? (
@@ -600,12 +619,80 @@ export default function EventsClient({
             ))}
           </div>
         )
-      ) : (
+      ) : view === 'calendar' ? (
         <FullScreenCalendar 
           data={calendarData} 
           onNewEventClick={() => setIsCreateDialogOpen(true)}
           onEventClick={handleEventClick}
         />
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="md:col-span-2 lg:col-span-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="text-sm text-muted-foreground">Rodyti panaudotus juodraščius</div>
+              <label className="inline-flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={showUsedDrafts} onChange={(e) => setShowUsedDrafts(e.target.checked)} />
+              </label>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-muted-foreground">Komanda</div>
+                <select
+                  value={teamDraftFilter}
+                  onChange={(e) => setTeamDraftFilter(e.target.value as any)}
+                  className="border rounded bg-background px-2 py-1 text-sm"
+                >
+                  <option value="all">Visos</option>
+                  <option value="banga">FK Banga</option>
+                  <option value="banga-b">FK Banga B</option>
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-muted-foreground">Data</div>
+                <select
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value as any)}
+                  className="border rounded bg-background px-2 py-1 text-sm"
+                >
+                  <option value="future">Ateities</option>
+                  <option value="past">Praėjusios</option>
+                  <option value="all">Visos</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          {drafts.length === 0 && (
+            <div className="text-sm text-muted-foreground">Nerasta juodraščių</div>
+          )}
+          {(Array.isArray(drafts) ? drafts : [])
+            .filter((d) => showUsedDrafts ? true : !d.used_at)
+            .filter((d) => {
+              if (teamDraftFilter === 'all') return true
+              const t1 = (d.team1_name || '').toLowerCase()
+              const t2 = (d.team2_name || '').toLowerCase()
+              if (teamDraftFilter === 'banga') return t1.includes('banga') && !t1.includes('b') || t2.includes('banga') && !t2.includes('b')
+              if (teamDraftFilter === 'banga-b') return t1.includes('banga b') || t2.includes('banga b') || t1.includes('banga-2') || t2.includes('banga-2') || t1.includes('banga ii') || t2.includes('banga ii')
+              return true
+            })
+            .filter((d) => {
+              if (dateFilter === 'all') return true
+              if (!d.date) return false
+              const eventDate = new Date(d.date)
+              const today = new Date()
+              today.setHours(0, 0, 0, 0)
+              if (dateFilter === 'future') return eventDate >= today
+              if (dateFilter === 'past') return eventDate < today
+              return true
+            })
+            .map((d) => (
+            <div key={d.id} className="border p-4 bg-[#0A165B] text-white">
+              <div className="font-bold mb-1">{d.title || 'Juodraštis'}</div>
+              <div className="text-white/70 text-sm mb-2">{d.date || ''} {d.time || ''}</div>
+              <div className="text-white/70 text-sm mb-4">{d.team1_name || ''} vs {d.team2_name || ''}</div>
+              <Button variant="cta" size="cta" onClick={() => { setDraftToPrefill(d); setIsCreateDialogOpen(true); }}>Tęsti kurimą</Button>
+            </div>
+          ))}
+        </div>
       )}
 
       {/* Event Preview Modal */}
@@ -722,6 +809,7 @@ export default function EventsClient({
         open={isCreateDialogOpen}
         onOpenChange={setIsCreateDialogOpen}
         onEventCreated={handleEventCreated}
+        draft={draftToPrefill}
       />
     </div>
   )

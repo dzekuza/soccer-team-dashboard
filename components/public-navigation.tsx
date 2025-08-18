@@ -35,12 +35,12 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
       page: "tickets-subscriptions",
       dropdown: true,
       items: [
-        { href: "https://soccer-team-dashboard.vercel.app/events", label: "Bilietai", page: "events", external: true },
-        { href: "https://soccer-team-dashboard.vercel.app/subscriptions", label: "Abonementai", page: "subscriptions", external: true }
+        { href: "/events", label: "Bilietai", page: "events", external: false },
+        { href: "/subscriptions", label: "Abonementai", page: "subscriptions", external: false }
       ]
     },
     { href: "https://darkorange-partridge-697021.hostingersite.com/pamaina/", label: "Akademija", page: "akademija", external: true },
-    { href: "https://darkorange-partridge-697021.hostingersite.com/shop/", label: "Parduotuvė", page: "parduotuve", external: true },
+    { href: "/shop", label: "Parduotuvė", page: "parduotuve", external: false },
     { href: "https://darkorange-partridge-697021.hostingersite.com/kontaktai/", label: "Kontaktai", page: "kontaktai", external: true },
   ]
 
@@ -70,7 +70,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className={`flex items-center gap-1 transition-colors bg-transparent hover:bg-transparent focus:bg-transparent ${
+                        className={`flex items-center gap-1 transition-colors bg-transparent hover:bg-transparent focus:bg-transparent rounded-none ${
                           currentPage === item.page 
                             ? "text-[#F15601] border-b-2 border-[#F15601]" 
                             : "text-white hover:text-[#F15601] hover:border-b-2 hover:border-[#F15601]"
@@ -85,7 +85,6 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                         <DropdownMenuItem key={dropdownItem.href} className="rounded-none hover:bg-transparent focus:bg-transparent">
                           <Link 
                             href={dropdownItem.href || "#"}
-                            target={dropdownItem.external ? "_blank" : "_self"}
                             className="text-white hover:text-[#F15601] w-full"
                           >
                             {dropdownItem.label}
@@ -101,7 +100,6 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                 <Link 
                   key={item.href}
                   href={item.href || "#"}
-                  target={item.external ? "_blank" : "_self"}
                   className={`transition-colors ${
                     currentPage === item.page 
                       ? "text-[#F15601] border-b-2 border-[#F15601]" 
@@ -174,7 +172,6 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                       <Link 
                         key={dropdownItem.href}
                         href={dropdownItem.href || "#"}
-                        target={dropdownItem.external ? "_blank" : "_self"}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`text-base py-2 px-8 transition-colors ${
                           currentPage === dropdownItem.page 
@@ -193,7 +190,6 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                 <Link 
                   key={item.href}
                   href={item.href || "#"}
-                  target={item.external ? "_blank" : "_self"}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-lg py-3 px-4 transition-colors ${
                     currentPage === item.page 

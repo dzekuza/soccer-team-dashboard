@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams } from "next/navigation"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -26,6 +26,7 @@ export default function EventPage() {
   const [error, setError] = useState<string | null>(null)
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
   const { cart, addToCart, updateQuantity, removeFromCart } = useCart()
+  const ticketsSectionRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (!id) return
@@ -154,6 +155,7 @@ export default function EventPage() {
 
   const { event, team1, team2 } = eventData
   const dateInfo = formatDate(event.date)
+  const hasTicketsInCart = cart.some(item => item.eventId === event.id && item.quantity > 0)
 
   return (
     <div className="bg-[#0A165B] text-white min-h-screen">
@@ -212,7 +214,7 @@ export default function EventPage() {
       </div>
 
       {/* Main Content - Two Column Layout */}
-      <div className="w-full px-4 md:px-8 lg:px-16 pb-20 lg:pb-0">
+      <div className="w-full pb-20 lg:pb-0">
         <div className="grid grid-cols-1 lg:grid-cols-2">
           
           {/* Left Column - Event Information */}
@@ -236,7 +238,7 @@ export default function EventPage() {
 
           {/* Right Column - Ticket Selection */}
           <div>
-            <div className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full">
+            <div ref={ticketsSectionRef} className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full">
               <h2 className="text-white text-xl font-bold mb-6">BILIETAI</h2>
               
               {/* Ticket Types */}
@@ -331,7 +333,9 @@ export default function EventPage() {
               <div className="hidden lg:block">
                 <Button
                   onClick={handleAddToCart}
-                  className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold py-3 text-lg rounded-none"
+                  variant="cta"
+                  size="cta"
+                  className="w-full font-semibold"
                 >
                   Pridėti į krepšelį
                 </Button>
@@ -344,10 +348,18 @@ export default function EventPage() {
       {/* Fixed Add to Cart Button - Mobile Only */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#0A165B] border-t border-[#232C62] p-4 lg:hidden z-50">
         <Button
-          onClick={handleAddToCart}
-          className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold py-4 text-lg rounded-none"
+          onClick={() => {
+            if (hasTicketsInCart) {
+              handleAddToCart()
+            } else {
+              ticketsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }}
+          variant="cta"
+          size="cta"
+          className="w-full font-semibold"
         >
-          Pridėti į krepšelį
+          {hasTicketsInCart ? 'Pridėti į krepšelį' : 'Rinktis bilietus'}
         </Button>
       </div>
     </div>

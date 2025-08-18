@@ -1,9 +1,9 @@
-import { PDFDocument, PDFFont, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
 import qr from "qrcode";
 import type { Team, TicketWithDetails } from "./types";
-import { formatCurrency } from "./utils";
-import fontkit from "@pdf-lib/fontkit";
-import { QRCodeService } from "./qr-code-service";
+import { readFileSync } from "fs";
+import { join } from "path";
 
 // Helper to fetch image as Uint8Array
 async function fetchImage(url: string | undefined): Promise<Uint8Array | null> {
@@ -18,10 +18,19 @@ async function fetchImage(url: string | undefined): Promise<Uint8Array | null> {
   }
 }
 
+// Helper to read local image file
+function readLocalImage(path: string): Uint8Array | null {
+  try {
+    return readFileSync(path);
+  } catch (error) {
+    console.error("Error reading local image:", error);
+    return null;
+  }
+}
+
 // Helper to replace unsupported Lithuanian characters with ASCII equivalents
 function replaceUnsupportedChars(str: string | undefined): string {
   if (!str) return "";
-
   return str
     .replace(/ą/g, "a")
     .replace(/č/g, "c")
@@ -56,299 +65,268 @@ function replaceUnsupportedChars(str: string | undefined): string {
     .replace(/Ż/g, "Z");
 }
 
-// Don't replace characters if we have a good font
+// Base URL for team logos in Supabase storage (if used)
 const SUPABASE_TEAM_LOGO_BASE_URL =
   "https://phvjdfqxzitzohiskwwo.supabase.co/storage/v1/object/public/team-logo//";
 
+// Add this small helper near your other utils:
+function formatDateLt(dateISO: string, timeStr: string) {
+  const d = new Date(dateISO);
+  const months = [
+    "Sausio",
+    "Vasario",
+    "Kovo",
+    "Balandžio",
+    "Gegužės",
+    "Birželio",
+    "Liepos",
+    "Rugpjūčio",
+    "Rugsėjo",
+    "Spalio",
+    "Lapkričio",
+    "Gruodžio",
+  ];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  return `${month} ${day}d, ${timeStr}`;
+}
+
+// Replace your current generateTicketPDF with this one:
 export async function generateTicketPDF(
   ticket: TicketWithDetails,
   team1?: Team,
   team2?: Team,
 ): Promise<Uint8Array> {
-  // Revert to previous wide ticket design
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
-  const width = 842, height = 400; // A4 landscape proportions
+  // Canvas — wide ticket (similar proportions to your reference)
+  const width = 1600;
+  const height = 700;
   const page = pdfDoc.addPage([width, height]);
 
-  // Colors matching your design
-  const mainBlue = rgb(10 / 255, 22 / 255, 91 / 255); // #0A165B
-  const orange = rgb(241 / 255, 86 / 255, 1 / 255); // #F15601
+  // Colors
   const white = rgb(1, 1, 1);
-  const lightGray = rgb(0.95, 0.95, 0.97);
-  const darkGray = rgb(0.4, 0.4, 0.5);
-  const mediumGray = rgb(0.6, 0.6, 0.65);
+  const gray = rgb(0.65, 0.68, 0.72);
 
-  // Get ticket type colors
-  function getTicketTypeColors(ticketType: string) {
-    const type = ticketType?.toLowerCase() || "normal";
-    if (type.includes("vip")) {
-      return { bg: orange, text: white };
-    } else if (type.includes("premium")) {
-      return { bg: rgb(0.4, 0.4, 0.5), text: white };
-    } else {
-      return { bg: rgb(0.35, 0.35, 0.45), text: white };
-    }
-  }
-
-  const ticketColors = getTicketTypeColors(ticket.tier?.name || "Normal");
-
-  // Use standard font to avoid encoding issues
+  // Fonts
   const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const bold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-  // === TICKET HEADER SECTION ===
-  const headerHeight = 80;
-  page.drawRectangle({
-    x: 0,
-    y: height - headerHeight,
-    width: width,
-    height: headerHeight,
-    color: ticketColors.bg,
-  });
+  // Load and embed the background image
+  try {
+    const backgroundImageBytes = readLocalImage("public/ticketbg.jpg");
+    if (backgroundImageBytes) {
+      const backgroundImage = await pdfDoc.embedJpg(backgroundImageBytes);
 
-  // Event title in header
-  const eventTitle = replaceUnsupportedChars(ticket.event.title);
-  page.drawText(eventTitle, {
-    x: 20,
-    y: height - 35,
-    size: 24,
-    font: font,
-    color: ticketColors.text,
-  });
-
-  // === TICKET BODY SECTION ===
-  const bodyY = height - headerHeight - 20;
-  const bodyHeight = height - headerHeight - 40;
-  const leftColumnWidth = width * 0.6;
-  const rightColumnWidth = width * 0.4;
-
-  // Left column - Event details
-  let currentY = bodyY;
-
-  // Event date
-  const eventDate = replaceUnsupportedChars(ticket.event.date);
-  page.drawText(`Data: ${eventDate}`, {
-    x: 20,
-    y: currentY,
-    size: 14,
-    font: font,
-    color: mainBlue,
-  });
-  currentY -= 20;
-
-  // Event time
-  const eventTime = replaceUnsupportedChars(ticket.event.time);
-  page.drawText(`Laikas: ${eventTime}`, {
-    x: 20,
-    y: currentY,
-    size: 14,
-    font: font,
-    color: mainBlue,
-  });
-  currentY -= 20;
-
-  // Event location
-  const eventLocation = replaceUnsupportedChars(ticket.event.location);
-  page.drawText(`Vieta: ${eventLocation}`, {
-    x: 20,
-    y: currentY,
-    size: 14,
-    font: font,
-    color: mainBlue,
-  });
-  currentY -= 30;
-
-  // Teams (if available)
-  if (team1 && team2) {
-    const team1Name = replaceUnsupportedChars(team1.team_name);
-    const team2Name = replaceUnsupportedChars(team2.team_name);
-    page.drawText(`${team1Name} vs ${team2Name}`, {
-      x: 20,
-      y: currentY,
-      size: 18,
-      font: font,
-      color: mainBlue,
+      // Draw the background image to fill the entire page
+      page.drawImage(backgroundImage, {
+        x: 0,
+        y: 0,
+        width: width,
+        height: height,
+      });
+    }
+  } catch (error) {
+    console.error("Error loading background image:", error);
+    // Fallback: draw a navy background
+    page.drawRectangle({
+      x: 0,
+      y: 0,
+      width: width,
+      height: height,
+      color: rgb(10 / 255, 22 / 255, 91 / 255), // #0A165B
     });
-    currentY -= 30;
   }
 
-  // Purchaser details
-  const purchaserName = replaceUnsupportedChars(ticket.purchaserName);
-  page.drawText(`Bilieto savininkas: ${purchaserName}`, {
-    x: 20,
-    y: currentY,
-    size: 14,
-    font: font,
-    color: mainBlue,
-  });
-  currentY -= 20;
+  // Content coordinates tuned for background image
+  const perfX = Math.round(width * 0.66);
+  const leftX = 120; // left margin inside navy panel
+  const leftMaxX = perfX - 140; // keep distance from dashed line
+  const leftWidth = leftMaxX - leftX;
+  const rightX = perfX + 90; // start of right column (QR)
 
-  const purchaserEmail = replaceUnsupportedChars(ticket.purchaserEmail);
-  page.drawText(`El. pastas: ${purchaserEmail}`, {
-    x: 20,
-    y: currentY,
-    size: 14,
-    font: font,
-    color: mainBlue,
-  });
-  currentY -= 30;
-
-  // Ticket type and price
-  const tierName = replaceUnsupportedChars(ticket.tier.name);
-  page.drawText(`Bilieto tipas: ${tierName}`, {
-    x: 20,
-    y: currentY,
-    size: 16,
-    font: font,
-    color: mainBlue,
-  });
-  currentY -= 20;
-
-  const tierPrice = ticket.tier.price;
-  page.drawText(`Kaina: €${tierPrice.toFixed(2)}`, {
-    x: 20,
-    y: currentY,
-    size: 16,
-    font: font,
-    color: orange,
+  // -------- Header: centered title with optional logos --------
+  const headerLabelY = height - 120;
+  page.drawText(replaceUnsupportedChars("Rungtynės"), {
+    x: leftX,
+    y: headerLabelY,
+    size: 18,
+    font,
+    color: white,
   });
 
-  // === QR CODE SECTION ===
-  const qrY = bodyY - 100;
+  // logos and title
+  const title = replaceUnsupportedChars(
+    team1 && team2
+      ? `${team1.team_name} – ${team2.team_name}`
+      : ticket.event.title,
+  );
+  const titleSize = 42;
+  const titleWidth = bold.widthOfTextAtSize(title, titleSize);
+  const logoSize = 46;
+  const logoGap = 16;
 
-  try {
-    // Always use ticket ID for QR code to ensure consistency
-    const qrImageBytes = await qr.toBuffer(ticket.id, {
-      width: 150,
-      margin: 2,
-      errorCorrectionLevel: "H", // High error correction
-      color: {
-        dark: "#0A165B", // Main blue color
-        light: "#FFFFFF",
-      },
+  const [logo1Bytes, logo2Bytes] = await Promise.all([
+    (async () => {
+      if (!team1) return null;
+      const u = (team1 as any).logo || (team1 as any).logo_url;
+      return u ? fetchImage(u) : null;
+    })(),
+    (async () => {
+      if (!team2) return null;
+      const u = (team2 as any).logo || (team2 as any).logo_url;
+      return u ? fetchImage(u) : null;
+    })(),
+  ]);
+  let logo1Img = logo1Bytes
+    ? await pdfDoc.embedPng(logo1Bytes).catch(async () =>
+      await pdfDoc.embedJpg(logo1Bytes!)
+    )
+    : null;
+  let logo2Img = logo2Bytes
+    ? await pdfDoc.embedPng(logo2Bytes).catch(async () =>
+      await pdfDoc.embedJpg(logo2Bytes!)
+    )
+    : null;
+
+  const totalTitleW = (logo1Img ? logoSize + logoGap : 0) + titleWidth +
+    (logo2Img ? logoGap + logoSize : 0);
+  const titleAreaCenterX = leftX + leftWidth / 2;
+  let cursorX = titleAreaCenterX - totalTitleW / 2;
+  const titleY = headerLabelY - 36;
+
+  if (logo1Img) {
+    page.drawImage(logo1Img, {
+      x: cursorX,
+      y: titleY - 6,
+      width: logoSize,
+      height: logoSize,
     });
+    cursorX += logoSize + logoGap;
+  }
+  page.drawText(title, {
+    x: cursorX,
+    y: titleY,
+    size: titleSize,
+    font: bold,
+    color: white,
+  });
+  cursorX += titleWidth;
+  if (logo2Img) {
+    cursorX += logoGap;
+    page.drawImage(logo2Img, {
+      x: cursorX,
+      y: titleY - 6,
+      width: logoSize,
+      height: logoSize,
+    });
+  }
 
-    const qrImage = await pdfDoc.embedPng(qrImageBytes);
+  // -------- Left column rows (fixed Y) --------
+  const row1Y = 480; // Location
+  const row2Y = 380; // Time + Price
+  const row3Y = 280; // Purchaser name
+  const emailY = 245; // Purchaser email
 
-    // Draw QR code with better positioning and size
-    const qrSize = 140;
-    const qrX = width - qrSize - 40;
-    const qrYPos = qrY - 30;
-
-    // Draw QR code background (white rectangle)
-    page.drawRectangle({
-      x: qrX - 10,
-      y: qrYPos - 10,
-      width: qrSize + 20,
-      height: qrSize + 40,
+  const label = (text: string, x: number, y: number) =>
+    page.drawText(replaceUnsupportedChars(text), {
+      x,
+      y,
+      size: 15,
+      font,
+      color: rgb(0.75, 0.77, 0.83),
+    });
+  const value = (text: string, x: number, y: number, size = 30) =>
+    page.drawText(replaceUnsupportedChars(text), {
+      x,
+      y,
+      size,
+      font: bold,
       color: white,
     });
 
-    // Draw QR code
-    page.drawImage(qrImage, {
-      x: qrX,
-      y: qrYPos,
+  // Row 1: Vieta
+  label("Vieta", leftX, row1Y + 18);
+  value(ticket.event.location, leftX, row1Y, 32);
+
+  // Row 2: Laikas (left) and Bilieto tipas ir kaina (right)
+  const midX = leftX + Math.floor(leftWidth * 0.52);
+  label("Laikas", leftX, row2Y + 18);
+  value(formatDateLt(ticket.event.date, ticket.event.time), leftX, row2Y, 30);
+  label("Bilieto tipas ir kaina", midX, row2Y + 18);
+  value(
+    `${ticket.tier.name} / €${ticket.tier.price.toFixed(0)}`,
+    midX,
+    row2Y,
+    30,
+  );
+
+  // Row 3: Pirkejas + email
+  label("Pirkejas", leftX, row3Y + 18);
+  value(ticket.purchaserName, leftX, row3Y, 28);
+  page.drawText(replaceUnsupportedChars(ticket.purchaserEmail), {
+    x: leftX,
+    y: emailY,
+    size: 16,
+    font,
+    color: white,
+  });
+
+  // -------- Right column QR block --------
+  const qrSize = 300;
+  const qrBottom = 320; // vertical position
+  const cardX = rightX;
+
+  try {
+    const qrBytes = await qr.toBuffer(ticket.id, {
+      width: qrSize,
+      margin: 2,
+      errorCorrectionLevel: "H",
+      color: { dark: "#000000", light: "#FFFFFF" },
+    });
+    const qrImg = await pdfDoc.embedPng(qrBytes);
+    page.drawRectangle({
+      x: cardX - 10,
+      y: qrBottom - 10,
+      width: qrSize + 20,
+      height: qrSize + 20,
+      color: white,
+      borderRadius: 12,
+    });
+    page.drawImage(qrImg, {
+      x: cardX,
+      y: qrBottom,
       width: qrSize,
       height: qrSize,
     });
 
-    // QR Code title
-    page.drawText("QR KODAS", {
-      x: qrX,
-      y: qrYPos + qrSize + 15,
-      size: 12,
-      font: font,
-      color: mainBlue,
+    page.drawText(replaceUnsupportedChars("QR kodas"), {
+      x: cardX,
+      y: qrBottom - 40,
+      size: 20,
+      font: bold,
+      color: white,
     });
-
-    // QR Code subtitle
-    page.drawText("Skenuokite iejimui", {
-      x: qrX,
-      y: qrYPos + qrSize + 5,
-      size: 8,
-      font: font,
-      color: darkGray,
+    page.drawText(replaceUnsupportedChars("Skenuokite prie iejimo"), {
+      x: cardX,
+      y: qrBottom - 65,
+      size: 14,
+      font,
+      color: white,
     });
+  } catch {}
 
-    // Ticket ID below QR code
-    const ticketIdText = ticket.id.slice(0, 16) + "...";
-    page.drawText(ticketIdText, {
-      x: qrX,
-      y: qrYPos - 15,
-      size: 8,
-      font: font,
-      color: darkGray,
-    });
-  } catch (error) {
-    console.error(`Error generating QR code for ticket ${ticket.id}:`, error);
-
-    // Fallback: draw a placeholder
-    page.drawRectangle({
-      x: width - 180,
-      y: qrY - 50,
-      width: 160,
-      height: 160,
-      color: lightGray,
-    });
-
-    page.drawText("QR Code Error", {
-      x: width - 170,
-      y: qrY + 60,
-      size: 10,
-      font: font,
-      color: darkGray,
-    });
-  }
-
-  // === PERFORATED EDGE EFFECT ===
-  const perfY = bodyY - bodyHeight - 10;
-
-  // Draw perforated dots
-  for (let i = 0; i < 40; i++) {
-    const dotX = 20 + (i * (width - 40) / 39);
-    page.drawCircle({
-      x: dotX,
-      y: perfY,
-      size: 2,
-      color: lightGray,
-    });
-  }
-
-  // === TICKET ID AND VALIDATION STATUS ===
-  const ticketId = ticket.id;
-  const validationStatus = ticket.isValidated ? "VALIDUOTAS" : "NEVALIDUOTAS";
-  const statusColor = ticket.isValidated ? orange : darkGray;
-
-  page.drawText(`Bilieto ID: ${ticketId}`, {
-    x: 20,
-    y: bodyY - bodyHeight + 20,
+  // Footer ID
+  page.drawText(`ID: ${ticket.id}`, {
+    x: leftX,
+    y: 30,
     size: 10,
-    font: font,
-    color: darkGray,
+    font,
+    color: white,
   });
 
-  page.drawText(`Statusas: ${validationStatus}`, {
-    x: 20,
-    y: bodyY - bodyHeight + 10,
-    size: 10,
-    font: font,
-    color: statusColor,
-  });
-
-  // === FOOTER ===
-  const footerY = 30;
-  page.drawText("FK Banga - Bilietu sistema", {
-    x: 20,
-    y: footerY,
-    size: 12,
-    font: font,
-    color: mainBlue,
-  });
-
-  const pdfBytes = await pdfDoc.save();
-  return pdfBytes;
+  return await pdfDoc.save();
 }
 
 export function uint8ArrayToPdfBlob(bytes: Uint8Array): Blob {

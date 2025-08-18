@@ -1,0 +1,8 @@
+ignoredBuiltDependencies:
+  - core-js
+  - esbuild
+  - supabase
+  - unrs-resolver
+
+onlyBuiltDependencies:
+  - puppeteer

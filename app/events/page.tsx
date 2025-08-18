@@ -53,8 +53,8 @@ export default function EventsPage() {
     }
     
     // If teams have logos, create a combined image or use team logos
-    // For now, use a default event placeholder
-    return '/Banga-1.png' // Use the FK Banga logo as a fallback
+    // Fallback to branded background if no cover is set
+    return '/bg%20qr.jpg'
   }
 
   if (loading) {
@@ -84,7 +84,7 @@ export default function EventsPage() {
       {/* Main Content */}
       <div className="w-full">
         <div className="text-center py-8 border-b border-[#232C62]">
-          <h1 className="text-3xl md:text-4xl font-bold text-white">Renginiai</h1>
+          <h1 className="h1-public">Renginiai</h1>
         </div>
         
         {/* Events Grid */}
@@ -103,18 +103,16 @@ export default function EventsPage() {
                 className="block bg-[#0A165B] border border-[#232C62] hover:border-white transition-colors"
               >
                 {/* Event Image */}
-                <div className="relative">
+                <div className="relative aspect-video md:aspect-auto md:h-[163px]">
                   <Image
                     src={getEventImageSrc(event)}
                     alt={event.title}
-                    width={400}
-                    height={200}
-                    className="w-full h-32 sm:h-40 md:h-[163px] object-cover"
+                    fill
+                    className="object-cover"
                     onError={(e) => {
                       console.log(`Image failed to load for event ${event.id}:`, event.coverImageUrl)
-                      // Fallback to FK Banga logo if image fails to load
                       const target = e.target as HTMLImageElement
-                      target.src = '/Banga-1.png'
+                      target.src = '/bg%20qr.jpg'
                     }}
                   />
                   
@@ -122,6 +120,17 @@ export default function EventsPage() {
                   <div className="absolute top-2 md:top-4 left-2 md:left-4 bg-white text-black px-2 md:px-3 py-1 text-center">
                     <div className="text-lg md:text-xl font-semibold leading-tight">{dateInfo.day}</div>
                     <div className="text-xs md:text-sm leading-tight">{dateInfo.month}</div>
+                  </div>
+
+                  {/* Teams Overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center gap-3 md:gap-6">
+                    <div className="flex flex-col items-center">
+                      <Image src={team1?.logo || '/placeholder-logo.png'} alt={team1?.team_name || 'Komanda 1'} width={40} height={40} className="object-contain w-10 h-10 md:w-12 md:h-12" />
+                    </div>
+                    <span className="text-white/80 font-bold text-base md:text-xl">VS</span>
+                    <div className="flex flex-col items-center">
+                      <Image src={team2?.logo || '/placeholder-logo.png'} alt={team2?.team_name || 'Komanda 2'} width={40} height={40} className="object-contain w-10 h-10 md:w-12 md:h-12" />
+                    </div>
                   </div>
                 </div>
 

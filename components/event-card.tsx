@@ -36,13 +36,12 @@ export function EventCard({ event, tickets, teams, onDelete, deletingId }: Event
   return (
     <Card className="group flex flex-col overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card text-card-foreground">
       {/* Cover Image */}
-      <div className="relative">
+      <div className="relative aspect-video md:aspect-auto md:h-48">
         <Image 
           src={event.coverImageUrl || '/placeholder.jpg'} 
           alt={event.title} 
-          width={400} 
-          height={200} 
-          className="w-full h-48 object-cover" 
+          fill
+          className="object-cover" 
         />
         
         {/* Delete button in top-right corner */}

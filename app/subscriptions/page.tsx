@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { PublicNavigation } from "@/components/public-navigation"
 import { useCart } from "@/context/cart-context"
@@ -24,6 +24,7 @@ export default function SubscriptionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
+  const subscriptionsSectionRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const fetchSubscriptions = async () => {
@@ -129,7 +130,7 @@ export default function SubscriptionsPage() {
       {/* Main Content */}
       <div className="w-full pb-20 lg:pb-0">
         <div className="text-center py-8 border-b border-[#232C62]">
-          <h1 className="text-3xl md:text-4xl font-bold text-white">Abonementai</h1>
+          <h1 className="h1-public">Abonementai</h1>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2">
@@ -137,7 +138,7 @@ export default function SubscriptionsPage() {
           {/* Left Column - About Subscriptions */}
           <div>
             <div className="bg-[#0A165B] border-l border-t border-b border-[#232C62] p-6 h-full">
-              <h2 className="text-white text-xl font-bold mb-4">APIE ABONEMENTUS</h2>
+              <h2 className="h2-public mb-4">APIE ABONEMENTUS</h2>
               <p className="text-gray-300 leading-relaxed">
                 Svarbus abonementų pasiūlymas FK &quot;Banga&quot; gerbėjams. Su mūsų abonementais galėsite lankytis visuose namų rungtynių sezone, gauti specialius pasiūlymus ir būti pirmieji, kurie sužinos apie naujienas. Abonementai suteikia ne tik patogumą, bet ir finansinę naudą, nes kaina yra žemesnė nei atskirų bilietų suma. Pasirinkite jums tinkamiausią abonementą ir tapkite tikru FK &quot;Banga&quot; gerbėju!
               </p>
@@ -146,8 +147,8 @@ export default function SubscriptionsPage() {
 
           {/* Right Column - Subscription Selection */}
           <div>
-            <div className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full flex flex-col">
-              <h2 className="text-white text-xl font-bold mb-6">ABONEMENTAI</h2>
+            <div ref={subscriptionsSectionRef} className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full flex flex-col">
+              <h2 className="h2-public mb-6">ABONEMENTAI</h2>
               
               {/* Subscription Tiers */}
               <div className="space-y-4 mb-6 flex-1">
@@ -227,7 +228,9 @@ export default function SubscriptionsPage() {
               <div className="hidden lg:block">
                 <Button
                   onClick={handleAddToCart}
-                  className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold py-3 text-lg rounded-none"
+                  variant="cta"
+                  size="cta"
+                  className="w-full font-semibold"
                 >
                   Pridėti į krepšelį
                 </Button>
@@ -240,10 +243,19 @@ export default function SubscriptionsPage() {
       {/* Fixed Add to Cart Button - Mobile Only */}
       <div className="fixed bottom-0 left-0 right-0 bg-[#0A165B] border-t border-[#232C62] p-4 lg:hidden z-50">
         <Button
-          onClick={handleAddToCart}
-          className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold py-4 text-lg rounded-none"
+          onClick={() => {
+            const hasSubscriptionInCart = cart.some(item => item.eventId === 'subscription' && item.quantity > 0)
+            if (hasSubscriptionInCart) {
+              handleAddToCart()
+            } else {
+              subscriptionsSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }
+          }}
+          variant="cta"
+          size="cta"
+          className="w-full font-semibold"
         >
-          Pridėti į krepšelį
+          {cart.some(item => item.eventId === 'subscription' && item.quantity > 0) ? 'Pridėti į krepšelį' : 'Rinktis prenumeratę'}
         </Button>
       </div>
     </div>

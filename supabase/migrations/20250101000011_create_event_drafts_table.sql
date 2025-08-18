@@ -1,0 +1,34 @@
+-- Create event_drafts table for storing scraped event data
+CREATE TABLE IF NOT EXISTS EVENT_DRAFTS (
+    ID UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
+    DEDUPE_KEY TEXT UNIQUE,
+    SOURCE TEXT,
+    RAW JSONB,
+    TITLE TEXT,
+    DATE DATE,
+    TIME TEXT,
+    LOCATION TEXT,
+    TEAM1_NAME TEXT,
+    TEAM2_NAME TEXT,
+    CREATED_AT TIMESTAMPTZ DEFAULT NOW(),
+    UPDATED_AT TIMESTAMPTZ DEFAULT NOW(),
+    USED_AT TIMESTAMPTZ
+);
+
+-- Create index for date-based queries
+CREATE INDEX IF NOT EXISTS EVENT_DRAFTS_DATE_IDX ON EVENT_DRAFTS(DATE);
+
+-- Create index for dedupe_key lookups
+CREATE INDEX IF NOT EXISTS EVENT_DRAFTS_DEDUPE_KEY_IDX ON EVENT_DRAFTS(DEDUPE_KEY);
+
+-- Create index for used_at filtering
+CREATE INDEX IF NOT EXISTS EVENT_DRAFTS_USED_AT_IDX ON EVENT_DRAFTS(USED_AT);
+
+-- Add RLS policies
+ALTER TABLE EVENT_DRAFTS ENABLE ROW LEVEL SECURITY;
+
+-- Allow all operations for now (we can restrict later)
+CREATE POLICY "Allow all operations on event_drafts"
+    ON EVENT_DRAFTS FOR ALL
+    USING (TRUE)
+    WITH CHECK (TRUE);

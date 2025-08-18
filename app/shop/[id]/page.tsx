@@ -129,6 +129,7 @@ export default function ProductPage() {
         title: "Pridėta į krepšelį",
         description: "Produktas sėkmingai pridėtas į krepšelį",
       })
+      setIsCartSheetOpen(true)
     }
   }
 
@@ -336,7 +337,9 @@ export default function ProductPage() {
                 <Button
                   onClick={handleAddToCart}
                   disabled={product.stock_quantity === 0 && !product.allow_backorders}
-                  className="w-full bg-[#F15601] hover:bg-[#F15601]/90 text-white font-bold py-4 text-xl rounded-none disabled:opacity-50"
+                  variant="cta"
+                  size="cta"
+                  className="w-full font-semibold disabled:opacity-50"
                 >
                   <ShoppingCart className="w-6 h-6 mr-3" />
                   {product.stock_quantity === 0 && !product.allow_backorders ? "Išparduota" : "Pridėti į krepšelį"}
@@ -365,58 +368,57 @@ export default function ProductPage() {
         {/* You Might Also Like Section */}
         {relatedProducts.length > 0 && (
           <div className="border-t border-[#232C62]">
-            <div className="p-6 lg:p-8">
-              <h2 className="text-2xl lg:text-3xl font-bold text-white mb-6">
-                Jums taip pat gali patikt
-              </h2>
-              
-              {/* Related Products Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {relatedProducts.map((relatedProduct) => (
-                  <Link 
-                    key={relatedProduct.id} 
-                    href={`/shop/${relatedProduct.id}`}
-                    className="block border border-[#232C62] hover:border-white transition-colors"
-                  >
-                    {/* Product Image */}
-                    <div className="relative">
-                      <Image
-                        src={relatedProduct.image_url || "/placeholder.jpg"}
-                        alt={relatedProduct.name}
-                        width={400}
-                        height={400}
-                        className="w-full aspect-square object-cover"
-                      />
-                      <div className="absolute top-2 left-2 bg-[#F15601] text-white px-2 py-1 text-sm font-semibold">
-                        {relatedProduct.product_categories?.name || "Nekategorizuotas"}
-                      </div>
+            {/* Section Title */}
+            <div className="px-4 md:px-8 lg:px-16 py-6 lg:py-8">
+              <h2 className="h2-public">Jums taip pat gali patikti</h2>
+            </div>
+
+            {/* Related Products Grid - no outer padding */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {relatedProducts.map((relatedProduct) => (
+                <Link 
+                  key={relatedProduct.id} 
+                  href={`/shop/${relatedProduct.id}`}
+                  className="block border border-[#232C62] hover:border-white transition-colors"
+                >
+                  {/* Product Image */}
+                  <div className="relative">
+                    <Image
+                      src={relatedProduct.image_url || "/placeholder.jpg"}
+                      alt={relatedProduct.name}
+                      width={400}
+                      height={400}
+                      className="w-full aspect-square object-cover"
+                    />
+                    <div className="absolute top-2 left-2 bg-[#F15601] text-white px-2 py-1 text-sm font-semibold">
+                      {relatedProduct.product_categories?.name || "Nekategorizuotas"}
                     </div>
-      
-                    {/* Product Details */}
-                    <div className="p-4 space-y-3">
-                      <div>
-                        <h3 className="text-white text-lg font-semibold leading-tight">
-                          {relatedProduct.name}
-                        </h3>
-                        <p className="text-gray-400 text-sm mt-1 line-clamp-2">
-                          {relatedProduct.short_description || relatedProduct.description}
-                        </p>
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <h3 className="text-white text-lg font-semibold leading-tight">
+                        {relatedProduct.name}
+                      </h3>
+                      <p className="text-gray-400 text-sm mt-1 line-clamp-2">
+                        {relatedProduct.short_description || relatedProduct.description}
+                      </p>
+                    </div>
+                    
+                    <div className="text-right">
+                      <div className="text-white font-bold text-xl">
+                        €{relatedProduct.price.toFixed(2)}
                       </div>
-                      
-                      <div className="text-right">
-                        <div className="text-white font-bold text-xl">
-                          €{relatedProduct.price.toFixed(2)}
+                      {relatedProduct.compare_price && relatedProduct.compare_price > relatedProduct.price && (
+                        <div className="text-gray-400 text-sm line-through">
+                          €{relatedProduct.compare_price.toFixed(2)}
                         </div>
-                        {relatedProduct.compare_price && relatedProduct.compare_price > relatedProduct.price && (
-                          <div className="text-gray-400 text-sm line-through">
-                            €{relatedProduct.compare_price.toFixed(2)}
-                          </div>
-                        )}
-                      </div>
+                      )}
                     </div>
-                  </Link>
-                ))}
-              </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
         )}

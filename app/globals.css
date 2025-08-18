@@ -52,6 +52,25 @@ body, html {
   }
 }
 
+@layer components {
+  /* Public typography helpers */
+  .h1-public {
+    @apply text-white font-bold text-[40px] leading-[52px] md:text-[64px] md:leading-[76px];
+  }
+  .h2-public {
+    @apply text-white text-center font-bold text-[32px] leading-[40px] md:text-[48px] md:leading-[60px];
+  }
+  .p-public {
+    @apply text-white font-medium text-[16px] leading-[24px];
+  }
+  .subheading-public {
+    @apply text-white/60 font-medium text-[16px] leading-[24px];
+  }
+  .link-underline-public {
+    @apply text-[#FA871C] text-center font-medium text-[16px] leading-[24px] underline underline-offset-2;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
