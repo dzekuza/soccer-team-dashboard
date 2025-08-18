@@ -131,12 +131,17 @@ export async function GET(
 ) {
     try {
         const { id } = params;
+        console.log("[pdf-html] Processing ticket ID:", id);
+        
         const ticket = await dbService.getTicketWithDetails(id);
         if (!ticket) {
+            console.log("[pdf-html] Ticket not found:", id);
             return NextResponse.json({ error: "Ticket not found" }, {
                 status: 404,
             });
         }
+
+        console.log("[pdf-html] Ticket found:", ticket.id);
 
         // Derive display values
         const title = ticket.event?.title || "Bilietas";
@@ -147,6 +152,8 @@ export async function GET(
         }`;
         const purchaserName = ticket.purchaserName || "";
         const purchaserEmail = ticket.purchaserEmail || "";
+
+        console.log("[pdf-html] Generated display values:", { title, location, dateText, priceText });
 
         // Inline QR image
         const qrDataUrl = await QRCode.toDataURL(ticket.id, {
@@ -168,6 +175,18 @@ export async function GET(
             qrDataUrl,
         });
 
+        console.log("[pdf-html] HTML generated, length:", html.length);
+
+        // For now, return HTML for debugging
+        return new NextResponse(html, {
+            status: 200,
+            headers: {
+                "Content-Type": "text/html",
+            },
+        });
+
+        // TODO: Re-enable PDF generation once Chromium is working
+        /*
         // Launch serverless Chromium
         const browser = await puppeteer.launch({
             args: chromium.args,
@@ -194,9 +213,15 @@ export async function GET(
                     `inline; filename="ticket-${ticket.id}.pdf"`,
             },
         });
+        */
     } catch (err: any) {
         console.error("[pdf-html] generation error", err);
-        return NextResponse.json({ error: "Failed to generate PDF" }, {
+        console.error("[pdf-html] error stack:", err.stack);
+        return NextResponse.json({ 
+            error: "Failed to generate PDF", 
+            details: err.message,
+            stack: err.stack 
+        }, {
             status: 500,
         });
     }
