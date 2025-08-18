@@ -70,26 +70,67 @@ export async function GET(
     const origin = new URL(_request.url).origin;
     const html = await renderTicketHtml({ ticket, origin });
 
-    // Generate PDF using Puppeteer
+    // Generate PDF using Puppeteer with optimized settings
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--disable-accelerated-2d-canvas",
+        "--no-first-run",
+        "--no-zygote",
+        "--single-process",
+        "--disable-gpu",
+      ],
     });
-    
+
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '0.5in',
-        right: '0.5in',
-        bottom: '0.5in',
-        left: '0.5in'
-      }
+
+    // Set viewport to match the ticket dimensions exactly
+    await page.setViewport({
+      width: 1600,
+      height: 700,
+      deviceScaleFactor: 2,
     });
-    
+
+    // Set content and wait for all resources to load
+    await page.setContent(html, {
+      waitUntil: "networkidle0",
+      timeout: 15000,
+    });
+
+    // Wait for images and fonts to load
+    await page.evaluate(() => {
+      return Promise.all([
+        ...Array.from(document.images).map((img) => {
+          if (img.complete) return Promise.resolve();
+          return new Promise((resolve, reject) => {
+            img.addEventListener("load", resolve);
+            img.addEventListener("error", reject);
+          });
+        }),
+        document.fonts.ready,
+      ]);
+    });
+
+    // Additional wait to ensure everything is rendered
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Generate PDF with exact dimensions
+    const pdfBuffer = await page.pdf({
+      width: "1600px",
+      height: "700px",
+      printBackground: true,
+      preferCSSPageSize: false,
+      margin: {
+        top: "0",
+        right: "0",
+        bottom: "0",
+        left: "0",
+      },
+    });
+
     await browser.close();
 
     // Return the PDF file for download
