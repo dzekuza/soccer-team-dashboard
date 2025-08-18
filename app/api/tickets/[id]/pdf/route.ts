@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, context: { params: { id: string 
     const title = ticket.event?.title || "Bilietas"
     const location = ticket.event?.location || ""
     const dateText = `${monthLt(ticket.event.date)}, ${ticket.event.time}`
-    const priceText = `${ticket.tier.name} / €${ticket.tier.price.toFixed(0)}`
+    const priceText = ticket.tier ? `${ticket.tier.name} / €${ticket.tier.price.toFixed(0)}` : "N/A"
     const purchaserName = ticket.purchaserName || ""
     const purchaserEmail = ticket.purchaserEmail || ""
 
