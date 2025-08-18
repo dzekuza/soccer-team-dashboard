@@ -84,11 +84,13 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
     if (!open) return;
     supabase
       .from("teams")
-      .select("id, team_name, logo, created_at, league_code, league_name, gender, squad")
+      .select("id, team_name, logo, created_at")
       .then(({ data, error }: { data: Team[] | null, error: PostgrestError | null }) => {
         if (error) {
+          console.error("Error fetching teams:", error);
           setTeams([]);
         } else {
+          console.log("Fetched teams:", data);
           setTeams(Array.isArray(data) ? data : []);
         }
       });
@@ -132,7 +134,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
       const findTeamByName = (name?: string | null) => {
         const candidates = expandSynonyms(name)
         return teams.find((t) => {
-          const tt = normalize((t as any).team_name || "")
+          const tt = normalize(t.team_name || "")
           return candidates.some((c) => tt === c || tt.includes(c) || c.includes(tt))
         }) || null
       }
@@ -140,8 +142,8 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
       const matchedT1 = findTeamByName((draft as any).team1_name)
       const matchedT2 = findTeamByName((draft as any).team2_name)
 
-      if (matchedT1) setTeam1Id((matchedT1 as any).id)
-      if (matchedT2 && (matchedT2 as any).id !== (matchedT1 as any)?.id) setTeam2Id((matchedT2 as any).id)
+      if (matchedT1) setTeam1Id(matchedT1.id)
+      if (matchedT2 && matchedT2.id !== matchedT1?.id) setTeam2Id(matchedT2.id)
 
       // infer league variant
       const inferVariant = (): 'banga'|'banga-b'|'banga-m'|'all' => {
@@ -150,8 +152,9 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
         if (/\bbanga\s*b\b/.test(t1n) || /\bbanga\s*b\b/.test(t2n) || /\bbanga-?2\b/.test(t1n+t2n) || /\bbanga\s*ii\b/.test(t1n+t2n)) return 'banga-b'
         // if opponent matches women team in DB
         const oppName = t1n.includes('banga') ? t2n : t1n
-        const opp = teams.find((t) => normalize((t as any).team_name||'') === oppName)
-        if ((opp as any)?.gender === 'women') return 'banga-m'
+        const opp = teams.find((t) => normalize(t.team_name||'') === oppName)
+        // Since teams don't have gender field, skip this check for now
+        // if (opp?.gender === 'women') return 'banga-m'
         if (t1n.includes('banga') || t2n.includes('banga')) return 'banga'
         return 'all'
       }
@@ -161,22 +164,15 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
   }, [open, draft, teams])
 
   const filteredTeams = React.useMemo(() => {
-    if (clubVariant === 'banga') {
-      return teams.filter((t: any) => (t.league_code === 'A-LYGA' && (t.gender === 'men' || !t.gender)))
-    }
-    if (clubVariant === 'banga-b') {
-      return teams.filter((t: any) => (t.league_code === 'II-A'))
-    }
-    if (clubVariant === 'banga-m') {
-      return teams.filter((t: any) => (t.league_code === 'W-ALYGA' || t.gender === 'women'))
-    }
+    // Since teams don't have league_code, gender, squad fields, just return all teams
+    // You can implement filtering logic later when those fields are added
     return teams
   }, [teams, clubVariant])
 
   // Reset selected teams if they are not in current filter
   useEffect(() => {
-    if (!filteredTeams.find((t: any) => t.id === team1Id)) setTeam1Id("")
-    if (!filteredTeams.find((t: any) => t.id === team2Id)) setTeam2Id("")
+    if (!filteredTeams.find((t) => t.id === team1Id)) setTeam1Id("")
+    if (!filteredTeams.find((t) => t.id === team2Id)) setTeam2Id("")
   }, [filteredTeams])
 
   const addPricingTier = () => {
