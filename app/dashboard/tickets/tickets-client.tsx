@@ -331,7 +331,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
             </div>
             <Button onClick={() => handleDownloadPDF(previewTicket)} className="w-full bg-[#F15601] hover:bg-[#E04501] text-white rounded-lg text-lg font-semibold py-3 mt-2">
               <Download className="h-5 w-5 mr-2" />
-              Download PDF
+                                          Atsisiųsti PDF
             </Button>
             <div className="text-center text-xs text-gray-300 border-t border-[#0A2065] pt-2 mt-4">
               <p>Ticket ID: {previewTicket.id}</p>
@@ -419,7 +419,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                     <QrCode className="h-4 w-4 mr-1" /> QR
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(ticket)}>
-                    <Download className="h-4 w-4 mr-1" /> PDF
+                    <Download className="h-4 w-4 mr-1" /> Atsisiųsti
                   </Button>
                 </div>
               </CardContent>

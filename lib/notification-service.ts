@@ -37,8 +37,13 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
     }
 
     // Generate HTML and print to PDF via headless Chromium
-    const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
-    const html = await renderTicketHtml({ ticket: { ...ticket, qrCodeUrl: ticket.id } as any, origin });
+    const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "http://localhost:3000";
+    const html = await renderTicketHtml({
+      ticket: { ...ticket, qrCodeUrl: ticket.id } as any,
+      origin,
+    });
     const browser = await puppeteer.launch({
       args: chromium.args,
       defaultViewport: { width: 1600, height: 700, deviceScaleFactor: 2 },
@@ -46,12 +51,12 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
       headless: true,
     });
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.setContent(html, { waitUntil: "networkidle0" });
     const pdfBytes = await page.pdf({
       printBackground: true,
-      width: '1600px',
-      height: '700px',
-      pageRanges: '1',
+      width: "1600px",
+      height: "700px",
+      pageRanges: "1",
       preferCSSPageSize: true,
     });
     await browser.close();
@@ -175,23 +180,26 @@ async function sendShopOrderConfirmation(orderId: string): Promise<void> {
     }
 
     const orderItems = await supabaseService.getShopOrderItems(orderId);
-    
+
     // Create order items HTML
-    const itemsHtml = orderItems.map(item => `
+    const itemsHtml = orderItems.map((item) => `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product_name}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.unit_price}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.total_price}</td>
       </tr>
-    `).join('');
+    `).join("");
 
     const emailBody = template.body_html
       .replace(/{{customer_name}}/g, order.customer_name)
       .replace(/{{order_number}}/g, order.order_number)
       .replace(/{{total_amount}}/g, `€${order.total_amount}`)
       .replace(/{{order_items}}/g, itemsHtml)
-      .replace(/{{delivery_address}}/g, formatDeliveryAddress(order.delivery_address));
+      .replace(
+        /{{delivery_address}}/g,
+        formatDeliveryAddress(order.delivery_address),
+      );
 
     const emailSubject = template.subject.replace(
       /{{order_number}}/g,
@@ -205,12 +213,17 @@ async function sendShopOrderConfirmation(orderId: string): Promise<void> {
       html: emailBody,
     });
   } catch (error) {
-    console.error(`Failed to send shop order confirmation for ${orderId}:`, error);
+    console.error(
+      `Failed to send shop order confirmation for ${orderId}:`,
+      error,
+    );
     throw error;
   }
 }
 
-async function sendShopOrderNotificationToAdmin(orderId: string): Promise<void> {
+async function sendShopOrderNotificationToAdmin(
+  orderId: string,
+): Promise<void> {
   try {
     const order = await supabaseService.getShopOrderById(orderId);
     if (!order) {
@@ -221,29 +234,34 @@ async function sendShopOrderNotificationToAdmin(orderId: string): Promise<void> 
       "shop_order_admin_notification",
     );
     if (!template) {
-      throw new Error("Shop order admin notification email template not found.");
+      throw new Error(
+        "Shop order admin notification email template not found.",
+      );
     }
 
     const orderItems = await supabaseService.getShopOrderItems(orderId);
-    
+
     // Create order items HTML
-    const itemsHtml = orderItems.map(item => `
+    const itemsHtml = orderItems.map((item) => `
       <tr>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product_name}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.unit_price}</td>
         <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.total_price}</td>
       </tr>
-    `).join('');
+    `).join("");
 
     const emailBody = template.body_html
       .replace(/{{customer_name}}/g, order.customer_name)
       .replace(/{{customer_email}}/g, order.customer_email)
-      .replace(/{{customer_phone}}/g, order.customer_phone || 'N/A')
+      .replace(/{{customer_phone}}/g, order.customer_phone || "N/A")
       .replace(/{{order_number}}/g, order.order_number)
       .replace(/{{total_amount}}/g, `€${order.total_amount}`)
       .replace(/{{order_items}}/g, itemsHtml)
-      .replace(/{{delivery_address}}/g, formatDeliveryAddress(order.delivery_address));
+      .replace(
+        /{{delivery_address}}/g,
+        formatDeliveryAddress(order.delivery_address),
+      );
 
     const emailSubject = template.subject.replace(
       /{{order_number}}/g,
@@ -260,21 +278,24 @@ async function sendShopOrderNotificationToAdmin(orderId: string): Promise<void> 
       html: emailBody,
     });
   } catch (error) {
-    console.error(`Failed to send shop order admin notification for ${orderId}:`, error);
+    console.error(
+      `Failed to send shop order admin notification for ${orderId}:`,
+      error,
+    );
     throw error;
   }
 }
 
 function formatDeliveryAddress(address: any): string {
-  if (!address) return 'N/A';
-  
+  if (!address) return "N/A";
+
   const parts = [];
   if (address.street) parts.push(address.street);
   if (address.city) parts.push(address.city);
   if (address.postalCode) parts.push(address.postalCode);
   if (address.country) parts.push(address.country);
-  
-  return parts.join(', ') || 'N/A';
+
+  return parts.join(", ") || "N/A";
 }
 
 async function sendBulkEmail(

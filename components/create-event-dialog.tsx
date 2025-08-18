@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { ChangeEvent, FormEvent, useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -66,6 +66,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
   const [teams, setTeams] = useState<Team[]>([])
   const [team1Id, setTeam1Id] = useState("")
   const [team2Id, setTeam2Id] = useState("")
+  const [clubVariant, setClubVariant] = useState<'all'|'banga'|'banga-b'|'banga-m'>('all')
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null)
   const [coverImageFilename, setCoverImageFilename] = useState<string>("")
   const [coverImageUploading, setCoverImageUploading] = useState(false)
@@ -83,7 +84,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
     if (!open) return;
     supabase
       .from("teams")
-      .select("id, team_name, logo, created_at")
+      .select("id, team_name, logo, created_at, league_code, league_name, gender, squad")
       .then(({ data, error }: { data: Team[] | null, error: PostgrestError | null }) => {
         if (error) {
           setTeams([]);
@@ -104,12 +105,79 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
         location: draft.location || prev.location,
       }))
       // try to preselect teams by name
-      const t1 = teams.find(t => t.team_name?.toLowerCase() === (draft.team1_name||'').toLowerCase())
-      const t2 = teams.find(t => t.team_name?.toLowerCase() === (draft.team2_name||'').toLowerCase())
-      if (t1) setTeam1Id(t1.id)
-      if (t2) setTeam2Id(t2.id)
+      const normalize = (s: string) => (s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+
+      const expandSynonyms = (name?: string | null): string[] => {
+        const n = normalize(name || "")
+        const out = new Set<string>([n])
+        // Handle Banga B variants
+        if (/\bbanga\b/.test(n)) {
+          out.add("fk banga")
+          out.add("banga")
+        }
+        if (/\bbanga\s*b\b/.test(n) || /\bbanga-?2\b/.test(n) || /\bbanga\s*ii\b/.test(n)) {
+          out.add("fk banga b")
+          out.add("banga b")
+          out.add("banga-2")
+          out.add("banga ii")
+        }
+        return Array.from(out)
+      }
+
+      const findTeamByName = (name?: string | null) => {
+        const candidates = expandSynonyms(name)
+        return teams.find((t) => {
+          const tt = normalize((t as any).team_name || "")
+          return candidates.some((c) => tt === c || tt.includes(c) || c.includes(tt))
+        }) || null
+      }
+
+      const matchedT1 = findTeamByName((draft as any).team1_name)
+      const matchedT2 = findTeamByName((draft as any).team2_name)
+
+      if (matchedT1) setTeam1Id((matchedT1 as any).id)
+      if (matchedT2 && (matchedT2 as any).id !== (matchedT1 as any)?.id) setTeam2Id((matchedT2 as any).id)
+
+      // infer league variant
+      const inferVariant = (): 'banga'|'banga-b'|'banga-m'|'all' => {
+        const t1n = normalize((draft as any).team1_name || "")
+        const t2n = normalize((draft as any).team2_name || "")
+        if (/\bbanga\s*b\b/.test(t1n) || /\bbanga\s*b\b/.test(t2n) || /\bbanga-?2\b/.test(t1n+t2n) || /\bbanga\s*ii\b/.test(t1n+t2n)) return 'banga-b'
+        // if opponent matches women team in DB
+        const oppName = t1n.includes('banga') ? t2n : t1n
+        const opp = teams.find((t) => normalize((t as any).team_name||'') === oppName)
+        if ((opp as any)?.gender === 'women') return 'banga-m'
+        if (t1n.includes('banga') || t2n.includes('banga')) return 'banga'
+        return 'all'
+      }
+      const v = inferVariant()
+      setClubVariant(v)
     }
   }, [open, draft, teams])
+
+  const filteredTeams = React.useMemo(() => {
+    if (clubVariant === 'banga') {
+      return teams.filter((t: any) => (t.league_code === 'A-LYGA' && (t.gender === 'men' || !t.gender)))
+    }
+    if (clubVariant === 'banga-b') {
+      return teams.filter((t: any) => (t.league_code === 'II-A'))
+    }
+    if (clubVariant === 'banga-m') {
+      return teams.filter((t: any) => (t.league_code === 'W-ALYGA' || t.gender === 'women'))
+    }
+    return teams
+  }, [teams, clubVariant])
+
+  // Reset selected teams if they are not in current filter
+  useEffect(() => {
+    if (!filteredTeams.find((t: any) => t.id === team1Id)) setTeam1Id("")
+    if (!filteredTeams.find((t: any) => t.id === team2Id)) setTeam2Id("")
+  }, [filteredTeams])
 
   const addPricingTier = () => {
     setPricingTiers([...pricingTiers, { name: "", price: 0, quantity: 0 }])
@@ -420,33 +488,98 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
           {/* Step 3: Teams selection and pricing tiers */}
           {step === 2 && (
             <div className="space-y-4">
+              <div>
+                <Label>Komandos lyga</Label>
+                <select
+                  value={clubVariant}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) => setClubVariant(e.target.value as any)}
+                  className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors"
+                >
+                  <option value="all">Visos lygos</option>
+                  <option value="banga">BANGA (TOPsport A lyga)</option>
+                  <option value="banga-b">BANGA B (II lyga A div.)</option>
+                  <option value="banga-m">BANGA M (Moterų A lyga)</option>
+                </select>
+              </div>
               <div className="flex gap-4">
                 <div className="flex-1">
                   <Label>Komanda 1</Label>
-                  <select
-                    value={team1Id}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam1Id(e.target.value)}
-                    className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors"
-                  >
-                    <option value="">Pasirinkite komandą</option>
-                    {Array.isArray(teams) && teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.team_name}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={team1Id}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam1Id(e.target.value)}
+                      className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors appearance-none pr-10"
+                    >
+                      <option value="">Pasirinkite komandą</option>
+                      {Array.isArray(filteredTeams) && filteredTeams.map((team: any) => (
+                        <option key={team.id} value={team.id}>{team.team_name}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  {team1Id && (
+                    <div className="mt-2 flex items-center gap-2 p-2 bg-[#0A165B]/50 rounded border">
+                      {(() => {
+                        const selectedTeam = filteredTeams.find((t: any) => t.id === team1Id);
+                        return selectedTeam ? (
+                          <>
+                            <Image 
+                              src={selectedTeam.logo || '/placeholder-logo.png'} 
+                              alt={selectedTeam.team_name} 
+                              width={32} 
+                              height={32} 
+                              className="object-contain rounded"
+                            />
+                            <span className="text-white text-sm font-medium">{selectedTeam.team_name}</span>
+                          </>
+                        ) : null;
+                      })()}
+                    </div>
+                  )}
                   {errors.team1Id && <div className="text-red-500 text-xs mt-1">{errors.team1Id}</div>}
                 </div>
                 <div className="flex-1">
                   <Label>Komanda 2</Label>
-                  <select
-                    value={team2Id}
-                    onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam2Id(e.target.value)}
-                    className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors"
-                  >
-                    <option value="">Pasirinkite komandą</option>
-                    {Array.isArray(teams) && teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.team_name}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={team2Id}
+                      onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam2Id(e.target.value)}
+                      className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors appearance-none pr-10"
+                    >
+                      <option value="">Pasirinkite komandą</option>
+                      {Array.isArray(filteredTeams) && filteredTeams.map((team: any) => (
+                        <option key={team.id} value={team.id}>{team.team_name}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                  {team2Id && (
+                    <div className="mt-2 flex items-center gap-2 p-2 bg-[#0A165B]/50 rounded border">
+                      {(() => {
+                        const selectedTeam = filteredTeams.find((t: any) => t.id === team2Id);
+                        return selectedTeam ? (
+                          <>
+                            <Image 
+                              src={selectedTeam.logo || '/placeholder-logo.png'} 
+                              alt={selectedTeam.team_name} 
+                              width={32} 
+                              height={32} 
+                              className="object-contain rounded"
+                            />
+                            <span className="text-white text-sm font-medium">{selectedTeam.team_name}</span>
+                          </>
+                        ) : null;
+                      })()}
+                    </div>
+                  )}
                   {errors.team2Id && <div className="text-red-500 text-xs mt-1">{errors.team2Id}</div>}
                 </div>
               </div>

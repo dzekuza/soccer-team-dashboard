@@ -1,48 +1,60 @@
-import QRCode from "qrcode"
-import type { TicketWithDetails } from "./types"
+import QRCode from "qrcode";
+import type { TicketWithDetails } from "./types";
 
 function escapeHtml(text: string | undefined) {
-  if (!text) return ""
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
+    if (!text) return "";
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 function monthLt(dateISO: string) {
-  const d = new Date(dateISO)
-  const months = [
-    "Sausio", "Vasario", "Kovo", "Balandžio", "Gegužės", "Birželio",
-    "Liepos", "Rugpjūčio", "Rugsėjo", "Spalio", "Lapkričio", "Gruodžio"
-  ]
-  return `${months[d.getMonth()]} ${d.getDate()}d`
+    const d = new Date(dateISO);
+    const months = [
+        "Sausio",
+        "Vasario",
+        "Kovo",
+        "Balandžio",
+        "Gegužės",
+        "Birželio",
+        "Liepos",
+        "Rugpjūčio",
+        "Rugsėjo",
+        "Spalio",
+        "Lapkričio",
+        "Gruodžio",
+    ];
+    return `${months[d.getMonth()]} ${d.getDate()}d`;
 }
 
 export async function renderTicketHtml(options: {
-  ticket: TicketWithDetails,
-  origin: string,
+    ticket: TicketWithDetails;
+    origin: string;
 }): Promise<string> {
-  const { ticket, origin } = options
+    const { ticket, origin } = options;
 
-  const title = ticket.event?.title || "Bilietas"
-  const location = ticket.event?.location || ""
-  const dateText = `${monthLt(ticket.event.date)}, ${ticket.event.time}`
-  const priceText = ticket.tier ? `${ticket.tier.name} / €${ticket.tier.price.toFixed(0)}` : "N/A"
-  const purchaserName = ticket.purchaserName || ""
-  const purchaserEmail = ticket.purchaserEmail || ""
+    const title = ticket.event?.title || "Bilietas";
+    const location = ticket.event?.location || "";
+    const dateText = `${monthLt(ticket.event.date)}, ${ticket.event.time}`;
+    const priceText = ticket.tier
+        ? `${ticket.tier.name} / €${ticket.tier.price.toFixed(0)}`
+        : "N/A";
+    const purchaserName = ticket.purchaserName || "";
+    const purchaserEmail = ticket.purchaserEmail || "";
 
-  const qrDataUrl = await QRCode.toDataURL(ticket.id, {
-    width: 300,
-    margin: 1,
-    errorCorrectionLevel: "H",
-    color: { dark: "#0A165B", light: "#FFFFFF" },
-  })
+    const qrDataUrl = await QRCode.toDataURL(ticket.id, {
+        width: 300,
+        margin: 1,
+        errorCorrectionLevel: "H",
+        color: { dark: "#0A165B", light: "#FFFFFF" },
+    });
 
-  const bgUrl = `${origin}/ticketbg.jpg`
+    const bgUrl = `${origin}/ticketbg.jpg`;
 
-  return `<!doctype html>
+    return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -92,7 +104,9 @@ export async function renderTicketHtml(options: {
 
       <div style="height: 24px"></div>
       <div class="label">Pirkėjas</div>
-      <div class="value" style="font-size: 26px;">${escapeHtml(purchaserName)}</div>
+      <div class="value" style="font-size: 26px;">${
+        escapeHtml(purchaserName)
+    }</div>
       <div class="value-sm">${escapeHtml(purchaserEmail)}</div>
     </div>
 
@@ -103,7 +117,5 @@ export async function renderTicketHtml(options: {
     </div>
   </div>
 </body>
-</html>`
+</html>`;
 }
-
-
