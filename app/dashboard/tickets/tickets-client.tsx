@@ -31,6 +31,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
   const [isLoadingQR, setIsLoadingQR] = useState(false)
   const [previewQrCodeUrl, setPreviewQrCodeUrl] = useState<string>("")
   const [isLoadingPreviewQR, setIsLoadingPreviewQR] = useState(false)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   async function fetchTickets() {
     try {
@@ -227,9 +228,14 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <DropdownMenu>
+                    <DropdownMenu open={openMenuId === ticket.id} onOpenChange={(o)=> setOpenMenuId(o ? ticket.id : null)}>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
+                        <Button
+                          variant="ghost"
+                          className="h-8 w-8 p-0"
+                          type="button"
+                          onClick={(e)=> { e.stopPropagation(); }}
+                        >
                           <span className="sr-only">Open menu</span>
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>

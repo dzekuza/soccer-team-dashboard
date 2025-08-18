@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils"
 const DropdownMenu = DropdownMenuPrimitive.Root
 
 const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
+// Ensure button semantics for accessibility in cases when used asChild is false
+;(DropdownMenuTrigger as any).defaultProps = { asChild: false }
 
 const DropdownMenuGroup = DropdownMenuPrimitive.Group
 
