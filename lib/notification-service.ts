@@ -1,9 +1,8 @@
 import { Resend } from "resend";
 import { supabaseService } from "./supabase-service";
 import { generateSubscriptionPDF } from "./pdf-generator";
-import chromium from "@sparticuz/chromium";
-import puppeteer from "puppeteer-core";
 import { renderTicketHtml } from "./ticket-html";
+import puppeteer from "puppeteer";
 import { createClient } from "@supabase/supabase-js";
 import type { Subscription, Team, Ticket } from "./types";
 
@@ -36,31 +35,63 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
       team2 = await supabaseService.getTeamById(ticket.event.team2Id);
     }
 
-    // Generate HTML and print to PDF via headless Chromium
-    const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : "http://localhost:3000";
-    const html = await renderTicketHtml({
-      ticket: { ...ticket, qrCodeUrl: ticket.id } as any,
-      origin,
-    });
-    const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: { width: 1600, height: 700, deviceScaleFactor: 2 },
-      executablePath: await chromium.executablePath(),
-      headless: true,
-    });
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    const pdfBytes = await page.pdf({
-      printBackground: true,
-      width: "1600px",
-      height: "700px",
-      pageRanges: "1",
-      preferCSSPageSize: true,
-    });
-    await browser.close();
-    const fileName = `ticket-${ticket.id}.pdf`;
+    // Generate ticket content using the same method as download functionality
+    let pdfBytes: Buffer | null = null;
+    let fileName: string | null = null;
+
+    try {
+      // Use the same HTML generation as the download functionality
+      const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3000";
+      const html = await renderTicketHtml({
+        ticket: { ...ticket, qrCodeUrl: ticket.id } as any,
+        origin,
+      });
+
+      // Generate PDF using Puppeteer with the same settings as download functionality
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-accelerated-2d-canvas",
+          "--no-first-run",
+          "--no-zygote",
+          "--single-process",
+          "--disable-gpu",
+        ],
+      });
+
+      const page = await browser.newPage();
+
+      // Set viewport to match the ticket dimensions exactly
+      await page.setViewport({
+        width: 1600,
+        height: 700,
+        deviceScaleFactor: 2,
+      });
+
+      // Set content and wait for all resources to load
+      await page.setContent(html, { waitUntil: "networkidle0" });
+
+      // Generate PDF with the same settings as download functionality
+      pdfBytes = await page.pdf({
+        printBackground: true,
+        width: "1600px",
+        height: "700px",
+        pageRanges: "1",
+        preferCSSPageSize: true,
+      });
+
+      await browser.close();
+      fileName = `ticket-${ticket.id}.pdf`;
+      console.log("Generated PDF ticket successfully using download method");
+    } catch (pdfError) {
+      console.warn("PDF generation failed:", pdfError);
+      // Continue without PDF attachment
+    }
 
     const eventDate = new Date(ticket.event.date).toLocaleDateString("lt-LT");
 
@@ -76,13 +107,32 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
       ticket.event.title,
     );
 
-    await resend.emails.send({
+    const emailPayload: any = {
       from: "bilietai@noriumuzikos.lt",
       to: ticket.purchaserEmail,
       subject: emailSubject,
       html: emailBody,
-      attachments: [{ filename: fileName, content: Buffer.from(pdfBytes) }],
-    });
+    };
+
+    // Add ticket attachment if available
+    if (pdfBytes && fileName) {
+      emailPayload.attachments = [{
+        filename: fileName,
+        content: pdfBytes,
+        contentType: "application/pdf",
+      }];
+      // Update email content to mention PDF ticket
+      emailPayload.html = emailPayload.html.replace(
+        "Pridedame Jūsų bilietą šiame laiške (prisegtuke).",
+        "Pridedame Jūsų bilietą PDF formatu šiame laiške (prisegtuke).",
+      );
+    } else {
+      // Add a note to the email if ticket generation failed
+      emailPayload.html +=
+        "<p><em>Pastaba: Bilieto PDF negalėjo būti sugeneruotas. Susisiekite su mumis, jei reikia bilieto kopijos.</em></p>";
+    }
+
+    await resend.emails.send(emailPayload);
   } catch (error) {
     console.error(`Failed to send ticket confirmation for ${ticketId}:`, error);
     // Re-throw the error so the API can handle it properly

@@ -54,7 +54,12 @@ export async function POST(request: NextRequest) {
       // userId: user.id, // Removed - user_id column was dropped from schema
     })
 
-    notificationService.sendTicketConfirmation(newTicket.id)
+    try {
+      await notificationService.sendTicketConfirmation(newTicket.id)
+    } catch (emailError) {
+      console.error("Failed to send ticket confirmation email:", emailError)
+      // Don't fail the ticket creation if email fails, but log the error
+    }
 
     return NextResponse.json(newTicket)
   } catch (error) {
