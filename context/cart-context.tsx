@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Temporarily define CartItem here until the component is created
 export interface CartItem {
@@ -17,6 +17,7 @@ export interface CartItem {
 
 interface CartContextType {
   cart: CartItem[];
+  isInitialized: boolean;
   addToCart: (item: CartItem) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, delta: number) => void;
@@ -27,6 +28,34 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Load cart from session storage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedCart = sessionStorage.getItem('cart');
+        if (savedCart) {
+          const parsedCart = JSON.parse(savedCart);
+          setCart(parsedCart);
+        }
+      } catch (error) {
+        console.error('Error loading cart from session storage:', error);
+      }
+      setIsInitialized(true);
+    }
+  }, []);
+
+  // Save cart to session storage whenever it changes
+  useEffect(() => {
+    if (isInitialized && typeof window !== 'undefined') {
+      try {
+        sessionStorage.setItem('cart', JSON.stringify(cart));
+      } catch (error) {
+        console.error('Error saving cart to session storage:', error);
+      }
+    }
+  }, [cart, isInitialized]);
 
   const addToCart = (productToAdd: CartItem) => {
     setCart((currentCart) => {
@@ -62,10 +91,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   
   const clearCart = () => {
     setCart([]);
+    if (typeof window !== 'undefined') {
+      try {
+        sessionStorage.removeItem('cart');
+      } catch (error) {
+        console.error('Error clearing cart from session storage:', error);
+      }
+    }
   };
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cart, isInitialized, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );

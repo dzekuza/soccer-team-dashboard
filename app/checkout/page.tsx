@@ -152,6 +152,8 @@ export default function CheckoutPage() {
             }
 
             if (url) {
+                // Clear cart before redirecting to Stripe
+                clearCart();
                 window.location.href = url;
             }
         } catch (err: any) {
