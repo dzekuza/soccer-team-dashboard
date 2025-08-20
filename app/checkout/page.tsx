@@ -99,16 +99,12 @@ export default function CheckoutPage() {
             const hasShopItems = cart.some(item => item.eventId === "shop");
             const hasTicketItems = cart.some(item => item.eventId && item.eventId !== "shop");
             
-            let apiEndpoint = '/api/checkout/session'; // Default for mixed or unknown
-            
+            let apiEndpoint = '/api/checkout/session'; // Use session for tickets-only or mixed
+
             if (hasShopItems && !hasTicketItems) {
-                // Pure shop purchase
+                // Pure shop purchase still uses dedicated shop endpoint
                 apiEndpoint = '/api/checkout/shop';
-            } else if (hasTicketItems && !hasShopItems) {
-                // Pure ticket purchase
-                apiEndpoint = '/api/checkout/tickets';
             }
-            // For mixed purchases, use the default session endpoint
             
             const response = await fetch(apiEndpoint, {
                 method: 'POST',
