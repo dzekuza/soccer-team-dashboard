@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { CartItem } from "@/context/cart-context";
+import { getAppUrl } from "@/lib/utils";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -46,6 +47,9 @@ export async function POST(request: NextRequest) {
             itemCount: cartItems.length,
         });
 
+        // Get the origin from the request headers or environment variables
+        const origin = getAppUrl(request.headers.get("origin"));
+
         // Create Stripe Checkout session for shop products
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
@@ -53,12 +57,12 @@ export async function POST(request: NextRequest) {
             mode: "payment",
             customer_email: purchaserEmail,
             success_url:
-                `${process.env.NEXT_PUBLIC_API_BASE_URL}/checkout/shop-success?session_id={CHECKOUT_SESSION_ID}&customer_name=${
+                `${origin}/checkout/shop-success?session_id={CHECKOUT_SESSION_ID}&customer_name=${
                     encodeURIComponent(purchaserName)
                 }&customer_email=${
                     encodeURIComponent(purchaserEmail)
                 }&customer_phone=${encodeURIComponent(purchaserPhone || "")}`,
-            cancel_url: `${process.env.NEXT_PUBLIC_API_BASE_URL}/shop`,
+            cancel_url: `${origin}/shop`,
             metadata: {
                 purchaseType: "shop",
                 purchaserName,

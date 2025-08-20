@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { CartItem } from "@/context/cart-context";
+import { getAppUrl } from "@/lib/utils";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -8,13 +9,13 @@ export async function POST(request: NextRequest) {
   let cartItems: CartItem[] = [];
   let purchaserEmail = "";
   let purchaserName = "";
-  
+
   try {
     const body = await request.json();
     cartItems = body.cartItems;
     purchaserEmail = body.purchaserEmail;
     purchaserName = body.purchaserName;
-    
+
     if (
       !cartItems || !Array.isArray(cartItems) || cartItems.length === 0 ||
       !purchaserEmail || !purchaserName
@@ -29,7 +30,7 @@ export async function POST(request: NextRequest) {
       let imageUrl = item.image;
       if (imageUrl && !imageUrl.startsWith("http")) {
         // If it's a relative path, make it absolute
-        const origin = request.headers.get("origin") || "http://localhost:3000";
+        const origin = getAppUrl(request.headers.get("origin"));
         imageUrl = `${origin}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
       }
 
@@ -64,8 +65,8 @@ export async function POST(request: NextRequest) {
       purchaserEmail,
     });
 
-    // Get the origin from the request headers
-    const origin = request.headers.get("origin") || "http://localhost:3000";
+    // Get the origin from the request headers or environment variables
+    const origin = getAppUrl(request.headers.get("origin"));
 
     // Create Stripe Checkout session
     const session = await stripe.checkout.sessions.create({
@@ -73,7 +74,8 @@ export async function POST(request: NextRequest) {
       line_items: line_items,
       mode: "payment",
       customer_email: purchaserEmail,
-      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url:
+        `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout`,
       metadata: {
         eventId: eventId || "",

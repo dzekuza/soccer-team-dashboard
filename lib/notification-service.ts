@@ -5,6 +5,7 @@ import { renderTicketHtml } from "./ticket-html";
 import puppeteer from "puppeteer";
 import { createClient } from "@supabase/supabase-js";
 import type { Subscription, Team, Ticket } from "./types";
+import { getAppUrl } from "./utils";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseAdmin = createClient(
@@ -41,9 +42,7 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
 
     try {
       // Use the same HTML generation as the download functionality
-      const origin = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "http://localhost:3000";
+      const origin = getAppUrl();
       const html = await renderTicketHtml({
         ticket: { ...ticket, qrCodeUrl: ticket.id } as any,
         origin,
