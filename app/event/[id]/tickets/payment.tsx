@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { EventWithTiers, Team, PricingTier } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import { loadStripe } from "@stripe/stripe-js"
 
 interface EventData {
   event: EventWithTiers
@@ -98,6 +99,50 @@ export default function PaymentPage() {
   
   const canSubmit = isEmailValid && payment && (isCardValid || isWalletValid || isBankValid)
 
+  // Handle checkout submission
+  const handleCheckout = async () => {
+    if (!canSubmit || !eventData) return
+
+    try {
+      // For each selected tier, create a checkout session
+      for (const tier of selectedTiers) {
+        const quantity = order[tier.id]
+        if (quantity > 0) {
+          const response = await fetch('/api/checkout/tickets', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              eventId: id,
+              tierId: tier.id,
+              quantity: quantity,
+              purchaserName: email.split('@')[0], // Use email prefix as name
+              purchaserSurname: '', // Could be enhanced to collect actual name
+              purchaserEmail: email,
+            }),
+          })
+
+          if (!response.ok) {
+            const errorData = await response.json()
+            throw new Error(errorData.error || 'Failed to create checkout session')
+          }
+
+          const { sessionId } = await response.json()
+          
+          // Redirect to Stripe Checkout
+          const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+          if (stripe) {
+            await stripe.redirectToCheckout({ sessionId })
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      setError(error instanceof Error ? error.message : 'Failed to process checkout')
+    }
+  }
+
   // Card number formatting
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
@@ -151,21 +196,36 @@ export default function PaymentPage() {
         <Card className="bg-[#070F40] border border-[#232B5D] col-span-2 p-8">
           <h2 className="text-2xl font-bold mb-8">Kur siųsti bilietus</h2>
           <div className="flex flex-col md:flex-row gap-6 mb-8">
-            <input
-              type="email"
-              placeholder="Email address *"
-              className="flex-1 bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-            />
-            <input
-              type="email"
-              placeholder="Confirm address *"
-              className="flex-1 bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
-              value={confirmEmail}
-              onChange={e => setConfirmEmail(e.target.value)}
-            />
+            <div className="flex-1">
+              <input
+                type="email"
+                placeholder="Email address *"
+                className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+              {email && !isEmailValid && (
+                <div className="text-red-500 text-sm mt-1">Please enter a valid email address</div>
+              )}
+            </div>
+            <div className="flex-1">
+              <input
+                type="email"
+                placeholder="Confirm address *"
+                className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                value={confirmEmail}
+                onChange={e => setConfirmEmail(e.target.value)}
+              />
+              {confirmEmail && email !== confirmEmail && (
+                <div className="text-red-500 text-sm mt-1">Email addresses do not match</div>
+              )}
+            </div>
           </div>
+          {error && (
+            <div className="mb-6 p-3 bg-red-900/20 border border-red-400/30 rounded-lg">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
           <h2 className="text-2xl font-bold mb-6">Pasirinkite mokėjimo būdą</h2>
           <div className="flex flex-col gap-4 mb-8">
             {paymentMethods.map(method => (
@@ -295,6 +355,9 @@ export default function PaymentPage() {
               </div>
             </div>
           )}
+          {!payment && (
+            <div className="text-red-500 text-sm mt-2">Please select a payment method</div>
+          )}
         </Card>
         {/* Order summary */}
         <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
@@ -327,7 +390,13 @@ export default function PaymentPage() {
               <span>€{total.toFixed(2)}</span>
             </div>
           </div>
-          <Button className="btn-main text-lg font-bold w-full mt-4" disabled={!canSubmit}>Patvirtinti mokėjimą</Button>
+          <Button 
+            className="btn-main text-lg font-bold w-full mt-4" 
+            disabled={!canSubmit}
+            onClick={handleCheckout}
+          >
+            Patvirtinti mokėjimą
+          </Button>
         </Card>
       </div>
     </div>
