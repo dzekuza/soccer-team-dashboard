@@ -75,19 +75,35 @@ export default function CheckoutPage() {
         setIsLoading(true);
         setError(null);
 
-        if (!name || !surname || !email || !phone || !streetAddress || !city || !postalCode || !country) {
-            setError("Prašome užpildyti visus laukus.");
-            setIsLoading(false);
-            return;
+        // Determine the checkout type based on cart contents
+        const hasShopItems = cart.some(item => item.eventId === "shop");
+        const hasTicketItems = cart.some(item => item.eventId && item.eventId !== "shop" && item.eventId !== "subscription");
+        const hasSubscriptionItems = cart.some(item => item.eventId === "subscription");
+
+        // Different validation based on cart contents
+        if (hasShopItems) {
+            // Shop items require all fields including address
+            if (!name || !surname || !email || !phone || !streetAddress || !city || !postalCode || !country) {
+                setError("Prašome užpildyti visus laukus.");
+                setIsLoading(false);
+                return;
+            }
+        } else {
+            // Digital items (tickets/subscriptions) only need basic info
+            if (!name || !surname || !email || !phone) {
+                setError("Prašome užpildyti vardą, pavardę, el. paštą ir telefono numerį.");
+                setIsLoading(false);
+                return;
+            }
         }
 
         // Store delivery address and coupon info in session storage
-        const deliveryAddress = {
+        const deliveryAddress = hasShopItems ? {
             street: streetAddress,
             city: city,
             postalCode: postalCode,
             country: country
-        };
+        } : null;
         
         sessionStorage.setItem("deliveryAddress", JSON.stringify(deliveryAddress));
         sessionStorage.setItem("couponCode", appliedCoupon?.code || "");
@@ -97,13 +113,28 @@ export default function CheckoutPage() {
         try {
             // Determine the checkout type based on cart contents
             const hasShopItems = cart.some(item => item.eventId === "shop");
-            const hasTicketItems = cart.some(item => item.eventId && item.eventId !== "shop");
+            const hasTicketItems = cart.some(item => item.eventId && item.eventId !== "shop" && item.eventId !== "subscription");
+            const hasSubscriptionItems = cart.some(item => item.eventId === "subscription");
             
             let apiEndpoint = '/api/checkout/session'; // Use session for tickets-only or mixed
 
-            if (hasShopItems && !hasTicketItems) {
+            if (hasShopItems && !hasTicketItems && !hasSubscriptionItems) {
                 // Pure shop purchase still uses dedicated shop endpoint
                 apiEndpoint = '/api/checkout/shop';
+            }
+            
+            // Prepare payload based on cart type
+            const payload: any = { 
+                cartItems: cart, 
+                purchaserEmail: email,
+                purchaserName: `${name} ${surname}`,
+                purchaserPhone: phone,
+                couponId: appliedCoupon?.id
+            };
+
+            // Only include delivery address for shop items
+            if (hasShopItems && deliveryAddress) {
+                payload.deliveryAddress = deliveryAddress;
             }
             
             const response = await fetch(apiEndpoint, {
@@ -111,14 +142,7 @@ export default function CheckoutPage() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    cartItems: cart, 
-                    purchaserEmail: email,
-                    purchaserName: `${name} ${surname}`,
-                    purchaserPhone: phone,
-                    deliveryAddress: deliveryAddress,
-                    couponId: appliedCoupon?.id
-                }),
+                body: JSON.stringify(payload),
             });
 
             const { url, error: apiError } = await response.json();
@@ -144,7 +168,9 @@ export default function CheckoutPage() {
             {/* Main Content */}
             <div className="w-full flex flex-col flex-1">
                 <div className="text-center py-8 border-b border-[#232C62]">
-                    <h1 className="text-3xl md:text-4xl font-bold text-white">Apmokėjimas</h1>
+                    <h1 className="text-3xl md:text-4xl font-bold text-white">
+                        {cart.some(item => item.eventId === "shop") ? "Apmokėjimas" : "Bilietų / Abonementų apmokėjimas"}
+                    </h1>
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 flex-1 min-h-0">
@@ -201,64 +227,66 @@ export default function CheckoutPage() {
                                 </div>
                             </div>
 
-                            {/* Delivery Address */}
-                            <div className="space-y-4">
-                                <h3 className="text-lg font-medium text-white border-b border-[#232C62] pb-2">Pristatymo adresas</h3>
-                                <div>
-                                    <Label htmlFor="streetAddress" className="text-white mb-2 block">Gatvės adresas *</Label>
-                                    <Input 
-                                        id="streetAddress" 
-                                        value={streetAddress} 
-                                        onChange={(e) => setStreetAddress(e.target.value)} 
-                                        placeholder="Gedimino pr. 1" 
-                                        className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Delivery Address - Only for shop items */}
+                            {cart.some(item => item.eventId === "shop") && (
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-medium text-white border-b border-[#232C62] pb-2">Pristatymo adresas</h3>
                                     <div>
-                                        <Label htmlFor="city" className="text-white mb-2 block">Miestas *</Label>
+                                        <Label htmlFor="streetAddress" className="text-white mb-2 block">Gatvės adresas *</Label>
                                         <Input 
-                                            id="city" 
-                                            value={city} 
-                                            onChange={(e) => setCity(e.target.value)} 
-                                            placeholder="Vilnius" 
+                                            id="streetAddress" 
+                                            value={streetAddress} 
+                                            onChange={(e) => setStreetAddress(e.target.value)} 
+                                            placeholder="Gedimino pr. 1" 
                                             className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                         />
                                     </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="city" className="text-white mb-2 block">Miestas *</Label>
+                                            <Input 
+                                                id="city" 
+                                                value={city} 
+                                                onChange={(e) => setCity(e.target.value)} 
+                                                placeholder="Vilnius" 
+                                                className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="postalCode" className="text-white mb-2 block">Pašto kodas *</Label>
+                                            <Input 
+                                                id="postalCode" 
+                                                value={postalCode} 
+                                                onChange={(e) => setPostalCode(e.target.value)} 
+                                                placeholder="01108" 
+                                                className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                            />
+                                        </div>
+                                    </div>
                                     <div>
-                                        <Label htmlFor="postalCode" className="text-white mb-2 block">Pašto kodas *</Label>
-                                        <Input 
-                                            id="postalCode" 
-                                            value={postalCode} 
-                                            onChange={(e) => setPostalCode(e.target.value)} 
-                                            placeholder="01108" 
-                                            className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
-                                        />
+                                        <Label htmlFor="country" className="text-white mb-2 block">Šalis *</Label>
+                                        <Select value={country} onValueChange={setCountry}>
+                                            <SelectTrigger className="bg-[#232C62] border-[#232C62] text-white focus:border-white focus:ring-white rounded-none">
+                                                <SelectValue placeholder="Pasirinkite šalį" />
+                                            </SelectTrigger>
+                                            <SelectContent className="bg-[#232C62] border-[#232C62] text-white">
+                                                <SelectItem value="LT">Lietuva</SelectItem>
+                                                <SelectItem value="LV">Latvija</SelectItem>
+                                                <SelectItem value="EE">Estija</SelectItem>
+                                                <SelectItem value="PL">Lenkija</SelectItem>
+                                                <SelectItem value="DE">Vokietija</SelectItem>
+                                                <SelectItem value="SE">Švedija</SelectItem>
+                                                <SelectItem value="FI">Suomija</SelectItem>
+                                                <SelectItem value="DK">Danija</SelectItem>
+                                                <SelectItem value="NO">Norvegija</SelectItem>
+                                                <SelectItem value="GB">Jungtinė Karalystė</SelectItem>
+                                                <SelectItem value="US">Jungtinės Valstijos</SelectItem>
+                                                <SelectItem value="CA">Kanada</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                 </div>
-                                <div>
-                                    <Label htmlFor="country" className="text-white mb-2 block">Šalis *</Label>
-                                    <Select value={country} onValueChange={setCountry}>
-                                        <SelectTrigger className="bg-[#232C62] border-[#232C62] text-white focus:border-white focus:ring-white rounded-none">
-                                            <SelectValue placeholder="Pasirinkite šalį" />
-                                        </SelectTrigger>
-                                        <SelectContent className="bg-[#232C62] border-[#232C62] text-white">
-                                            <SelectItem value="LT">Lietuva</SelectItem>
-                                            <SelectItem value="LV">Latvija</SelectItem>
-                                            <SelectItem value="EE">Estija</SelectItem>
-                                            <SelectItem value="PL">Lenkija</SelectItem>
-                                            <SelectItem value="DE">Vokietija</SelectItem>
-                                            <SelectItem value="SE">Švedija</SelectItem>
-                                            <SelectItem value="FI">Suomija</SelectItem>
-                                            <SelectItem value="DK">Danija</SelectItem>
-                                            <SelectItem value="NO">Norvegija</SelectItem>
-                                            <SelectItem value="GB">Jungtinė Karalystė</SelectItem>
-                                            <SelectItem value="US">Jungtinės Valstijos</SelectItem>
-                                            <SelectItem value="CA">Kanada</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                     
