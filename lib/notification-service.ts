@@ -2,7 +2,7 @@ import { Resend } from "resend";
 import { supabaseService } from "./supabase-service";
 import { generateSubscriptionPDF } from "./pdf-generator";
 import { renderTicketHtml } from "./ticket-html";
-import puppeteer from "puppeteer";
+import { generatePDFFromHTML } from "./pdf-service";
 import { createClient } from "@supabase/supabase-js";
 import type { Subscription, Team, Ticket } from "./types";
 import { getAppUrl } from "./utils";
@@ -48,48 +48,36 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
         origin,
       });
 
-      // Generate PDF using Puppeteer with the same settings as download functionality
-      const browser = await puppeteer.launch({
-        headless: true,
-        args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-accelerated-2d-canvas",
-          "--no-first-run",
-          "--no-zygote",
-          "--single-process",
-          "--disable-gpu",
-        ],
-      });
-
-      const page = await browser.newPage();
-
-      // Set viewport to match the ticket dimensions exactly
-      await page.setViewport({
-        width: 1600,
-        height: 700,
-        deviceScaleFactor: 2,
-      });
-
-      // Set content and wait for all resources to load
-      await page.setContent(html, { waitUntil: "networkidle0" });
-
-      // Generate PDF with the same settings as download functionality
-      pdfBytes = await page.pdf({
-        printBackground: true,
+      // Generate PDF using the new PDF service
+      pdfBytes = await generatePDFFromHTML({
+        html,
         width: "1600px",
         height: "700px",
-        pageRanges: "1",
+        printBackground: true,
         preferCSSPageSize: true,
-      }) as any;
+      });
 
-      await browser.close();
       fileName = `ticket-${ticket.id}.pdf`;
-      console.log("Generated PDF ticket successfully using download method");
+      console.log("Generated PDF ticket successfully using PDF service");
     } catch (pdfError) {
-      console.warn("PDF generation failed:", pdfError);
-      // Continue without PDF attachment
+      console.warn("PDF generation failed with PDF service:", pdfError);
+
+      // Fallback: Try using pdf-lib as a last resort
+      try {
+        console.log("Attempting fallback PDF generation with pdf-lib...");
+        const { generateTicketPDF } = await import("./pdf-generator");
+        const pdfArray = await generateTicketPDF(
+          ticket,
+          team1 || undefined,
+          team2 || undefined,
+        );
+        pdfBytes = Buffer.from(pdfArray as any);
+        fileName = `ticket-${ticket.id}.pdf`;
+        console.log("Generated PDF ticket successfully using fallback method");
+      } catch (fallbackError) {
+        console.warn("Fallback PDF generation also failed:", fallbackError);
+        // Continue without PDF attachment
+      }
     }
 
     const eventDate = new Date(ticket.event.date).toLocaleDateString("lt-LT");

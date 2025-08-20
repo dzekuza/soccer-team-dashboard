@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import type { Team, TicketWithDetails } from "@/lib/types";
 import { renderTicketHtml } from "@/lib/ticket-html";
-import puppeteer from "puppeteer";
+import { generatePDFFromHTML } from "@/lib/pdf-service";
 
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL!,
@@ -70,68 +70,62 @@ export async function GET(
     const origin = new URL(_request.url).origin;
     const html = await renderTicketHtml({ ticket, origin });
 
-    // Generate PDF using Puppeteer with optimized settings
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        "--no-sandbox",
-        "--disable-setuid-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-accelerated-2d-canvas",
-        "--no-first-run",
-        "--no-zygote",
-        "--single-process",
-        "--disable-gpu",
-      ],
-    });
+    let pdfBuffer: Buffer | Uint8Array;
 
-    const page = await browser.newPage();
+    try {
+      // Generate PDF using the new PDF service
+      pdfBuffer = await generatePDFFromHTML({
+        html,
+        width: "1600px",
+        height: "700px",
+        printBackground: true,
+        preferCSSPageSize: false,
+        margin: {
+          top: "0",
+          right: "0",
+          bottom: "0",
+          left: "0",
+        },
+      });
+      console.log("Generated PDF ticket successfully using PDF service");
+    } catch (pdfError) {
+      console.warn("PDF generation failed with PDF service:", pdfError);
 
-    // Set viewport to match the ticket dimensions exactly
-    await page.setViewport({
-      width: 1600,
-      height: 700,
-      deviceScaleFactor: 2,
-    });
+      // Fallback: Try using pdf-lib
+      try {
+        console.log("Attempting fallback PDF generation with pdf-lib...");
+        const { generateTicketPDF } = await import("@/lib/pdf-generator");
 
-    // Set content and wait for all resources to load
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      timeout: 15000,
-    });
+        // Get team data for the fallback
+        let team1 = null;
+        let team2 = null;
+        if (ticket.event.team1Id) {
+          const { data: team1Data } = await supabaseAdmin
+            .from("teams")
+            .select("*")
+            .eq("id", ticket.event.team1Id)
+            .single();
+          team1 = team1Data;
+        }
+        if (ticket.event.team2Id) {
+          const { data: team2Data } = await supabaseAdmin
+            .from("teams")
+            .select("*")
+            .eq("id", ticket.event.team2Id)
+            .single();
+          team2 = team2Data;
+        }
 
-    // Wait for images and fonts to load
-    await page.evaluate(() => {
-      return Promise.all([
-        ...Array.from(document.images).map((img) => {
-          if (img.complete) return Promise.resolve();
-          return new Promise((resolve, reject) => {
-            img.addEventListener("load", resolve);
-            img.addEventListener("error", reject);
-          });
-        }),
-        document.fonts.ready,
-      ]);
-    });
-
-    // Additional wait to ensure everything is rendered
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    // Generate PDF with exact dimensions
-    const pdfBuffer = await page.pdf({
-      width: "1600px",
-      height: "700px",
-      printBackground: true,
-      preferCSSPageSize: false,
-      margin: {
-        top: "0",
-        right: "0",
-        bottom: "0",
-        left: "0",
-      },
-    });
-
-    await browser.close();
+        const pdfArray = await generateTicketPDF(ticket, team1, team2);
+        pdfBuffer = pdfArray;
+        console.log("Generated PDF ticket successfully using fallback method");
+      } catch (fallbackError) {
+        console.error("Fallback PDF generation also failed:", fallbackError);
+        throw new Error(
+          "PDF generation failed with both PDF service and fallback methods",
+        );
+      }
+    }
 
     // Return the PDF file for download
     return new NextResponse(pdfBuffer as any, {
