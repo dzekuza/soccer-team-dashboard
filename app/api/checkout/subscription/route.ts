@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseService } from "@/lib/supabase-service";
 import type { SubscriptionType } from "@/lib/types";
+import { getAppUrl } from "@/lib/utils";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -21,13 +22,17 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
+  let subscriptionTypeId = "";
+  let purchaserName = "";
+  let purchaserSurname = "";
+  let purchaserEmail = "";
+  
   try {
-    const {
-      subscriptionTypeId,
-      purchaserName,
-      purchaserSurname,
-      purchaserEmail,
-    } = await request.json();
+    const body = await request.json();
+    subscriptionTypeId = body.subscriptionTypeId;
+    purchaserName = body.purchaserName;
+    purchaserSurname = body.purchaserSurname;
+    purchaserEmail = body.purchaserEmail;
 
     if (!subscriptionTypeId || !purchaserName || !purchaserEmail) {
       return NextResponse.json({ error: "Trūksta privalomų laukų" }, {
@@ -49,6 +54,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // Log subscription type details for debugging
+    console.log("📋 Subscription type details:", {
+      id: subscriptionType.id,
+      title: subscriptionType.title,
+      description: subscriptionType.description,
+      price: subscriptionType.price,
+      duration_days: subscriptionType.duration_days,
+      is_active: subscriptionType.is_active
+    });
+
     // 2. Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -56,19 +71,17 @@ export async function POST(request: NextRequest) {
         price_data: {
           currency: "eur",
           product_data: {
-            name: subscriptionType.title,
+            name: subscriptionType.title || `Prenumerata ${subscriptionType.id}`,
             description: subscriptionType.description ||
-              `Prenumerata: ${subscriptionType.title}`,
+              `Prenumerata: ${subscriptionType.title || subscriptionType.id}`,
           },
           unit_amount: Math.round(subscriptionType.price * 100),
         },
         quantity: 1,
       }],
       mode: "payment",
-      success_url: `${
-        request.headers.get("origin")
-      }/checkout/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.headers.get("origin")}/subscriptions`,
+      success_url: `${getAppUrl(request.headers.get("origin"))}/checkout/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getAppUrl(request.headers.get("origin"))}/subscriptions`,
       metadata: {
         subscriptionTypeId,
         purchaserName,
@@ -85,10 +98,17 @@ export async function POST(request: NextRequest) {
       headers: CORS_HEADERS,
     });
   } catch (error: any) {
-    console.error("Error creating subscription checkout session:", error);
+    console.error("❌ Error creating subscription checkout session:", error);
+    console.error("❌ Error details:", {
+      message: error.message,
+      stack: error.stack,
+      subscriptionTypeId,
+      purchaserName,
+      purchaserEmail
+    });
     return NextResponse.json({
-      error: error.message ||
-        "Nepavyko sukurti prenumeratos apmokėjimo sesijos",
+      error: "Failed to create Stripe session",
+      details: error.message || "Nepavyko sukurti prenumeratos apmokėjimo sesijos",
     }, { status: 500, headers: CORS_HEADERS });
   }
 }
