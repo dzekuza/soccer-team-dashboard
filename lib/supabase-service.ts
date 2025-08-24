@@ -770,16 +770,15 @@ export const supabaseService = {
     }
   },
 
-  // Players (placeholder - you may need to adjust based on your schema)
+  // Players
   getPlayers: async (): Promise<
     { data: any[] | null; error: Error | null }
   > => {
     try {
-      // This is a placeholder - adjust based on your actual players table
       const { data, error } = await supabaseAdmin
-        .from("teams")
+        .from("banga_playerss")
         .select("*")
-        .order("created_at", { ascending: false });
+        .order("name", { ascending: true });
 
       if (error) {
         throw error;

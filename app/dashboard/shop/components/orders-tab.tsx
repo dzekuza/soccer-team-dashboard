@@ -26,6 +26,7 @@ import {
   MapPin,
   Euro
 } from "lucide-react"
+import { ShippingDialog } from "@/components/shipping-dialog"
 
 interface OrderItem {
   id: string
@@ -161,6 +162,60 @@ export function OrdersTab() {
         description: "Nepavyko atnaujinti užsakymo",
         variant: "destructive",
       })
+    }
+  }
+
+  const shipOrder = async (orderId: string, trackingNumber: string, notes?: string) => {
+    try {
+      // First update the order status to shipped
+      const response = await fetch(`/api/shop/orders/${orderId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'shipped',
+          tracking_number: trackingNumber,
+          notes,
+          shipped_at: new Date().toISOString()
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to ship order')
+      }
+
+      // Send shipping confirmation email
+      const emailResponse = await fetch(`/api/shop/orders/${orderId}/ship`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tracking_number: trackingNumber
+        }),
+      })
+
+      if (!emailResponse.ok) {
+        console.warn('Failed to send shipping confirmation email')
+      }
+
+      toast({
+        title: "Sėkminga",
+        description: "Užsakymas išsiųstas ir klientas informuotas",
+      })
+
+      fetchOrders()
+    } catch (error) {
+      console.error('Error shipping order:', error)
+      toast({
+        title: "Klaida",
+        description: "Nepavyko išsiųsti užsakymo",
+        variant: "destructive",
+      })
+      throw error
     }
   }
 
@@ -493,6 +548,15 @@ export function OrdersTab() {
                             </div>
                           </DialogContent>
                         </Dialog>
+                        
+                        {order.status === 'processing' && (
+                          <ShippingDialog
+                            orderId={order.id}
+                            orderNumber={order.order_number}
+                            customerName={order.customer_name}
+                            onShip={(trackingNumber, notes) => shipOrder(order.id, trackingNumber, notes)}
+                          />
+                        )}
                       </div>
                     </div>
                   </div>

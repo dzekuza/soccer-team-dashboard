@@ -218,20 +218,29 @@ async function sendShopOrderConfirmation(orderId: string): Promise<void> {
 
     const orderItems = await supabaseService.getShopOrderItems(orderId);
 
-    // Create order items HTML
+    // Create order items HTML with improved styling
     const itemsHtml = orderItems.map((item) => `
       <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product_name}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.unit_price}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.total_price}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-family: 'DM Sans', sans-serif;">
+          <div style="font-weight: 600; color: #1f2937;">${item.product_name}</div>
+          ${item.product_sku ? `<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">SKU: ${item.product_sku}</div>` : ''}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-family: 'DM Sans', sans-serif; color: #374151;">
+          ${item.quantity}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: 'DM Sans', sans-serif; color: #374151;">
+          €${item.unit_price.toFixed(2)}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: 'DM Sans', sans-serif; font-weight: 600; color: #1f2937;">
+          €${item.total_price.toFixed(2)}
+        </td>
       </tr>
     `).join("");
 
     const emailBody = template.body_html
       .replace(/{{customer_name}}/g, order.customer_name)
       .replace(/{{order_number}}/g, order.order_number)
-      .replace(/{{total_amount}}/g, `€${order.total_amount}`)
+      .replace(/{{total_amount}}/g, `€${order.total_amount.toFixed(2)}`)
       .replace(/{{order_items}}/g, itemsHtml)
       .replace(
         /{{delivery_address}}/g,
@@ -278,13 +287,22 @@ async function sendShopOrderNotificationToAdmin(
 
     const orderItems = await supabaseService.getShopOrderItems(orderId);
 
-    // Create order items HTML
+    // Create order items HTML with improved styling
     const itemsHtml = orderItems.map((item) => `
       <tr>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.product_name}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.quantity}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.unit_price}</td>
-        <td style="padding: 10px; border-bottom: 1px solid #eee;">€${item.total_price}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-family: 'DM Sans', sans-serif;">
+          <div style="font-weight: 600; color: #1f2937;">${item.product_name}</div>
+          ${item.product_sku ? `<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">SKU: ${item.product_sku}</div>` : ''}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-family: 'DM Sans', sans-serif; color: #374151;">
+          ${item.quantity}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: 'DM Sans', sans-serif; color: #374151;">
+          €${item.unit_price.toFixed(2)}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: 'DM Sans', sans-serif; font-weight: 600; color: #1f2937;">
+          €${item.total_price.toFixed(2)}
+        </td>
       </tr>
     `).join("");
 
@@ -293,7 +311,7 @@ async function sendShopOrderNotificationToAdmin(
       .replace(/{{customer_email}}/g, order.customer_email)
       .replace(/{{customer_phone}}/g, order.customer_phone || "N/A")
       .replace(/{{order_number}}/g, order.order_number)
-      .replace(/{{total_amount}}/g, `€${order.total_amount}`)
+      .replace(/{{total_amount}}/g, `€${order.total_amount.toFixed(2)}`)
       .replace(/{{order_items}}/g, itemsHtml)
       .replace(
         /{{delivery_address}}/g,
@@ -317,6 +335,72 @@ async function sendShopOrderNotificationToAdmin(
   } catch (error) {
     console.error(
       `Failed to send shop order admin notification for ${orderId}:`,
+      error,
+    );
+    throw error;
+  }
+}
+
+async function sendShopOrderShippingConfirmation(
+  orderId: string,
+  trackingNumber: string,
+): Promise<void> {
+  try {
+    const order = await supabaseService.getShopOrderById(orderId);
+    if (!order || !order.customer_email) {
+      throw new Error("Order not found or is missing customer email address.");
+    }
+
+    const template = await supabaseService.getEmailTemplateByName(
+      "shop_order_shipping_confirmation",
+    );
+    if (!template) {
+      throw new Error("Shop order shipping confirmation email template not found.");
+    }
+
+    const orderItems = await supabaseService.getShopOrderItems(orderId);
+
+    // Create order items HTML with improved styling
+    const itemsHtml = orderItems.map((item) => `
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; font-family: 'DM Sans', sans-serif;">
+          <div style="font-weight: 600; color: #1f2937;">${item.product_name}</div>
+          ${item.product_sku ? `<div style="font-size: 12px; color: #6b7280; margin-top: 2px;">SKU: ${item.product_sku}</div>` : ''}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: center; font-family: 'DM Sans', sans-serif; color: #374151;">
+          ${item.quantity}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; font-family: 'DM Sans', sans-serif; font-weight: 600; color: #1f2937;">
+          €${item.total_price.toFixed(2)}
+        </td>
+      </tr>
+    `).join("");
+
+    const emailBody = template.body_html
+      .replace(/{{customer_name}}/g, order.customer_name)
+      .replace(/{{order_number}}/g, order.order_number)
+      .replace(/{{tracking_number}}/g, trackingNumber)
+      .replace(/{{total_amount}}/g, `€${order.total_amount.toFixed(2)}`)
+      .replace(/{{order_items}}/g, itemsHtml)
+      .replace(
+        /{{delivery_address}}/g,
+        formatDeliveryAddress(order.delivery_address),
+      );
+
+    const emailSubject = template.subject.replace(
+      /{{order_number}}/g,
+      order.order_number,
+    );
+
+    await resend.emails.send({
+      from: "bilietai@noriumuzikos.lt",
+      to: order.customer_email,
+      subject: emailSubject,
+      html: emailBody,
+    });
+  } catch (error) {
+    console.error(
+      `Failed to send shop order shipping confirmation for ${orderId}:`,
       error,
     );
     throw error;
@@ -370,5 +454,6 @@ export const notificationService = {
   sendSubscriptionConfirmation,
   sendShopOrderConfirmation,
   sendShopOrderNotificationToAdmin,
+  sendShopOrderShippingConfirmation,
   sendBulkEmail,
 };

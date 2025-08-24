@@ -219,6 +219,7 @@ export interface Player {
   id: number;
   number: string | null;
   name?: string | null;
+  surname?: string | null;
   profile_url?: string | null;
   position?: string | null;
   matches?: number | null;

@@ -30,6 +30,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
     { href: "https://darkorange-partridge-697021.hostingersite.com/klubas/", label: "Klubas", page: "klubas", external: true },
     { href: "https://darkorange-partridge-697021.hostingersite.com/naujienos/", label: "Naujienos", page: "naujienos", external: true },
     { href: "https://darkorange-partridge-697021.hostingersite.com/komandos/", label: "Komandos", page: "komandos", external: true },
+    { href: "/players", label: "Žaidėjai", page: "players", external: false },
     { 
       label: "Bilietai ir abonementai", 
       page: "tickets-subscriptions",
