@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import QrScanner from "@/components/qr-scanner"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -26,6 +26,17 @@ function isSubscription(details: any): details is Subscription {
 export default function ScannerPage() {
   const [lastScan, setLastScan] = useState<ScanResult | null>(null)
   const [isScanning, setIsScanning] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Initialize scanner on mount
+  useEffect(() => {
+    // Set initialized after a short delay to allow camera permission
+    const timer = setTimeout(() => {
+      setIsInitialized(true)
+    }, 1000)
+    
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleScan = async (data: string | null) => {
     if (!data || !isScanning) return
@@ -33,6 +44,11 @@ export default function ScannerPage() {
     
     setIsScanning(false) // Stop scanning after a result
     setLastScan(null)
+    
+    // Mark as initialized after first scan
+    if (!isInitialized) {
+      setIsInitialized(true)
+    }
 
     try {
       // Accept QR code as just an ID (UUID)
