@@ -13,6 +13,8 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
   const qrScannerRef = useRef<QrScannerLib | null>(null)
+  const onScanRef = useRef(onScan)
+  const isInitializingRef = useRef(false)
 
   // Check camera permission status
   const checkCameraPermission = useCallback(async () => {
@@ -51,7 +53,9 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
 
   // Initialize QR scanner
   const initializeScanner = useCallback(async () => {
-    if (!videoRef.current || isInitialized) return
+    if (!videoRef.current || isInitialized || qrScannerRef.current || isInitializingRef.current) return
+    
+    isInitializingRef.current = true
 
     try {
       // Check if we already have permission
@@ -66,7 +70,7 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
         videoRef.current,
         (result) => {
           console.log("QR Code scanned:", result.data)
-          onScan(result.data)
+          onScanRef.current(result.data)
         },
         {
           highlightScanRegion: true,
@@ -87,8 +91,10 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
     } catch (error) {
       console.error("Failed to initialize QR scanner:", error)
       setHasPermission(false)
+    } finally {
+      isInitializingRef.current = false
     }
-  }, [onScan, isInitialized, checkCameraPermission])
+  }, [isInitialized])
 
   // Cleanup function
   const cleanupScanner = useCallback(() => {
@@ -99,7 +105,7 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
     }
   }, [])
 
-  // Initialize on mount
+  // Initialize on mount - only run once
   useEffect(() => {
     initializeScanner()
     
@@ -107,7 +113,12 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
     return () => {
       cleanupScanner()
     }
-  }, [initializeScanner, cleanupScanner])
+  }, []) // Empty dependency array to run only once
+
+  // Update onScanRef when onScan prop changes
+  useEffect(() => {
+    onScanRef.current = onScan
+  }, [onScan])
 
   // Handle scanning state changes
   useEffect(() => {
