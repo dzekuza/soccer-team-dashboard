@@ -97,6 +97,23 @@ export interface EventStats {
   totalRevenue: number;
 }
 
+export interface Post {
+  id: string;
+  title: string;
+  content: string;
+  excerpt?: string;
+  author?: string;
+  published_date?: string;
+  url: string;
+  image_url?: string;
+  category?: string;
+  tags?: string[];
+  source: string;
+  fingerprint: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Team {
   id: string;
   team_name: string;

@@ -12,6 +12,7 @@ import type {
   Team,
   Ticket,
   TicketWithDetails,
+  Post,
 } from "./types";
 import { QRCodeService } from "./qr-code-service";
 
@@ -741,6 +742,26 @@ export const supabaseService = {
       return eventsWithTiers;
     } catch (error) {
       console.error("Supabase Service: Error in getEventsWithTiers:", error);
+      throw error;
+    }
+  },
+
+  // Posts
+  getPosts: async (): Promise<Post[]> => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from("posts")
+        .select("*")
+        .order("published_date", { ascending: false });
+
+      if (error) {
+        console.error("Error fetching posts:", error);
+        throw new Error(`Failed to fetch posts: ${error.message}`);
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error("Supabase Service: Error in getPosts:", error);
       throw error;
     }
   },

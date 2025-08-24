@@ -28,7 +28,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
 
   const navigationItems = [
     { href: "https://darkorange-partridge-697021.hostingersite.com/klubas/", label: "Klubas", page: "klubas", external: true },
-    { href: "https://darkorange-partridge-697021.hostingersite.com/naujienos/", label: "Naujienos", page: "naujienos", external: true },
+    { href: "/naujienos", label: "Naujienos", page: "naujienos", external: false },
     { href: "https://darkorange-partridge-697021.hostingersite.com/komandos/", label: "Komandos", page: "komandos", external: true },
     { href: "/zaidejai", label: "Žaidėjai", page: "zaidejai", external: false },
     { 

@@ -164,26 +164,33 @@ export default function ScannerPage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto space-y-6">
-      <Card>
-        <CardHeader><CardTitle>QR Kodų Skeneris</CardTitle></CardHeader>
-        <CardContent>
-          <div className="relative w-full aspect-square bg-gray-900 rounded-md overflow-hidden">
-            <QrScanner onScan={handleScan} />
-            {isScanning && (
-              <div className="absolute inset-0 pointer-events-none">
-                <div className="scanner-line"></div>
-              </div>
-            )}
-            {!isScanning && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
-                <p className="text-white text-lg font-medium">Apdorojama...</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-      {renderScanResult()}
+    <div className="w-full h-full flex flex-col">
+      {/* Header */}
+      <div className="p-4 border-b">
+        <h1 className="text-2xl font-bold">QR Kodų Skeneris</h1>
+      </div>
+      
+      {/* Scanner Container - Full Width */}
+      <div className="flex-1 relative">
+        <div className="absolute inset-0">
+          <QrScanner onScan={handleScan} />
+          {isScanning && (
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="scanner-line"></div>
+            </div>
+          )}
+          {!isScanning && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <p className="text-white text-lg font-medium">Apdorojama...</p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Results - Fixed at bottom */}
+      <div className="p-4">
+        {renderScanResult()}
+      </div>
     </div>
   )
 }
