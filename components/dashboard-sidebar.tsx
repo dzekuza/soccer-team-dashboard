@@ -26,12 +26,12 @@ export function DashboardSidebar() {
 
   const navItems = [
     { name: "Suvestinė", href: "/dashboard/overview", icon: BarChart2 },
-    { name: "Renginiai", href: "/dashboard/events", icon: Calendar },
-    { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
-    { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
+    { name: "Renginiai", href: "/dashboard/renginiai", icon: Calendar },
+    { name: "Bilietai", href: "/dashboard/bilietai", icon: Ticket },
+    { name: "Prenumeratos", href: "/dashboard/prenumeratos", icon: Ticket },
     { name: "Prenumeratos tipai", href: "/dashboard/subscription-types", icon: BadgeCheck },
     { name: "Kuponai", href: "/dashboard/coupons", icon: Tag },
-    { name: "Parduotuvė", href: "/dashboard/shop", icon: ShoppingBag },
+    { name: "Parduotuvė", href: "/dashboard/parduotuve", icon: ShoppingBag },
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "QR skaitytuvas", href: "/dashboard/scanner", icon: QrCode },
     { name: "Eksportas", href: "/dashboard/export", icon: Download },
@@ -42,7 +42,7 @@ export function DashboardSidebar() {
 
   // Dropdown state for My Team
   const [myTeamOpen, setMyTeamOpen] = useState(false)
-  const isMyTeamActive = ["/dashboard/players", "/dashboard/matches"].includes(pathname)
+  const isMyTeamActive = ["/dashboard/zaidejai", "/dashboard/rungtynes"].includes(pathname)
 
   return (
     <>
@@ -94,13 +94,13 @@ export function DashboardSidebar() {
               {(myTeamOpen || isMyTeamActive) && (
                 <ul className="ml-8 mt-1 space-y-1">
                   <li>
-                    <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Žaidėjai</Link>
+                    <Link href="/dashboard/zaidejai" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/zaidejai" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Žaidėjai</Link>
                   </li>
                   <li>
-                    <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Rungtynės</Link>
+                    <Link href="/dashboard/rungtynes" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/rungtynes" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Rungtynės</Link>
                   </li>
                   <li>
-                    <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Lentelė</Link>
+                    <Link href="/dashboard/lentele" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/lentele" ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent/30")}>Lentelė</Link>
                   </li>
                 </ul>
               )}
@@ -148,13 +148,13 @@ export function DashboardSidebar() {
                   {(myTeamOpen || isMyTeamActive) && (
                     <ul className="ml-8 mt-1 space-y-1">
                       <li>
-                        <Link href="/dashboard/players" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/players" ? "bg-gray-200" : "hover:bg-gray-100")}>Žaidėjai</Link>
+                        <Link href="/dashboard/zaidejai" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/zaidejai" ? "bg-gray-200" : "hover:bg-gray-100")}>Žaidėjai</Link>
                       </li>
                       <li>
-                        <Link href="/dashboard/matches" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/matches" ? "bg-gray-200" : "hover:bg-gray-100")}>Rungtynės</Link>
+                        <Link href="/dashboard/rungtynes" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/rungtynes" ? "bg-gray-200" : "hover:bg-gray-100")}>Rungtynės</Link>
                       </li>
                       <li>
-                        <Link href="/dashboard/standings" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/standings" ? "bg-gray-200" : "hover:bg-gray-100")}>Lentelė</Link>
+                        <Link href="/dashboard/lentele" className={cn("flex items-center p-2 rounded-md", pathname === "/dashboard/lentele" ? "bg-gray-200" : "hover:bg-gray-100")}>Lentelė</Link>
                       </li>
                     </ul>
                   )}
@@ -178,15 +178,15 @@ export function DashboardMobileMenu() {
   // Main navigation for mobile bar
   const navigation = [
     { name: "Suvestinė", href: "/dashboard/overview", icon: BarChart2 },
-    { name: "Renginiai", href: "/dashboard/events", icon: Calendar },
-    { name: "Bilietai", href: "/dashboard/tickets", icon: Ticket },
+    { name: "Renginiai", href: "/dashboard/renginiai", icon: Calendar },
+    { name: "Bilietai", href: "/dashboard/bilietai", icon: Ticket },
     { name: "QR skait.", href: "/dashboard/scanner", icon: QrCode },
     { name: "Pagalba", href: "/dashboard/help", icon: HelpCircle },
   ];
 
   // Actions for modal
   const modalActions = [
-    { name: "Prenumeratos", href: "/dashboard/subscriptions", icon: Ticket },
+    { name: "Prenumeratos", href: "/dashboard/prenumeratos", icon: Ticket },
     { name: "Gerbėjai", href: "/dashboard/fans", icon: Users },
     { name: "Eksportas", href: "/dashboard/export", icon: Ticket },
     { name: "Šablonai", href: "/dashboard/templates", icon: Settings },

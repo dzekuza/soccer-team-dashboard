@@ -39,8 +39,17 @@ export default function PlayersPage() {
     fetchPlayers()
   }, [])
 
+  // Remove duplicates based on name and surname combination
+  const uniquePlayers = players.filter((player, index, self) => {
+    const fullName = `${player.name || ''} ${player.surname || ''}`.toLowerCase().trim()
+    const firstIndex = self.findIndex(p => 
+      `${p.name || ''} ${p.surname || ''}`.toLowerCase().trim() === fullName
+    )
+    return index === firstIndex
+  })
+
   // Filter players based on search term and team selection
-  const filteredPlayers = players.filter(player => {
+  const filteredPlayers = uniquePlayers.filter(player => {
     const fullName = `${player.name || ''} ${player.surname || ''}`.toLowerCase()
     const matchesSearch = fullName.includes(searchTerm.toLowerCase())
     const matchesTeam = selectedTeam === "all" || player.team_key === selectedTeam
@@ -106,7 +115,7 @@ export default function PlayersPage() {
 
   return (
     <div className="min-h-screen bg-[#0A165B] text-white">
-      <PublicNavigation currentPage="players" />
+              <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Content */}
       <div className="w-full">

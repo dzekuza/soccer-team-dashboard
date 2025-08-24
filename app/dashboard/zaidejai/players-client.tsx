@@ -202,7 +202,7 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-blue-600">{players.length}</p>
-              <p className="text-sm text-muted-foreground font-medium">Total Players</p>
+              <p className="text-sm text-muted-foreground font-medium">Iš viso žaidėjų</p>
             </div>
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-green-600">
@@ -232,7 +232,7 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
               <p className="text-3xl font-bold text-purple-600">
                 {players.reduce((sum, p) => sum + (p.matches || 0), 0)}
               </p>
-              <p className="text-sm text-muted-foreground font-medium">Total Matches</p>
+              <p className="text-sm text-muted-foreground font-medium">Iš viso rungtynių</p>
             </div>
           </div>
         </div>
@@ -369,7 +369,7 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
                 <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
                     <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 text-center border border-gray-200">
                         <p className="font-bold text-xl text-gray-800">{player.matches || 0}</p>
-                        <p className="text-xs text-muted-foreground font-medium">Matches</p>
+                        <p className="text-xs text-muted-foreground font-medium">Rungtynės</p>
                     </div>
                     <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 text-center border border-green-200">
                         <p className="font-bold text-xl text-green-700">{player.goals || 0}</p>

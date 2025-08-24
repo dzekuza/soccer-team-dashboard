@@ -30,18 +30,18 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
     { href: "https://darkorange-partridge-697021.hostingersite.com/klubas/", label: "Klubas", page: "klubas", external: true },
     { href: "https://darkorange-partridge-697021.hostingersite.com/naujienos/", label: "Naujienos", page: "naujienos", external: true },
     { href: "https://darkorange-partridge-697021.hostingersite.com/komandos/", label: "Komandos", page: "komandos", external: true },
-    { href: "/players", label: "Žaidėjai", page: "players", external: false },
+    { href: "/zaidejai", label: "Žaidėjai", page: "zaidejai", external: false },
     { 
       label: "Bilietai ir abonementai", 
       page: "tickets-subscriptions",
       dropdown: true,
       items: [
-        { href: "/events", label: "Bilietai", page: "events", external: false },
-        { href: "/subscriptions", label: "Abonementai", page: "subscriptions", external: false }
+        { href: "/renginiai", label: "Bilietai", page: "renginiai", external: false },
+        { href: "/prenumeratos", label: "Abonementai", page: "prenumeratos", external: false }
       ]
     },
     { href: "https://darkorange-partridge-697021.hostingersite.com/pamaina/", label: "Akademija", page: "akademija", external: true },
-    { href: "/shop", label: "Parduotuvė", page: "parduotuve", external: false },
+    { href: "/parduotuve", label: "Parduotuvė", page: "parduotuve", external: false },
     { href: "https://darkorange-partridge-697021.hostingersite.com/kontaktai/", label: "Kontaktai", page: "kontaktai", external: true },
   ]
 

@@ -784,7 +784,19 @@ export const supabaseService = {
         throw error;
       }
 
-      return { data: data || [], error: null };
+      // Map the data to ensure proper field names
+      const mappedData = (data || []).map((player) => ({
+        ...player,
+        // Ensure these fields are properly mapped
+        matches: player.matches || player.MATCHES || 0,
+        goals: player.goals || player.GOALS || 0,
+        minutes: player.minutes || player.MINUTES || 0,
+        assists: player.assists || player.ASSISTS || 0,
+        yellow_cards: player.yellow_cards || player.YELLOW_CARDS || 0,
+        red_cards: player.red_cards || player.RED_CARDS || 0,
+      }));
+
+      return { data: mappedData, error: null };
     } catch (error) {
       console.error("Supabase Service: Error in getPlayers:", error);
       return {

@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import Link from "next/link"
 import type { Player } from "@/lib/types"
 
 interface PlayerCardProps {
@@ -19,19 +20,23 @@ export function PlayerCard({ player }: PlayerCardProps) {
     if (!position) return "N/A"
     
     const positionMap: Record<string, string> = {
-      "Goalkeeper": "GK",
-      "Vartininkas": "GK",
-      "Defender": "DEF",
-      "Saugas": "DEF",
-      "Midfielder": "MID",
-      "Pusgynėjas": "MID",
-      "Forward": "FWD",
-      "Puolėjas": "FWD",
-      "Striker": "ST",
-      "Puolėjas": "ST"
+      "Goalkeeper": "VAR",
+      "Vartininkas": "VAR",
+      "Vartininkė": "VAR",
+      "Defender": "GYN",
+      "Saugas": "GYN",
+      "Saugė": "GYN",
+      "Gynėjas": "GYN",
+      "Midfielder": "PUS",
+      "Pusgynėjas": "PUS",
+      "Forward": "PUO",
+      "Puolėjas": "PUO",
+      "Puolėja": "PUO",
+      "Striker": "PUO",
+      "Žaidėja": "ŽAI"
     }
     
-    // If it's a known position, return the abbreviation
+    // If it's a known position, return the Lithuanian abbreviation
     if (positionMap[position]) {
       return positionMap[position]
     }
@@ -43,18 +48,22 @@ export function PlayerCard({ player }: PlayerCardProps) {
   const getCleanSheets = (player: Player) => {
     // For goalkeepers, clean sheets might be stored differently
     // This is a placeholder - adjust based on your data structure
-    return player.matches || 0
+    return player.goals || 0
   }
 
-  const getProgressPercentage = (matches: number | null | undefined) => {
-    if (!matches) return 0
-    // Assuming a season has 30+ matches, calculate percentage
-    const maxMatches = 30
-    return Math.min((matches / maxMatches) * 100, 100)
+  const getProgressPercentage = (matches: number | null | undefined, goals: number | null | undefined) => {
+    const matchesNum = Number(matches) || 0;
+    const goalsNum = Number(goals) || 0;
+    const total = matchesNum + goalsNum;
+    
+    if (total === 0) return 50; // Equal bars when no data
+    
+    return Math.round((matchesNum / total) * 100);
   }
 
   return (
-    <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden">
+    <Link href={`/zaidejai/${player.id}`} className="block">
+      <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden hover:border-[#F15601] transition-colors duration-300 cursor-pointer">
       {/* Player Image Section */}
       <div className="relative w-full h-[400px] overflow-hidden">
         <Image
@@ -98,7 +107,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
         <div className="flex gap-6 items-center justify-start w-full">
           <div className="flex flex-col gap-1 flex-1">
             <div className="text-white text-base font-normal tracking-tight">
-              Rungtynes
+              Rungtynės
             </div>
             <div className="text-white text-3xl font-semibold tracking-tight">
               {player.matches || 0}
@@ -106,7 +115,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
           </div>
           <div className="flex flex-col gap-1 flex-1">
             <div className="text-white text-base font-normal tracking-tight">
-              Ivarciai
+              Įvarčiai
             </div>
             <div className="text-white text-3xl font-semibold tracking-tight">
               {getCleanSheets(player)}
@@ -116,31 +125,57 @@ export function PlayerCard({ player }: PlayerCardProps) {
         
         {/* Progress Bar */}
         <div className="space-y-2">
-          <div className="flex gap-1 items-center w-full">
-            <div className="bg-white h-2 rounded-full flex-1" />
-            <div 
-              className="bg-[#fc8231] h-2 rounded-full transition-all duration-300"
-              style={{ width: `${getProgressPercentage(player.matches)}%` }}
-            />
-          </div>
+          {(() => {
+            const matches = Number(player.matches) || 0;
+            const goals = Number(player.goals) || 0;
+            const total = matches + goals;
+            
+            // Handle edge cases
+            if (total === 0) {
+              return (
+                <div className="flex gap-1 items-center w-full">
+                  <div className="bg-white h-2 rounded-full flex-1" />
+                  <div className="bg-[#fc8231] h-2 rounded-full flex-1" />
+                </div>
+              );
+            }
+            
+            // Calculate percentages
+            const matchesPercent = Math.round((matches / total) * 100);
+            const goalsPercent = Math.round((goals / total) * 100);
+            
+            return (
+              <div className="flex gap-1 items-center w-full">
+                <div 
+                  className="bg-white h-2 rounded-l-full transition-all duration-300"
+                  style={{ width: `${matchesPercent}%` }}
+                />
+                <div 
+                  className="bg-[#fc8231] h-2 rounded-r-full transition-all duration-300"
+                  style={{ width: `${goalsPercent}%` }}
+                />
+              </div>
+            );
+          })()}
           
           {/* Legend */}
-          <div className="flex gap-5 items-center">
-            <div className="flex gap-1.5 items-end">
-              <div className="text-white text-xs font-normal tracking-tight">
-                Rungtynes
+                      <div className="flex gap-5 items-center">
+              <div className="flex gap-1.5 items-end">
+                <div className="text-white text-xs font-normal tracking-tight">
+                  Rungtynės
+                </div>
+                <div className="bg-white rounded-sm w-3 h-3" />
               </div>
-              <div className="bg-white rounded-sm w-3 h-3" />
-            </div>
-            <div className="flex gap-1.5 items-end">
-              <div className="text-white text-xs font-normal tracking-tight">
-                Ivarciai
+              <div className="flex gap-1.5 items-end">
+                <div className="text-white text-xs font-normal tracking-tight">
+                  Įvarčiai
+                </div>
+                <div className="bg-[#f15601] rounded-sm w-3 h-3" />
               </div>
-              <div className="bg-[#f15601] rounded-sm w-3 h-3" />
             </div>
-          </div>
         </div>
       </div>
-    </div>
+      </div>
+    </Link>
   )
 }

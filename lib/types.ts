@@ -216,7 +216,7 @@ export interface Match {
 }
 
 export interface Player {
-  id: number;
+  id: string;
   number: string | null;
   name?: string | null;
   surname?: string | null;
