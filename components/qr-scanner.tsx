@@ -2,70 +2,28 @@
 
 import { useEffect, useRef, useState } from "react"
 import QrScannerLib from "qr-scanner"
-import { useToast } from "@/components/ui/use-toast"
 
 interface QrScannerProps {
   onScan: (result: string) => void
-  onValidationResult?: (result: any) => void
 }
 
-const QrScanner = ({ onScan, onValidationResult }: QrScannerProps) => {
+const QrScanner = ({ onScan }: QrScannerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isScanning, setIsScanning] = useState(false)
-  const { toast } = useToast()
 
   useEffect(() => {
     if (!videoRef.current) return
 
     const qrScanner = new QrScannerLib(
       videoRef.current,
-      async (result) => {
+      (result) => {
         if (isScanning) return // Prevent multiple scans
         
         setIsScanning(true)
         console.log("QR Code scanned:", result.data)
         
-        try {
-          // QR code now contains only the ID (ticket ID or subscription ID)
-          const qrData = result.data.trim();
-          
-          if (qrData) {
-            // Validate the QR code through our API
-            const response = await fetch('/api/validate-qr', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ qrData }),
-            });
-
-            const validationResult = await response.json();
-            
-            if (response.ok) {
-              toast({
-                title: "✅ Valid QR Code",
-                description: validationResult.message,
-              });
-              
-              if (onValidationResult) {
-                onValidationResult(validationResult);
-              }
-            } else {
-              toast({
-                title: "❌ Invalid QR Code",
-                description: validationResult.error,
-                variant: "destructive",
-              });
-            }
-          } else {
-            // Fallback for empty data
-            onScan(result.data);
-          }
-        } catch (error) {
-          // If there's an error, treat as old format
-          console.log("Error processing QR code data, using old format");
-          onScan(result.data);
-        }
+        // Simply pass the scanned data to the parent component
+        onScan(result.data)
         
         // Reset scanning state after a delay
         setTimeout(() => setIsScanning(false), 2000);
@@ -80,17 +38,12 @@ const QrScanner = ({ onScan, onValidationResult }: QrScannerProps) => {
 
     qrScanner.start().catch((err) => {
       console.error("Failed to start scanner", err)
-      toast({
-        title: "❌ Scanner Error",
-        description: "Failed to start camera scanner",
-        variant: "destructive",
-      });
     })
 
     return () => {
       qrScanner.destroy()
     }
-  }, [onScan, onValidationResult, isScanning, toast])
+  }, [onScan, isScanning])
 
   return (
     <div className="relative">
