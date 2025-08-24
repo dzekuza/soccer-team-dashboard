@@ -105,7 +105,7 @@ export default function PlayerDetailPage() {
             className="absolute inset-0 bg-contain bg-bottom bg-no-repeat"
             style={{ 
               backgroundImage: `url('${player.image_url || '/placeholder-user.jpg'}')`,
-              backgroundSize: '60% auto',
+              backgroundSize: 'auto 80%',
               filter: 'drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3))'
             }}
           />

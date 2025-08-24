@@ -37,15 +37,26 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
   const positions = useMemo(() => Array.from(new Set(players.map(p => p.position).filter(Boolean))), [players])
   const teamKeys = useMemo(() => Array.from(new Set(players.map(p => p.team_key).filter(Boolean))), [players])
 
+  // Remove duplicates based on name and surname combination
+  const uniquePlayers = useMemo(() => {
+    return players.filter((player, index, self) => {
+      const fullName = `${player.name || ''} ${player.surname || ''}`.toLowerCase().trim()
+      const firstIndex = self.findIndex(p => 
+        `${p.name || ''} ${p.surname || ''}`.toLowerCase().trim() === fullName
+      )
+      return index === firstIndex
+    })
+  }, [players])
+
   const filteredPlayers = useMemo(() => {
-    return players.filter(player => {
+    return uniquePlayers.filter(player => {
       const fullName = `${player.name || ''} ${player.surname || ''}`.toLowerCase()
       const matchesSearch = fullName.includes(searchTerm.toLowerCase())
       const matchesPosition = positionFilter && positionFilter !== 'all' ? player.position === positionFilter : true
       const matchesTeamKey = teamKeyFilter && teamKeyFilter !== 'all' ? player.team_key === teamKeyFilter : true
       return matchesSearch && matchesPosition && matchesTeamKey
     })
-  }, [players, searchTerm, positionFilter, teamKeyFilter])
+  }, [uniquePlayers, searchTerm, positionFilter, teamKeyFilter])
 
   async function fetchPlayers() {
     try {
@@ -201,36 +212,36 @@ export function PlayersClient({ initialPlayers }: PlayersClientProps) {
           <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Team Statistics</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-              <p className="text-3xl font-bold text-blue-600">{players.length}</p>
+              <p className="text-3xl font-bold text-blue-600">{uniquePlayers.length}</p>
               <p className="text-sm text-muted-foreground font-medium">Iš viso žaidėjų</p>
             </div>
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-green-600">
-                {players.reduce((sum, p) => sum + (p.goals || 0), 0)}
+                {uniquePlayers.reduce((sum, p) => sum + (p.goals || 0), 0)}
               </p>
               <p className="text-sm text-muted-foreground font-medium">Total Goals</p>
             </div>
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-blue-600">
-                {players.reduce((sum, p) => sum + (p.assists || 0), 0)}
+                {uniquePlayers.reduce((sum, p) => sum + (p.assists || 0), 0)}
               </p>
               <p className="text-sm text-muted-foreground font-medium">Total Assists</p>
             </div>
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-yellow-600">
-                {players.reduce((sum, p) => sum + (p.yellow_cards || 0), 0)}
+                {uniquePlayers.reduce((sum, p) => sum + (p.yellow_cards || 0), 0)}
               </p>
               <p className="text-sm text-muted-foreground font-medium">Yellow Cards</p>
             </div>
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-red-600">
-                {players.reduce((sum, p) => sum + (p.red_cards || 0), 0)}
+                {uniquePlayers.reduce((sum, p) => sum + (p.red_cards || 0), 0)}
               </p>
               <p className="text-sm text-muted-foreground font-medium">Red Cards</p>
             </div>
             <div className="text-center bg-white rounded-lg p-4 shadow-sm border border-gray-200">
               <p className="text-3xl font-bold text-purple-600">
-                {players.reduce((sum, p) => sum + (p.matches || 0), 0)}
+                {uniquePlayers.reduce((sum, p) => sum + (p.matches || 0), 0)}
               </p>
               <p className="text-sm text-muted-foreground font-medium">Iš viso rungtynių</p>
             </div>

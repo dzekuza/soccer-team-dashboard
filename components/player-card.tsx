@@ -63,9 +63,9 @@ export function PlayerCard({ player }: PlayerCardProps) {
 
   return (
     <Link href={`/zaidejai/${player.id}`} className="block">
-      <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden hover:border-[#F15601] transition-colors duration-300 cursor-pointer">
+      <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden hover:border-[#F15601] hover:bg-orange-500 transition-all duration-300 cursor-pointer group">
       {/* Player Image Section */}
-      <div className="relative w-full h-[400px] overflow-hidden">
+      <div className="relative w-full h-[400px] overflow-hidden group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-orange-600">
         <Image
           src={getPlayerImageSrc(player)}
           alt={`${player.name} ${player.surname}`}
@@ -88,7 +88,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
         </div>
         
         {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-b from-transparent to-[#09155a]" />
+        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-b from-transparent to-[#09155a] group-hover:bg-gradient-to-b group-hover:from-transparent group-hover:to-orange-500 transition-all duration-300" />
         
         {/* Player Name */}
         <div className="absolute bottom-2 left-4 text-white">
@@ -102,7 +102,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
       </div>
       
       {/* Stats Section */}
-      <div className="bg-[#09155a] p-4 w-full space-y-4">
+      <div className="bg-[#09155a] group-hover:bg-orange-500 p-4 w-full space-y-4 transition-colors duration-300">
         {/* Stats Row */}
         <div className="flex gap-6 items-center justify-start w-full">
           <div className="flex flex-col gap-1 flex-1">
