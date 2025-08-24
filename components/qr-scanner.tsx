@@ -17,16 +17,10 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
     const qrScanner = new QrScannerLib(
       videoRef.current,
       (result) => {
-        if (isScanning) return // Prevent multiple scans
-        
-        setIsScanning(true)
         console.log("QR Code scanned:", result.data)
         
         // Simply pass the scanned data to the parent component
         onScan(result.data)
-        
-        // Reset scanning state after a delay
-        setTimeout(() => setIsScanning(false), 2000);
       },
       {
         highlightScanRegion: true,

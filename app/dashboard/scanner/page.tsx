@@ -69,14 +69,27 @@ export default function ScannerPage() {
         }
       }
       setLastScan(result)
+      
+      // Auto-hide notification after 3 seconds
+      setTimeout(() => {
+        setLastScan(null)
+      }, 3000)
+      
     } catch (err) {
       console.error("Error in handleScan:", err)
       setLastScan({
         status: "error",
         message: "Klaida apdorojant QR kodą. Patikrinkite, ar QR kodas yra teisingas.",
       })
+      
+      // Auto-hide error notification after 3 seconds
+      setTimeout(() => {
+        setLastScan(null)
+      }, 3000)
     }
-    setTimeout(() => setIsScanning(true), 3000)
+    
+    // Resume scanning after a short delay
+    setTimeout(() => setIsScanning(true), 1000)
   }
 
   const handleTicketValidation = async (ticketId: string): Promise<ScanResult> => {
@@ -185,8 +198,17 @@ export default function ScannerPage() {
   return (
     <div className="w-full h-full flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b flex justify-between items-center">
         <h1 className="text-2xl font-bold">QR Kodų Skeneris</h1>
+        <button
+          onClick={() => {
+            setLastScan(null)
+            setIsScanning(true)
+          }}
+          className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+        >
+          Reset Scanner
+        </button>
       </div>
       
       {/* Scanner Container - Full Width */}
@@ -204,11 +226,13 @@ export default function ScannerPage() {
             </div>
           )}
         </div>
-      </div>
-      
-      {/* Results - Fixed at bottom */}
-      <div className="p-4">
-        {renderScanResult()}
+        
+        {/* Notification - Fixed at top */}
+        {lastScan && (
+          <div className="absolute top-4 left-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
+            {renderScanResult()}
+          </div>
+        )}
       </div>
     </div>
   )
