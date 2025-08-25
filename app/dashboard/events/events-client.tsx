@@ -11,7 +11,7 @@ import { EventCard } from "@/components/event-card"
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Clock, MapPin, Trash2, Edit, Eye } from "lucide-react"
+import { Calendar, Clock, MapPin, Trash2, Edit, Eye, RefreshCw } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import Image from "next/image"
 import { useToast } from "@/components/ui/use-toast"
@@ -365,6 +365,41 @@ export default function EventsClient({
   }, [])
   const [selectedEvent, setSelectedEvent] = useState<EventWithTiers | null>(null)
   const [isEventModalOpen, setIsEventModalOpen] = useState(false)
+  const [isScraping, setIsScraping] = useState(false)
+
+  const handleScrapeFixtures = async () => {
+    setIsScraping(true)
+    try {
+      const response = await fetch('/api/fixtures/scrape', {
+        method: 'POST'
+      })
+      
+      if (!response.ok) throw new Error("Failed to scrape fixtures")
+      
+      const result = await response.json()
+      if (result.success) {
+        toast({
+          title: "Sėkmė",
+          description: `Sėkmingai scrapinta ${result.data.length} lygų rungtynės`,
+        })
+        // Refresh drafts to show new scraped fixtures
+        const draftsResponse = await fetch('/api/events/drafts')
+        const draftsData = await draftsResponse.json()
+        setDrafts(Array.isArray(draftsData) ? draftsData : [])
+      } else {
+        throw new Error(result.error || "Failed to scrape fixtures")
+      }
+    } catch (error) {
+      console.error("Error scraping fixtures:", error)
+      toast({
+        title: "Klaida",
+        description: "Nepavyko scrapinti rungtynių",
+        variant: "destructive"
+      })
+    } finally {
+      setIsScraping(false)
+    }
+  }
 
   const handleEventCreated = async () => {
     window.location.reload();
@@ -581,10 +616,21 @@ export default function EventsClient({
           <h1 className="text-3xl font-bold">Renginiai</h1>
           <p className="text-gray-600">Tvarkykite savo futbolo komandos renginius</p>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Sukurti renginį
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleScrapeFixtures}
+            disabled={isScraping}
+            variant="outline"
+            className="bg-[#F15601] hover:bg-[#E04501] text-white border-[#F15601]"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isScraping ? 'animate-spin' : ''}`} />
+            {isScraping ? 'Scrapinama...' : 'Scrapinti rungtynes'}
+          </Button>
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Sukurti renginį
+          </Button>
+        </div>
       </div>
       <Tabs value={view} onValueChange={(v: string) => setView(v as any)} className="mb-4">
         <TabsList>

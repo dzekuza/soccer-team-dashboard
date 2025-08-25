@@ -17,7 +17,7 @@ export async function GET(request: Request) {
         );
 
         let query = supabase
-            .from("posts")
+            .from("banga_posts")
             .select("*", { count: "exact" })
             .order("published_date", { ascending: false });
 

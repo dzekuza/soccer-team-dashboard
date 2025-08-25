@@ -340,11 +340,21 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
       // Mark draft as used if we created from a draft
       if (draft?.id) {
         try {
-          await supabase
-            .from('event_drafts')
-            .update({ used_at: new Date().toISOString() })
-            .eq('id', draft.id);
-        } catch {}
+          // Check if it's a fixture draft or event draft
+          if ((draft as any).is_fixture) {
+            await supabase
+              .from('fixtures_all_new')
+              .update({ used_at: new Date().toISOString() })
+              .eq('id', draft.id);
+          } else {
+            await supabase
+              .from('event_drafts')
+              .update({ used_at: new Date().toISOString() })
+              .eq('id', draft.id);
+          }
+        } catch (error) {
+          console.error('Error marking draft as used:', error);
+        }
       }
 
       setApiSuccess("Event created successfully!");

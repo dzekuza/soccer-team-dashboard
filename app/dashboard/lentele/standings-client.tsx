@@ -1,229 +1,383 @@
-'use client';
-import React, { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+"use client"
+
+import React, { useEffect, useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { RefreshCw, Download, Upload } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast"
 
 // Standings row type
 interface Standing {
-  team_key: string;
-  team_name: string | null;
-  position: number | null;
-  played: number | null;
-  won: number | null;
-  drawn: number | null;
-  lost: number | null;
-  scored: number | null;
-  conceded: number | null;
-  goal_diff: string | null;
-  points: number | null;
-  logo: string | null;
-  fingerprint: string;
+  team_key: string
+  team_name: string | null
+  position: number | null
+  played: number | null
+  won: number | null
+  drawn: number | null
+  lost: number | null
+  scored: number | null
+  conceded: number | null
+  goal_diff: string | null
+  points: number | null
+  logo: string | null
+  fingerprint: string
 }
 
-interface Team {
-  id: string;
-  team_name: string;
-  logo: string;
+interface StandingsData {
+  id: string
+  league_key: string
+  league_name: string
+  standings_data: any[]
+  last_updated: string
+  created_at: string
 }
 
-const isAdmin = true; // TODO: Replace with real admin check
+export function StandingsClient() {
+  const [standingsData, setStandingsData] = useState<StandingsData[]>([])
+  const [loading, setLoading] = useState(true)
+  const [editRow, setEditRow] = useState<Standing | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [form, setForm] = useState<Partial<Standing>>({})
+  const [selectedLeague, setSelectedLeague] = useState<string>("a_lyga")
+  const [isScraping, setIsScraping] = useState(false)
+  const { toast } = useToast()
 
-export default function StandingsClient() {
-  const [standings, setStandings] = useState<Standing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [editRow, setEditRow] = useState<Standing | null>(null);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState<Partial<Standing>>({});
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [selectedTeam, setSelectedTeam] = useState<string>("");
-  const [teamKeys, setTeamKeys] = useState<string[]>([]);
-
-  useEffect(() => {
-    fetch("/api/teams")
-      .then((res) => res.json())
-      .then((data) => setTeams(Array.isArray(data) ? data : []));
-  }, []);
+  const leagues = [
+    { key: "a_lyga", name: "Banga A" },
+    { key: "ii_lyga_a", name: "Banga B" },
+    { key: "moteru_a_lyga", name: "Banga M" }
+  ]
 
   useEffect(() => {
-    setLoading(true);
-    fetch("/api/standings")
-      .then((res) => res.json())
-      .then((data) => {
-        setStandings(Array.isArray(data) ? data : []);
-        // Extract unique team_keys for filter dropdown
-        const keys = Array.isArray(data) ? Array.from(new Set(data.map((row: Standing) => row.team_key))) : [];
-        setTeamKeys(keys.filter(Boolean));
-        setLoading(false);
-      });
-  }, []);
+    fetchStandings()
+  }, [])
 
-  useEffect(() => {
-    if (!selectedTeam) return;
-    setLoading(true);
-    fetch(`/api/standings?team_key=${encodeURIComponent(selectedTeam)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setStandings(Array.isArray(data) ? data : []);
-        setLoading(false);
-      });
-  }, [selectedTeam]);
+  const fetchStandings = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/standings/scrape')
+      if (!response.ok) throw new Error("Failed to fetch standings")
+      
+      const result = await response.json()
+      if (result.success) {
+        setStandingsData(result.data)
+      } else {
+        throw new Error(result.error || "Failed to fetch standings")
+      }
+    } catch (error) {
+      console.error("Error fetching standings:", error)
+      toast({
+        title: "Error",
+        description: "Failed to fetch standings data",
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getCurrentStandings = (): Standing[] => {
+    const currentData = standingsData.find(data => data.league_key === selectedLeague)
+    return currentData?.standings_data || []
+  }
+
+  const getLastUpdated = (): string => {
+    const currentData = standingsData.find(data => data.league_key === selectedLeague)
+    if (!currentData?.last_updated) return ""
+    
+    return new Date(currentData.last_updated).toLocaleDateString('lt-LT', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  }
+
+  const handleScrapeStandings = async () => {
+    setIsScraping(true)
+    try {
+      const response = await fetch('/api/standings/scrape', {
+        method: 'POST'
+      })
+      
+      if (!response.ok) throw new Error("Failed to scrape standings")
+      
+      const result = await response.json()
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Standings data updated successfully"
+        })
+        await fetchStandings()
+      } else {
+        throw new Error(result.error || "Failed to scrape standings")
+      }
+    } catch (error) {
+      console.error("Error scraping standings:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update standings data",
+        variant: "destructive"
+      })
+    } finally {
+      setIsScraping(false)
+    }
+  }
 
   const openEditModal = (row: Standing) => {
-    setEditRow(row);
-    setForm(row);
-    setModalOpen(true);
-  };
+    setEditRow(row)
+    setForm(row)
+    setModalOpen(true)
+  }
 
   const closeModal = () => {
-    setModalOpen(false);
-    setEditRow(null);
-    setForm({});
-  };
+    setModalOpen(false)
+    setEditRow(null)
+    setForm({})
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setForm((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleSave = async () => {
-    await fetch(`/api/standings/${editRow?.fingerprint}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
-    // Refresh data
-    const res = await fetch("/api/standings");
-    setStandings(await res.json());
-    closeModal();
-  };
+    try {
+      await fetch(`/api/standings/${editRow?.fingerprint}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      })
+      
+      toast({
+        title: "Success",
+        description: "Standing updated successfully"
+      })
+      
+      await fetchStandings()
+      closeModal()
+    } catch (error) {
+      console.error("Error updating standing:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update standing",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const currentStandings = getCurrentStandings()
 
   return (
-    <div className="p-8 text-white">
-      <h1 className="text-2xl font-bold mb-4">Standings</h1>
-      <div className="mb-4 flex items-center gap-2">
-        <label htmlFor="team-filter" className="text-sm">Filter by team key:</label>
-        <select
-          id="team-filter"
-          value={selectedTeam}
-          onChange={e => setSelectedTeam(e.target.value)}
-          className="border border-[#5F5F71] bg-[#070F40] text-white rounded px-3 py-2"
-        >
-          <option value="">All Teams</option>
-          {teamKeys.map(key => (
-            <option key={key} value={key}>{key}</option>
-          ))}
-        </select>
-      </div>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-[#0A165B] text-[#B6C1E2]">
-                <TableHead className="px-3 py-2">#</TableHead>
-                <TableHead className="px-3 py-2">Team</TableHead>
-                <TableHead className="px-3 py-2">Played</TableHead>
-                <TableHead className="px-3 py-2">W</TableHead>
-                <TableHead className="px-3 py-2">D</TableHead>
-                <TableHead className="px-3 py-2">L</TableHead>
-                <TableHead className="px-3 py-2">GF</TableHead>
-                <TableHead className="px-3 py-2">GA</TableHead>
-                <TableHead className="px-3 py-2">GD</TableHead>
-                <TableHead className="px-3 py-2">Pts</TableHead>
-                {isAdmin && <TableHead className="px-3 py-2">Edit</TableHead>}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array.isArray(standings) && standings.length > 0 ? (
-                standings.map((row) => (
-                  <TableRow key={row.fingerprint} className="border-t border-[#5F5F71]">
-                    <TableCell className="px-3 py-2 text-center">{row.position}</TableCell>
-                    <TableCell className="px-3 py-2 flex items-center gap-2">
-                      {row.logo && <img src={row.logo} alt="logo" className="w-6 h-6 rounded" />}
-                      {row.team_name}
-                    </TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.played}</TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.won}</TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.drawn}</TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.lost}</TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.scored}</TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.conceded}</TableCell>
-                    <TableCell className="px-3 py-2 text-center">{row.goal_diff}</TableCell>
-                    <TableCell className="px-3 py-2 text-center font-bold">{row.points}</TableCell>
-                    {isAdmin && (
-                      <TableCell className="px-3 py-2 text-center">
-                        <Button size="sm" onClick={() => openEditModal(row)}>
-                          Edit
-                        </Button>
-                      </TableCell>
-                    )}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={isAdmin ? 11 : 10} className="text-center py-8 text-muted-foreground">No standings found.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+    <div className="space-y-6">
+      {/* Controls */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button 
+            onClick={handleScrapeStandings} 
+            disabled={isScraping}
+            className="bg-[#F15601] hover:bg-[#E04501]"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isScraping ? 'animate-spin' : ''}`} />
+            {isScraping ? 'Atnaujinama...' : 'Atnaujinti duomenis'}
+          </Button>
+          {getLastUpdated() && (
+            <span className="text-sm text-gray-600">
+              Atnaujinta: {getLastUpdated()}
+            </span>
+          )}
         </div>
-      )}
+      </div>
+
+      {/* League Tabs */}
+      <Tabs value={selectedLeague} onValueChange={setSelectedLeague}>
+        <TabsList className="grid w-full grid-cols-3">
+          {leagues.map(league => (
+            <TabsTrigger key={league.key} value={league.key}>
+              {league.name}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value={selectedLeague} className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-gray-600">Kraunama...</div>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[60px]">Poz.</TableHead>
+                    <TableHead>Komanda</TableHead>
+                    <TableHead className="w-[60px] text-center">R</TableHead>
+                    <TableHead className="w-[60px] text-center">Perg.</TableHead>
+                    <TableHead className="w-[60px] text-center">Lyg.</TableHead>
+                    <TableHead className="w-[60px] text-center">Pr.</TableHead>
+                    <TableHead className="w-[60px] text-center">Įv.</TableHead>
+                    <TableHead className="w-[60px] text-center">Tsk.</TableHead>
+                    <TableHead className="w-[100px] text-center">Veiksmai</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {currentStandings.length > 0 ? (
+                    currentStandings.map((row) => (
+                      <TableRow key={row.fingerprint}>
+                        <TableCell className="font-medium">{row.position}</TableCell>
+                        <TableCell className="flex items-center gap-2">
+                          {row.logo && (
+                            <img 
+                              src={row.logo} 
+                              alt="logo" 
+                              className="w-6 h-6 rounded object-contain"
+                            />
+                          )}
+                          <span className="truncate">{row.team_name}</span>
+                        </TableCell>
+                        <TableCell className="text-center">{row.played}</TableCell>
+                        <TableCell className="text-center">{row.won}</TableCell>
+                        <TableCell className="text-center">{row.drawn}</TableCell>
+                        <TableCell className="text-center">{row.lost}</TableCell>
+                        <TableCell className="text-center">{row.scored}</TableCell>
+                        <TableCell className="text-center font-bold">{row.points}</TableCell>
+                        <TableCell className="text-center">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => openEditModal(row)}
+                          >
+                            Redaguoti
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={9} className="text-center py-8 text-muted-foreground">
+                        Nėra duomenų šiai lygai
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Edit Modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit Standing</DialogTitle>
+            <DialogTitle>Redaguoti poziciją</DialogTitle>
           </DialogHeader>
           {editRow && (
             <form
               onSubmit={e => {
-                e.preventDefault();
-                handleSave();
+                e.preventDefault()
+                handleSave()
               }}
-              className="space-y-3"
+              className="space-y-4"
             >
-              <div className="grid grid-cols-2 gap-2">
-                <label className="text-sm">Team Name
-                  <Input name="team_name" value={form.team_name ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Position
-                  <Input name="position" type="number" value={form.position ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Played
-                  <Input name="played" type="number" value={form.played ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Won
-                  <Input name="won" type="number" value={form.won ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Drawn
-                  <Input name="drawn" type="number" value={form.drawn ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Lost
-                  <Input name="lost" type="number" value={form.lost ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Scored
-                  <Input name="scored" type="number" value={form.scored ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Conceded
-                  <Input name="conceded" type="number" value={form.conceded ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Goal Diff
-                  <Input name="goal_diff" value={form.goal_diff ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
-                <label className="text-sm">Points
-                  <Input name="points" type="number" value={form.points ?? ""} onChange={handleChange} className="mt-1" />
-                </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Komandos pavadinimas</label>
+                  <Input 
+                    name="team_name" 
+                    value={form.team_name ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Pozicija</label>
+                  <Input 
+                    name="position" 
+                    type="number" 
+                    value={form.position ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sužaista</label>
+                  <Input 
+                    name="played" 
+                    type="number" 
+                    value={form.played ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Pergalės</label>
+                  <Input 
+                    name="won" 
+                    type="number" 
+                    value={form.won ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Lygiosios</label>
+                  <Input 
+                    name="drawn" 
+                    type="number" 
+                    value={form.drawn ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Pralaimėjimai</label>
+                  <Input 
+                    name="lost" 
+                    type="number" 
+                    value={form.lost ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Įvarčiai už</label>
+                  <Input 
+                    name="scored" 
+                    type="number" 
+                    value={form.scored ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Įvarčiai prieš</label>
+                  <Input 
+                    name="conceded" 
+                    type="number" 
+                    value={form.conceded ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Taškai</label>
+                  <Input 
+                    name="points" 
+                    type="number" 
+                    value={form.points ?? ""} 
+                    onChange={handleChange} 
+                  />
+                </div>
               </div>
-              <div className="flex gap-2 justify-end pt-2">
-                <Button type="button" variant="outline" onClick={closeModal}>Cancel</Button>
-                <Button type="submit">Save</Button>
+              <div className="flex gap-2 justify-end pt-4">
+                <Button type="button" variant="outline" onClick={closeModal}>
+                  Atšaukti
+                </Button>
+                <Button type="submit">
+                  Išsaugoti
+                </Button>
               </div>
             </form>
           )}
         </DialogContent>
       </Dialog>
     </div>
-  );
+  )
 } 

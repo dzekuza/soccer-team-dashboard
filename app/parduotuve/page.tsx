@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase-browser"
 import { PublicNavigation } from "@/components/public-navigation"
+import { PublicFooter } from "@/components/public-footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { ShoppingCart, Search, Filter, Star } from "lucide-react"
 import Link from "next/link"
 import { Database } from "@/lib/types"
+import Image from "next/image"
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   product_categories: {
@@ -300,6 +302,7 @@ export default function ShopPage() {
           </>
         )}
       </div>
+      <PublicFooter />
     </div>
   )
 }

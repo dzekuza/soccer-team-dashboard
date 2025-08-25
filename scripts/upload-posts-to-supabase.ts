@@ -41,21 +41,17 @@ function generateFingerprint(post: BangaPost): string {
     return createHash("md5").update(content).digest("hex");
 }
 
-function transformPost(bangaPost: BangaPost): Post {
+function transformPost(bangaPost: BangaPost): any {
     return {
+        id: bangaPost.id,
         title: bangaPost.title,
         content: bangaPost.content,
         excerpt: bangaPost.excerpt,
-        author: "FK Banga", // Default author
         published_date: bangaPost.published_date
             ? new Date(bangaPost.published_date).toISOString()
             : undefined,
         url: bangaPost.url,
         image_url: bangaPost.image_url,
-        category: "Football", // Default category
-        tags: ["Banga", "Football", "Lithuania"], // Default tags
-        source: "fkbanga.lt",
-        fingerprint: generateFingerprint(bangaPost),
     };
 }
 
@@ -85,8 +81,8 @@ async function uploadPosts() {
         console.log("💾 Uploading posts to Supabase...");
 
         const { data, error } = await supabase
-            .from("posts")
-            .upsert(posts, { onConflict: "fingerprint" });
+            .from("banga_posts")
+            .upsert(posts, { onConflict: "id" });
 
         if (error) {
             console.error("❌ Upload failed:", error);
@@ -99,7 +95,7 @@ async function uploadPosts() {
 
         // Verify the upload by counting records
         const { count, error: countError } = await supabase
-            .from("posts")
+            .from("banga_posts")
             .select("*", { count: "exact", head: true });
 
         if (countError) {
@@ -110,8 +106,8 @@ async function uploadPosts() {
 
         // Show sample of uploaded posts
         const { data: samplePosts, error: sampleError } = await supabase
-            .from("posts")
-            .select("title, published_date, source")
+            .from("banga_posts")
+            .select("title, published_date, url")
             .order("published_date", { ascending: false })
             .limit(5);
 
@@ -120,7 +116,7 @@ async function uploadPosts() {
         } else {
             console.log("📋 Sample uploaded posts:");
             samplePosts?.forEach((post) => {
-                console.log(`  - ${post.title} (${post.source})`);
+                console.log(`  - ${post.title} (${post.url})`);
             });
         }
     } catch (error) {

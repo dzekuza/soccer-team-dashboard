@@ -6,6 +6,7 @@ export const dynamic = 'force-dynamic'
 import Link from "next/link"
 import Image from "next/image"
 import { PublicNavigation } from "@/components/public-navigation"
+import { PublicFooter } from "@/components/public-footer"
 import { format } from 'date-fns'
 
 interface Post {
@@ -92,9 +93,10 @@ export default function PostsPage() {
         {/* Posts Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {posts.map((post) => (
-            <div 
+            <Link 
               key={post.id} 
-              className="bg-[#0A165B] border border-[#232C62]"
+              href={`/naujienos/${post.id}`}
+              className="bg-[#0A165B] border border-[#232C62] hover:border-[#F15601] transition-colors cursor-pointer"
             >
               {/* Post Image */}
               <div className="relative aspect-video">
@@ -149,17 +151,12 @@ export default function PostsPage() {
                       {post.author}
                     </span>
                   )}
-                  <a
-                    href={post.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[#F15601] text-sm hover:text-[#FF6A00] underline"
-                  >
+                  <span className="text-[#F15601] text-sm">
                     Skaityti →
-                  </a>
+                  </span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -174,6 +171,8 @@ export default function PostsPage() {
           <p className="text-white text-xs">Debug: Loaded {posts.length} posts</p>
         </div>
       </div>
+
+      <PublicFooter />
     </div>
   )
 }

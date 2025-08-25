@@ -16,7 +16,7 @@ export default function HomePage() {
       router.push('/dashboard')
     } else {
       // User is not logged in, redirect to public events page
-      router.push('/events')
+      router.push('/renginiai')
     }
   }, [user, isLoading, router])
 

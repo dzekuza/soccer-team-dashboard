@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { PublicNavigation } from "@/components/public-navigation"
 import { PlayerCard } from "@/components/player-card"
+import { PublicTabs } from "@/components/ui/tabs"
 import type { Player } from "@/lib/types"
 
 interface PlayerGroup {
@@ -82,6 +83,12 @@ export default function PlayersPage() {
   // Get unique teams for filter
   const teams = Array.from(new Set(players.map(p => p.team_key).filter(Boolean))) as string[]
 
+  // Create tabs array for PublicTabs component
+  const tabs = [
+    { key: "all", label: "Visi" },
+    ...teams.map(team => ({ key: team, label: team }))
+  ]
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0A165B]">
@@ -114,6 +121,15 @@ export default function PlayersPage() {
           <h1 className="h1-public">Žaidėjai</h1>
         </div>
         
+        {/* Team Tabs */}
+        <div className="w-full">
+          <PublicTabs
+            tabs={tabs}
+            activeTab={selectedTeam}
+            onTabChange={setSelectedTeam}
+          />
+        </div>
+        
         {/* Filters */}
         <div className="p-4 md:p-8 space-y-4">
           {/* Search */}
@@ -125,33 +141,6 @@ export default function PlayersPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2 bg-[#232C62] border border-[#232C62] rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white"
             />
-          </div>
-          
-          {/* Team Filter */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => setSelectedTeam("all")}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                selectedTeam === "all"
-                  ? "bg-[#F15601] text-white"
-                  : "bg-[#232C62] text-white hover:bg-[#232C62]/80"
-              }`}
-            >
-              Visi
-            </button>
-            {teams.map(team => (
-              <button
-                key={team}
-                onClick={() => setSelectedTeam(team)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  selectedTeam === team
-                    ? "bg-[#F15601] text-white"
-                    : "bg-[#232C62] text-white hover:bg-[#232C62]/80"
-                }`}
-              >
-                {team}
-              </button>
-            ))}
           </div>
         </div>
         

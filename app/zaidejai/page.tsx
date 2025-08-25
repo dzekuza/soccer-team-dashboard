@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react"
 import { PublicNavigation } from "@/components/public-navigation"
+import { PublicFooter } from "@/components/public-footer"
 import { PlayerCard } from "@/components/player-card"
+import { PublicTabs } from "@/components/ui/tabs"
 import type { Player } from "@/lib/types"
 
 interface PlayerGroup {
@@ -91,6 +93,12 @@ export default function PlayersPage() {
   // Get unique teams for filter
   const teams = Array.from(new Set(players.map(p => p.team_key).filter(Boolean))) as string[]
 
+  // Create tabs array for PublicTabs component
+  const tabs = [
+    { key: "all", label: "Visi" },
+    ...teams.map(team => ({ key: team, label: team }))
+  ]
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0A165B]">
@@ -115,7 +123,7 @@ export default function PlayersPage() {
 
   return (
     <div className="min-h-screen bg-[#0A165B] text-white">
-              <PublicNavigation currentPage="zaidejai" />
+      <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Content */}
       <div className="w-full">
@@ -123,60 +131,35 @@ export default function PlayersPage() {
           <h1 className="h1-public">Žaidėjai</h1>
         </div>
         
+        {/* Team Tabs */}
+        <div className="w-full">
+          <PublicTabs
+            tabs={tabs}
+            activeTab={selectedTeam}
+            onTabChange={setSelectedTeam}
+          />
+        </div>
+        
         {/* Filters */}
-        <div className="p-4 md:p-8 space-y-4">
+        <div className="p-4 space-y-4">
           {/* Search */}
-          <div className="max-w-md mx-auto">
+          <div className="relative">
             <input
               type="text"
               placeholder="Ieškoti žaidėjų..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 bg-[#232C62] border border-[#232C62] rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white"
+              className="w-full px-4 py-2 bg-[#232C62] text-white border border-[#F15601] rounded focus:outline-none focus:border-[#F15601]"
             />
-          </div>
-          
-          {/* Team Filter */}
-          <div className="flex flex-wrap justify-center gap-2">
-            <button
-              onClick={() => setSelectedTeam("all")}
-              className={`px-4 py-2 rounded-lg transition-colors ${
-                selectedTeam === "all"
-                  ? "bg-[#F15601] text-white"
-                  : "bg-[#232C62] text-white hover:bg-[#232C62]/80"
-              }`}
-            >
-              Visi
-            </button>
-            {teams.map(team => (
-              <button
-                key={team}
-                onClick={() => setSelectedTeam(team)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  selectedTeam === team
-                    ? "bg-[#F15601] text-white"
-                    : "bg-[#232C62] text-white hover:bg-[#232C62]/80"
-                }`}
-              >
-                {team}
-              </button>
-            ))}
           </div>
         </div>
         
-        {/* Players by Position */}
-        <div>
-          {playerGroups.map((group) => (
-            <div key={group.title}>
-              {/* Position Heading */}
-              <div className="px-4 md:px-16 py-4 md:py-8 border-t border-b border-[#232C62]">
-                <h2 className="text-white text-2xl md:text-3xl font-bold">
-                  {group.title}
-                </h2>
-              </div>
-              
-              {/* Players Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {/* Players Grid */}
+        <div className="p-4">
+          {groupPlayersByPosition(filteredPlayers).map((group) => (
+            <div key={group.title} className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 text-[#F15601]">{group.title}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {group.players.map((player) => (
                   <PlayerCard key={player.id} player={player} />
                 ))}
@@ -184,18 +167,9 @@ export default function PlayersPage() {
             </div>
           ))}
         </div>
-
-        {filteredPlayers.length === 0 && !loading && (
-          <div className="text-center py-8">
-            <p className="text-white text-lg">Nėra žaidėjų</p>
-          </div>
-        )}
-        
-        {/* Debug info */}
-        <div className="text-center py-2">
-          <p className="text-white text-xs">Debug: Loaded {players.length} players, showing {filteredPlayers.length}</p>
-        </div>
       </div>
+
+      <PublicFooter />
     </div>
   )
 }

@@ -3,7 +3,8 @@
 import type React from "react"
 import { usePathname } from "next/navigation"
 import { SidebarProvider } from "@/components/ui/sidebar"
-import { DashboardSidebar, DashboardMobileMenu } from "@/components/dashboard-sidebar"
+import { DashboardSidebarNew } from "@/components/dashboard-sidebar-new"
+import { DashboardMobileMenu } from "@/components/dashboard-mobile-menu"
 
 export default function DashboardLayout({
   children,
@@ -16,10 +17,8 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen w-full">
-        <div className="group peer hidden md:block text-sidebar-foreground fixed w-64 h-full">
-          <DashboardSidebar />
-        </div>
-        <main className="flex-1 md:pl-64">
+        <DashboardSidebarNew />
+        <main className="flex-1">
           <div className={isScannerPage 
             ? "h-screen overflow-hidden" 
             : "px-4 sm:px-4 md:px-6 pb-20 md:pt-8 md:pb-8 h-screen overflow-y-auto md:pb-8 pb-28"

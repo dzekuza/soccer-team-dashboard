@@ -45,3 +45,4 @@ CREATE TRIGGER update_banga_posts_updated_at
   BEFORE UPDATE ON banga_posts 
   FOR EACH ROW 
   EXECUTE FUNCTION update_updated_at_column();
+

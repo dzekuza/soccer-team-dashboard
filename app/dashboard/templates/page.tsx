@@ -217,9 +217,9 @@ export default function TemplatesPage() {
           {selectedTemplate ? (
             <Tabs defaultValue="editor">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-                <TabsList className="bg-gray-100">
-                  <TabsTrigger value="editor" className="data-[state=active]:bg-white data-[state=active]:text-[#0A165B] data-[state=active]:font-semibold">Redaktorius</TabsTrigger>
-                  <TabsTrigger value="preview" className="data-[state=active]:bg-white data-[state=active]:text-[#0A165B] data-[state=active]:font-semibold">Peržiūra</TabsTrigger>
+                <TabsList>
+                  <TabsTrigger value="editor">Redaktorius</TabsTrigger>
+                  <TabsTrigger value="preview">Peržiūra</TabsTrigger>
                 </TabsList>
                 <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white" variant="default">
                   {isSaving ? "Saugoma..." : "Išsaugoti pakeitimus"}
