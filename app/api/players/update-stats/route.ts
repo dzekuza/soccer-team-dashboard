@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import {
-    updatePlayerStatsAfterMatch,
-    updatePlayerStatsForRecentMatches,
-} from "@/scripts/update-player-stats-after-match";
 
 export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
@@ -28,35 +24,19 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        const body = await request.json();
-        const { matchId, updateRecent } = body;
-
-        if (matchId) {
-            // Update stats for a specific match
-            await updatePlayerStatsAfterMatch(matchId);
-            return NextResponse.json({
-                success: true,
-                message: `Player stats updated for match ${matchId}`,
-            });
-        } else if (updateRecent) {
-            // Update stats for recent matches
-            await updatePlayerStatsForRecentMatches();
-            return NextResponse.json({
-                success: true,
-                message: "Player stats updated for recent matches",
-            });
-        } else {
-            return NextResponse.json({
-                error: "Either matchId or updateRecent must be provided",
-            }, { status: 400 });
-        }
+        // Return error since player stats update functionality was removed during cleanup
+        return NextResponse.json({
+            error: "Player stats update functionality has been removed",
+            message:
+                "This feature is no longer available. Please use the dashboard to manage player stats manually.",
+        }, { status: 501 });
     } catch (error) {
         console.error("Error in /api/players/update-stats:", error);
         const message = error instanceof Error
             ? error.message
             : "Unknown error";
         return NextResponse.json(
-            { error: "Failed to update player stats", details: message },
+            { error: "Failed to process request", details: message },
             { status: 500 },
         );
     }
