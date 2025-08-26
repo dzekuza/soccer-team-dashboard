@@ -16,6 +16,7 @@ import { ShoppingCart, Search, Filter, Star } from "lucide-react"
 import Link from "next/link"
 import { Database } from "@/lib/types"
 import Image from "next/image"
+import { usePageAnimation } from '@/hooks/use-page-animation'
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   product_categories: {
@@ -37,6 +38,7 @@ export default function ShopPage() {
   const { toast } = useToast()
   const { addToCart } = useCart()
   const supabase = createClient()
+  const isVisible = usePageAnimation([products, loading])
 
   useEffect(() => {
     fetchProducts()
@@ -149,7 +151,9 @@ export default function ShopPage() {
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#0A165B] to-[#1a237e] py-12">
+      <div className={`bg-gradient-to-r from-[#0A165B] to-[#1a237e] py-12 transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="px-6">
           <div className="text-center">
             <h1 className="h1-public mb-4">FK Banga Parduotuvė</h1>
@@ -199,20 +203,23 @@ export default function ShopPage() {
         </div>
       </div>
 
+      {/* Products Title Section */}
+      <div className={`text-center py-8 border-b border-[#232C62] transition-all duration-1000 ease-out delay-200 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
+        <h1 className="h1-public">Produktai</h1>
+      </div>
+
       {/* Products Grid */}
-      <div className="py-8">
+      <div className={`transition-all duration-1000 ease-out delay-400 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-xl text-gray-300">Kraunama...</div>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between mb-6 px-6">
-              <h2 className="h2-public">
-                Produktai ({products.length})
-              </h2>
-            </div>
-
             {products.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-xl text-gray-300 mb-4">Nerasta produktų</div>

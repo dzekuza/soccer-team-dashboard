@@ -72,7 +72,7 @@ export function PublicTabs({ tabs, activeTab, onTabChange, className }: PublicTa
             <TabsTrigger 
               key={tab.key}
               value={tab.key}
-              className="px-8 py-[33px] text-white text-base font-medium bg-transparent data-[state=active]:bg-[#070F40] data-[state=active]:text-white hover:bg-[rgba(255,255,255,0.1)] rounded-none border-r border-[rgba(95,95,113,0.3)] focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50 last:border-r-0"
+              className="px-8 py-6 md:py-[33px] text-white text-base font-medium bg-transparent data-[state=active]:bg-[#070F40] data-[state=active]:text-white hover:bg-[rgba(255,255,255,0.1)] rounded-none border-r border-[rgba(95,95,113,0.3)] focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50 last:border-r-0"
             >
               {tab.label}
             </TabsTrigger>

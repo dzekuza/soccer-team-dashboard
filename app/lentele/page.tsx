@@ -5,6 +5,7 @@ import { PublicNavigation } from "@/components/public-navigation"
 import { PublicFooter } from "@/components/public-footer"
 import { PublicTabs } from "@/components/ui/tabs"
 import Image from "next/image"
+import { usePageAnimation } from '@/hooks/use-page-animation'
 
 interface StandingRow {
   position: number
@@ -38,6 +39,7 @@ export default function StandingsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<string>("a_lyga")
+  const isVisible = usePageAnimation([standingsData, loading])
 
   const tabs = [
     { key: "a_lyga", label: "Banga A" },
@@ -115,7 +117,9 @@ export default function StandingsPage() {
       <PublicNavigation currentPage="lentele" />
       
       {/* Main Content */}
-      <div className="w-full">
+      <div className={`w-full transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="text-center py-8 border-b border-[#232C62]">
           <h1 className="h1-public">Turnyrinė lentelė</h1>
         </div>

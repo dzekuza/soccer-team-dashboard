@@ -159,16 +159,16 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
         <table className="w-full text-white">
           <thead>
             <tr className="border-b border-[rgba(95,95,113,0.3)]">
-              <th className="px-4 py-3 text-left font-medium text-[14px]">Poz.</th>
-              <th className="px-4 py-3 text-left font-medium text-[14px]">Komanda</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">R</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">L</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">Lyg.</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">Pr.</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">Įv.</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">Pr.</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">Skirt.</th>
-              <th className="px-4 py-3 text-center font-medium text-[14px]">Tšk.</th>
+              <th className="px-2 md:px-4 py-3 text-left font-medium text-[14px] w-12 md:w-auto">Poz.</th>
+              <th className="px-2 md:px-4 py-3 text-left font-medium text-[14px] w-32 md:w-auto">Komanda</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">R</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">L</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Lyg.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Pr.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Įv.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Pr.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Skirt.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Tšk.</th>
             </tr>
           </thead>
           <tbody>
@@ -179,10 +179,10 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
                     team.team.name?.toLowerCase().includes('banga') ? 'bg-[#070F40]/50' : ''
                   }`}
                 >
-                  <td className="px-4 py-3 text-[14px] font-medium">
+                  <td className="px-2 md:px-4 py-3 text-[14px] font-medium w-12 md:w-auto">
                     {team.position}
                   </td>
-                  <td className="px-4 py-3 text-[14px] font-medium">
+                  <td className="px-2 md:px-4 py-3 text-[14px] font-medium w-32 md:w-auto">
                     <div className="flex items-center gap-2">
                       {team.team.logo && (
                         <img 
@@ -196,14 +196,14 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.played}</td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.won}</td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.drawn}</td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.lost}</td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.goalsFor}</td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.goalsAgainst}</td>
-                  <td className="px-4 py-3 text-center text-[14px]">{team.goalDifference}</td>
-                  <td className="px-4 py-3 text-center text-[14px] font-semibold">{team.points}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.played}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.won}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.drawn}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.lost}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.goalsFor}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.goalsAgainst}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.goalDifference}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-[14px] font-semibold w-8 md:w-auto">{team.points}</td>
               </tr>
             ))}
           </tbody>

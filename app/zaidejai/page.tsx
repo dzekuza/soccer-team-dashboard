@@ -7,6 +7,7 @@ import { PublicFooter } from "@/components/public-footer"
 import { PlayerCard } from "@/components/player-card"
 import { PublicTabs } from "@/components/ui/tabs"
 import type { Player } from "@/lib/types"
+import { usePageAnimation } from "@/hooks/use-page-animation"
 
 interface PlayerGroup {
   title: string
@@ -19,6 +20,7 @@ function PlayersContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<string>("all")
+  const isVisible = usePageAnimation([players, loading])
 
   // Handle URL parameter for team selection
   useEffect(() => {
@@ -133,7 +135,9 @@ function PlayersContent() {
       <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Content */}
-      <div className="w-full">
+      <div className={`w-full transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="text-center py-8 border-b border-[#232C62]">
           <h1 className="h1-public">Žaidėjai</h1>
         </div>

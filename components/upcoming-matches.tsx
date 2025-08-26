@@ -27,6 +27,7 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -77,6 +78,16 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
 
     fetchMatches()
   }, [selectedTeam])
+
+  // Check if mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   const goToPrevious = () => {
     setCurrentIndex(Math.max(0, currentIndex - 1))
@@ -145,13 +156,13 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
       {/* Matches Container */}
               <div 
           className="flex transition-transform duration-300 ease-in-out" 
-          style={{ transform: `translateX(-${currentIndex * 350}px)` }}
+          style={{ transform: `translateX(-${currentIndex * (isMobile ? 300 : 350)}px)` }}
         >
           {matches.map((match, index) => (
             <Link 
               key={match.id || index} 
               href={`/fixtures/${match.id}`}
-              className="flex-shrink-0 w-[350px] h-[146px] bg-[#0a165b] border-r border-[rgba(95,95,113,0.25)] relative hover:bg-[#0a2065] transition-colors cursor-pointer"
+              className="flex-shrink-0 w-[300px] md:w-[350px] h-[146px] bg-[#0a165b] border-r border-[rgba(95,95,113,0.25)] relative hover:bg-[#0a2065] transition-colors cursor-pointer"
             >
             {/* Teams and Score Row */}
             <div className="absolute top-[25px] left-0 right-0 flex items-center justify-between px-6">

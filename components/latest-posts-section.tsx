@@ -44,44 +44,22 @@ export function LatestPostsSection() {
       <section className="w-full bg-[#0A165B]">
         <div className="space-y-0">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="flex items-center justify-start relative w-full">
-              {i % 2 === 0 ? (
-                // Text on left, image on right
-                <>
-                  <div className="basis-0 flex flex-row grow items-center self-stretch shrink-0">
-                    <div className="basis-0 bg-[#0a165b] box-border content-stretch flex flex-col gap-2.5 grow h-full items-start justify-start min-h-px min-w-px overflow-clip p-16 relative shrink-0">
-                      <div className="content-stretch flex flex-col gap-5 items-start justify-start leading-[0] relative shrink-0 w-full">
-                        <Skeleton className="h-6 w-32 bg-gray-600" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-16 w-full bg-gray-600" />
-                          <Skeleton className="h-16 w-3/4 bg-gray-600" />
-                        </div>
-                      </div>
-                    </div>
+            <div key={i} className="flex flex-col lg:flex-row items-stretch relative w-full">
+              {/* Image Section */}
+              <div className="w-full lg:w-1/2 h-64 lg:h-auto lg:min-h-[388px] relative overflow-hidden">
+                <Skeleton className="h-full w-full bg-gray-600" />
+              </div>
+              
+              {/* Text Section */}
+              <div className="w-full lg:w-1/2 bg-[#0a165b] p-6 md:p-8 lg:p-16 flex items-center">
+                <div className="w-full space-y-4 lg:space-y-6">
+                  <Skeleton className="h-6 w-32 bg-gray-600" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-8 md:h-10 lg:h-12 w-full bg-gray-600" />
+                    <Skeleton className="h-8 md:h-10 lg:h-12 w-3/4 bg-gray-600" />
                   </div>
-                  <div className="basis-0 bg-no-repeat bg-size-[112.5%_100%] bg-top grow h-[388.98px] min-h-px min-w-px shrink-0 relative overflow-hidden">
-                    <Skeleton className="h-full w-full bg-gray-600" />
-                  </div>
-                </>
-              ) : (
-                // Image on left, text on right
-                <>
-                  <div className="basis-0 bg-no-repeat bg-size-[112.5%_100%] bg-top grow h-[388.98px] min-h-px min-w-px shrink-0 relative overflow-hidden">
-                    <Skeleton className="h-full w-full bg-gray-600" />
-                  </div>
-                  <div className="basis-0 flex flex-row grow items-center self-stretch shrink-0">
-                    <div className="basis-0 bg-[#0a165b] box-border content-stretch flex flex-col gap-2.5 grow h-full items-start justify-start min-h-px min-w-px overflow-clip p-16 relative shrink-0">
-                      <div className="content-stretch flex flex-col gap-5 items-start justify-start leading-[0] relative shrink-0 w-full">
-                        <Skeleton className="h-6 w-32 bg-gray-600" />
-                        <div className="space-y-2">
-                          <Skeleton className="h-16 w-full bg-gray-600" />
-                          <Skeleton className="h-16 w-3/4 bg-gray-600" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -95,52 +73,55 @@ export function LatestPostsSection() {
 
   return (
     <section className="w-full bg-[#0A165B]">
-      {/* Posts Layout - Alternating Image and Text */}
+      {/* Posts Layout - Responsive Grid */}
       <div className="space-y-0">
         {posts.map((post, index) => (
           <div
             key={post.id}
-            className="flex items-center justify-start relative w-full"
+            className="flex flex-col lg:flex-row items-stretch relative w-full"
           >
-            {/* Alternate layout: image on left/right based on index */}
+            {/* Mobile: Image always on top, Desktop: Alternate layout */}
             {index % 2 === 0 ? (
-              // Text on left, image on right
+              // Mobile: Image top, Text bottom | Desktop: Text left, Image right
               <>
-                <div className="basis-0 flex flex-row grow items-center self-stretch shrink-0">
-                  <div className="basis-0 bg-[#0a165b] box-border content-stretch flex flex-col gap-2.5 grow h-full items-start justify-start min-h-px min-w-px overflow-clip p-16 relative shrink-0">
-                    <div className="content-stretch flex flex-col gap-5 items-start justify-start leading-[0] relative shrink-0 w-full">
-                      <div className="flex flex-col font-medium h-6 justify-center relative shrink-0 text-[16px] text-[rgba(255,255,255,0.61)] w-full">
-                        <p className="leading-[24px]">
-                          {new Date(post.created_at).toLocaleDateString('lt-LT', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
+                {/* Image Section */}
+                <div className="w-full lg:w-1/2 h-64 lg:h-auto lg:min-h-[388px] relative overflow-hidden order-1 lg:order-2">
+                  <Image
+                    src={post.cover_image_url || post.image_url || '/placeholder-news.jpg'}
+                    alt={post.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                
+                {/* Text Section */}
+                <div className="w-full lg:w-1/2 bg-[#0a165b] p-6 md:p-8 lg:p-16 flex items-center order-2 lg:order-1">
+                  <div className="w-full space-y-4 lg:space-y-6">
+                    {/* Date */}
+                    <div className="text-sm md:text-base text-[rgba(255,255,255,0.61)]">
+                      {new Date(post.created_at).toLocaleDateString('lt-LT', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </div>
+                    
+                    {/* Title */}
+                    <div className="text-2xl md:text-3xl lg:text-4xl xl:text-[48px] font-bold text-white leading-tight">
+                      <Link href={`/naujienos/${post.id}`} className="hover:opacity-80 transition-opacity">
+                        <p className="mb-0 leading-tight">
+                          {post.title}
                         </p>
-                      </div>
-                      <div className="flex flex-col font-bold justify-center leading-[76px] relative shrink-0 text-[#ffffff] text-[64px] w-full">
-                        <Link href={`/naujienos/${post.id}`} className="hover:opacity-80 transition-opacity">
-                          <p className="mb-0 leading-tight line-clamp-2">
-                            {post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title}
-                          </p>
-                        </Link>
-                      </div>
+                      </Link>
                     </div>
                   </div>
                 </div>
-                <div className="basis-0 bg-no-repeat bg-size-[112.5%_100%] bg-top grow h-[388.98px] min-h-px min-w-px shrink-0 relative overflow-hidden">
-                  <Image
-                    src={post.cover_image_url || post.image_url || '/placeholder-news.jpg'}
-                    alt={post.title}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
               </>
             ) : (
-              // Image on left, text on right
+              // Mobile: Image top, Text bottom | Desktop: Image left, Text right
               <>
-                <div className="basis-0 bg-no-repeat bg-size-[112.5%_100%] bg-top grow h-[388.98px] min-h-px min-w-px shrink-0 relative overflow-hidden">
+                {/* Image Section */}
+                <div className="w-full lg:w-1/2 h-64 lg:h-auto lg:min-h-[388px] relative overflow-hidden order-1">
                   <Image
                     src={post.cover_image_url || post.image_url || '/placeholder-news.jpg'}
                     alt={post.title}
@@ -148,25 +129,26 @@ export function LatestPostsSection() {
                     className="object-cover"
                   />
                 </div>
-                <div className="basis-0 flex flex-row grow items-center self-stretch shrink-0">
-                  <div className="basis-0 bg-[#0a165b] box-border content-stretch flex flex-col gap-2.5 grow h-full items-start justify-start min-h-px min-w-px overflow-clip p-16 relative shrink-0">
-                    <div className="content-stretch flex flex-col gap-5 items-start justify-start leading-[0] relative shrink-0 w-full">
-                      <div className="flex flex-col font-medium h-6 justify-center relative shrink-0 text-[16px] text-[rgba(255,255,255,0.61)] w-full">
-                        <p className="leading-[24px]">
-                          {new Date(post.created_at).toLocaleDateString('lt-LT', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                          })}
+                
+                {/* Text Section */}
+                <div className="w-full lg:w-1/2 bg-[#0a165b] p-6 md:p-8 lg:p-16 flex items-center order-2">
+                  <div className="w-full space-y-4 lg:space-y-6">
+                    {/* Date */}
+                    <div className="text-sm md:text-base text-[rgba(255,255,255,0.61)]">
+                      {new Date(post.created_at).toLocaleDateString('lt-LT', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </div>
+                    
+                    {/* Title */}
+                    <div className="text-2xl md:text-3xl lg:text-4xl xl:text-[48px] font-bold text-white leading-tight">
+                      <Link href={`/naujienos/${post.id}`} className="hover:opacity-80 transition-opacity">
+                        <p className="mb-0 leading-tight">
+                          {post.title}
                         </p>
-                      </div>
-                      <div className="flex flex-col font-bold justify-center leading-[76px] relative shrink-0 text-[#ffffff] text-[64px] w-full">
-                        <Link href={`/naujienos/${post.id}`} className="hover:opacity-80 transition-opacity">
-                          <p className="mb-0 leading-tight line-clamp-2">
-                            {post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title}
-                          </p>
-                        </Link>
-                      </div>
+                      </Link>
                     </div>
                   </div>
                 </div>

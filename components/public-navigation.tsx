@@ -82,6 +82,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
     },
     { href: "https://darkorange-partridge-697021.hostingersite.com/pamaina/", label: "Akademija", page: "akademija", external: true },
     { href: "/parduotuve", label: "Parduotuvė", page: "parduotuve", external: false },
+
     { href: "https://darkorange-partridge-697021.hostingersite.com/kontaktai/", label: "Kontaktai", page: "kontaktai", external: true },
   ]
 

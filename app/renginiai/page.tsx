@@ -5,6 +5,7 @@ import { PublicNavigation } from "@/components/public-navigation"
 import { PublicFooter } from "@/components/public-footer"
 import { PublicEventCard } from "@/components/public-event-card"
 import type { EventWithTiers, Team } from "@/lib/types"
+import { usePageAnimation } from '@/hooks/use-page-animation'
 
 interface EventData {
   event: EventWithTiers
@@ -16,6 +17,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<EventData[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isVisible = usePageAnimation([events, loading])
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -64,7 +66,9 @@ export default function EventsPage() {
       <PublicNavigation currentPage="renginiai" />
       
       {/* Main Content */}
-      <div className="w-full">
+      <div className={`w-full transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="text-center py-8 border-b border-[#232C62]">
           <h1 className="h1-public">Renginiai</h1>
         </div>

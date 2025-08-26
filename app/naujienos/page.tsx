@@ -8,6 +8,7 @@ import Image from "next/image"
 import { PublicNavigation } from "@/components/public-navigation"
 import { PublicFooter } from "@/components/public-footer"
 import { format } from 'date-fns'
+import { usePageAnimation } from '@/hooks/use-page-animation'
 
 interface Post {
   id: string
@@ -29,6 +30,7 @@ export default function PostsPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const isVisible = usePageAnimation([posts, loading])
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -85,7 +87,9 @@ export default function PostsPage() {
       <PublicNavigation currentPage="naujienos" />
       
       {/* Main Content */}
-      <div className="w-full">
+      <div className={`w-full transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="text-center py-8 border-b border-[#232C62]">
           <h1 className="h1-public">Naujienos</h1>
         </div>

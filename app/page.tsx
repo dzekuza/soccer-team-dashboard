@@ -7,11 +7,13 @@ import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MatchesTabs } from '@/components/matches-tabs'
-import { StandingsTabs } from '@/components/standings-tabs'
+import { PublicTabs } from '@/components/ui/tabs'
 import { LatestPostsSection } from '@/components/latest-posts-section'
 import { TicketsApparelSection } from '@/components/tickets-apparel-section'
 import { PartnersSection } from '@/components/partners-section'
+import { UpcomingMatches } from '@/components/upcoming-matches'
+import { StandingsTable } from '@/components/standings-table'
+import { usePageAnimation } from '@/hooks/use-page-animation'
 
 interface Post {
   id: string
@@ -27,6 +29,15 @@ export default function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [latestPost, setLatestPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
+  const [selectedTeam, setSelectedTeam] = useState("Banga A")
+  const [selectedStandingsTeam, setSelectedStandingsTeam] = useState("Banga A")
+  const isVisible = usePageAnimation([latestPost, loading])
+
+  const teamTabs = [
+    { key: "Banga A", label: "Banga" },
+    { key: "Banga B", label: "Banga B" },
+    { key: "Banga M", label: "Merginos" }
+  ]
 
   // Fetch latest post for slide 1
   useEffect(() => {
@@ -81,7 +92,7 @@ export default function LandingPage() {
       type: 'tickets',
       title: 'Bilietai į rungtynes',
       description: 'Pirkite bilietus į artimiausias FK Banga rungtynes ir palaikykite komandą',
-      image: '/placeholder-tickets.jpg',
+      image: '/ticketsbg.png',
       buttonText: 'Peržiūrėti bilietus',
       buttonLink: '/renginiai',
       bgColor: 'bg-gradient-to-r from-[#F15601] to-[#E04A00]'
@@ -91,7 +102,7 @@ export default function LandingPage() {
       type: 'store',
       title: 'Oficiali parduotuvė',
       description: 'Atsisiųskite oficialius FK Banga atributus ir palaikykite komandą',
-      image: '/placeholder-store.jpg',
+      image: '/shopbg.png',
       buttonText: 'Apsipirkti',
       buttonLink: '/parduotuve',
       bgColor: 'bg-gradient-to-r from-[#0A165B] to-[#1a2b6b]'
@@ -126,7 +137,9 @@ export default function LandingPage() {
       <PublicNavigation currentPage="home" />
       
       {/* Hero Section with Slider */}
-      <section className="relative h-[600px] overflow-hidden">
+      <section className={`relative h-[600px] overflow-hidden transition-all duration-1000 ease-out ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         {/* Slides */}
         <div className="relative h-full">
           {slides.map((slide, index) => (
@@ -178,17 +191,21 @@ export default function LandingPage() {
         {/* Navigation Arrows */}
         <button
           onClick={goToPrevious}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-colors z-20"
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 w-[50px] h-[50px] bg-[#111111] flex items-center justify-center hover:bg-[#222222] transition-colors z-20"
           aria-label="Previous slide"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
         <button
           onClick={goToNext}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-colors z-20"
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 w-[50px] h-[50px] bg-[#111111] flex items-center justify-center hover:bg-[#222222] transition-colors z-20"
           aria-label="Next slide"
         >
-          <ChevronRight className="w-6 h-6" />
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </button>
 
         {/* Slide Indicators */}
@@ -207,27 +224,66 @@ export default function LandingPage() {
       </section>
 
       {/* Upcoming Matches Section */}
-      <section className="w-full bg-[#0a165b]">
+      <section className={`w-full bg-[#0a165b] transition-all duration-1000 ease-out delay-200 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="w-full max-w-none">
-          <MatchesTabs />
+          <PublicTabs
+            tabs={teamTabs}
+            activeTab={selectedTeam}
+            onTabChange={setSelectedTeam}
+          />
+          <div className="w-full">
+            {selectedTeam === "Banga A" && <UpcomingMatches selectedTeam="Banga A" />}
+            {selectedTeam === "Banga B" && <UpcomingMatches selectedTeam="Banga B" />}
+            {selectedTeam === "Banga M" && <UpcomingMatches selectedTeam="Banga M" />}
+          </div>
         </div>
       </section>
 
       {/* Standings Section */}
-      <section className="w-full bg-[#0a165b]">
+      <section className={`w-full bg-[#0a165b] transition-all duration-1000 ease-out delay-400 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
         <div className="w-full max-w-none">
-          <StandingsTabs />
+          <div className="text-center py-8 border-t border-b border-[#232C62]">
+            <h2 className="text-white text-2xl md:text-[48px] font-bold leading-tight md:leading-[60px]">
+              Turnyrinė lentelė
+            </h2>
+          </div>
+          <PublicTabs
+            tabs={teamTabs}
+            activeTab={selectedStandingsTeam}
+            onTabChange={setSelectedStandingsTeam}
+          />
+          <div className="w-full">
+            {selectedStandingsTeam === "Banga A" && <StandingsTable selectedTeam="Banga A" />}
+            {selectedStandingsTeam === "Banga B" && <StandingsTable selectedTeam="Banga B" />}
+            {selectedStandingsTeam === "Banga M" && <StandingsTable selectedTeam="Banga M" />}
+          </div>
         </div>
       </section>
 
       {/* Latest Posts Section */}
-      <LatestPostsSection />
+      <div className={`transition-all duration-1000 ease-out delay-600 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
+        <LatestPostsSection />
+      </div>
 
       {/* Tickets and Apparel Section */}
-      <TicketsApparelSection />
+      <div className={`transition-all duration-1000 ease-out delay-800 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
+        <TicketsApparelSection />
+      </div>
 
       {/* Partners Section */}
-      <PartnersSection />
+      <div className={`transition-all duration-1000 ease-out delay-1000 ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+      }`}>
+        <PartnersSection />
+      </div>
 
       <PublicFooter />
     </div>
