@@ -166,7 +166,7 @@ function FullScreenCalendar({ data, onNewEventClick, onEventClick }: FullScreenC
 
           <Button className="w-full gap-2 md:w-auto" onClick={onNewEventClick}>
             <PlusCircleIcon size={16} strokeWidth={2} aria-hidden="true" />
-            <span>New Event</span>
+            <span>Pridėti renginį</span>
           </Button>
         </div>
       </div>

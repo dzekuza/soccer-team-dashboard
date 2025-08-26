@@ -1,0 +1,142 @@
+# UI Components and Styling Guidelines
+
+## Shadcn UI Components
+
+All UI components are available in [components/ui/](mdc:components/ui/) and
+follow Radix UI patterns:
+
+### Core Components
+
+- **Button**: [components/ui/button.tsx](mdc:components/ui/button.tsx) - Primary
+  action component
+- **Dialog**: [components/ui/dialog.tsx](mdc:components/ui/dialog.tsx) - Modal
+  dialogs with dark background
+- **Form**: [components/ui/form.tsx](mdc:components/ui/form.tsx) - Form
+  components with validation
+- **Input**: [components/ui/input.tsx](mdc:components/ui/input.tsx) - Text input
+  fields
+- **Card**: [components/ui/card.tsx](mdc:components/ui/card.tsx) - Content
+  containers
+- **Table**: [components/ui/table.tsx](mdc:components/ui/table.tsx) - Data
+  tables
+- **Toast**: [components/ui/toast.tsx](mdc:components/ui/toast.tsx) -
+  Notifications
+
+### Layout Components
+
+- **Sidebar**: [components/ui/sidebar.tsx](mdc:components/ui/sidebar.tsx) -
+  Navigation sidebar
+- **Sheet**: [components/ui/sheet.tsx](mdc:components/ui/sheet.tsx) - Slide-out
+  panels
+- **Tabs**: [components/ui/tabs.tsx](mdc:components/ui/tabs.tsx) - Tabbed
+  interfaces
+- **Accordion**:
+  [components/ui/accordion.tsx](mdc:components/ui/accordion.tsx) - Collapsible
+  content
+
+### Data Display
+
+- **Calendar**: [components/ui/calendar.tsx](mdc:components/ui/calendar.tsx) -
+  Date picker
+- **Chart**: [components/ui/chart.tsx](mdc:components/ui/chart.tsx) - Data
+  visualization
+- **Avatar**: [components/ui/avatar.tsx](mdc:components/ui/avatar.tsx) - User
+  avatars
+- **Badge**: [components/ui/badge.tsx](mdc:components/ui/badge.tsx) - Status
+  indicators
+
+## Styling Patterns
+
+### Utility Classes
+
+Use the `cn()` function from [lib/utils.ts](mdc:lib/utils.ts) for conditional
+classes:
+
+```tsx
+import { cn } from '@/lib/utils'
+
+<div className={cn(
+  'base-classes',
+  condition && 'conditional-classes',
+  variant === 'primary' && 'primary-classes'
+)}>
+```
+
+### Theme Colors
+
+Use CSS variables defined in [tailwind.config.ts](mdc:tailwind.config.ts):
+
+- `main-orange`: #F15601 (primary brand color)
+- `background`: CSS variable for background colors
+- `foreground`: CSS variable for text colors
+- `primary`: CSS variable for primary actions
+- `secondary`: CSS variable for secondary actions
+
+### Responsive Design
+
+- Use mobile-first approach with Tailwind breakpoints
+- Test on mobile, tablet, and desktop viewports
+- Use responsive utility classes: `sm:`, `md:`, `lg:`, `xl:`
+
+### Dark Mode
+
+- Dark mode is configured in [tailwind.config.ts](mdc:tailwind.config.ts)
+- Use CSS variables for theme-aware colors
+- Test components in both light and dark modes
+
+## Component Usage Examples
+
+### Button Variants
+
+```tsx
+import { Button } from '@/components/ui/button'
+
+<Button variant="default">Default Button</Button>
+<Button variant="destructive">Delete</Button>
+<Button variant="outline">Outline</Button>
+<Button variant="ghost">Ghost</Button>
+```
+
+### Form with Validation
+
+```tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+```
+
+### Dialog with Dark Background
+
+```tsx
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
+<Dialog>
+  <DialogContent className="bg-gray-900 text-white">
+    <DialogHeader>
+      <DialogTitle>Dialog Title</DialogTitle>
+    </DialogHeader>
+    {/* Content */}
+  </DialogContent>
+</Dialog>
+```
+
+## Custom Components
+
+When creating custom components:
+
+1. Use Shadcn UI components as building blocks
+2. Follow the established patterns in [components/](mdc:components/)
+3. Use TypeScript interfaces for props
+4. Implement proper accessibility attributes
+5. Test with different screen sizes and themes description: globs: alwaysApply:
+   true
+
+---

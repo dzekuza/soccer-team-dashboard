@@ -1,0 +1,135 @@
+# Development Workflow and Scripts
+
+## Available Scripts
+
+### Development
+
+- **`npm run dev`**: Start development server
+- **`npm run build`**: Build for production
+- **`npm run start`**: Start production server
+- **`npm run lint`**: Run ESLint
+
+### Data Management Scripts
+
+- **`npm run scrape:banga`**: Scrape Banga fixtures data
+- **`npm run scrape:banga-posts`**: Scrape Banga news posts
+- **`npm run upload:banga-posts`**: Upload scraped posts to Supabase
+- **`npm run upload:posts`**: Upload posts to Supabase
+- **`npm run update:standings`**: Update league standings
+- **`npm run cron:scrape-banga`**: Automated scraping to drafts
+
+### Database Scripts
+
+- **`npm run print-stripe-migration`**: Generate Stripe migration SQL
+- **`npm run print-tickets-migration`**: Generate tickets migration SQL
+
+## Development Practices
+
+### Environment Setup
+
+- Use environment variables for configuration
+- Reference [ENVIRONMENT_VARIABLES.md](mdc:ENVIRONMENT_VARIABLES.md) for
+  required variables
+- Use `.env.local` for local development
+
+### Database Management
+
+- Use Supabase for database operations
+- Run migrations through Supabase CLI
+- Reference
+  [CREATE_USER_SUBSCRIPTIONS_TABLE.sql](mdc:CREATE_USER_SUBSCRIPTIONS_TABLE.sql)
+  for table structures
+
+### Code Quality
+
+- Follow TypeScript strict mode
+- Use ESLint for code linting
+- Implement proper error handling
+- Write descriptive commit messages
+
+## Deployment
+
+### Vercel Deployment
+
+- **Configuration**: [vercel.json](mdc:vercel.json) - Vercel deployment settings
+- **Checklist**: [DEPLOYMENT_CHECKLIST.md](mdc:DEPLOYMENT_CHECKLIST.md) -
+  Deployment requirements
+- **Environment**: Configure environment variables in Vercel dashboard
+
+### Pre-deployment Checklist
+
+1. Run `npm run build` locally to ensure no build errors
+2. Check all environment variables are configured
+3. Verify database migrations are applied
+4. Test critical user flows
+5. Check Stripe webhook configuration
+
+## Integration Status
+
+### Stripe Integration
+
+- **Status**: [STRIPE_INTEGRATION_STATUS.md](mdc:STRIPE_INTEGRATION_STATUS.md) -
+  Current integration state
+- **Setup**: [STRIPE_SETUP.md](mdc:STRIPE_SETUP.md) - Stripe configuration guide
+- **Webhooks**: [WEBHOOK_SETUP.md](mdc:WEBHOOK_SETUP.md) - Webhook configuration
+
+### Supabase Integration
+
+- **Database**: Configured with PostgreSQL
+- **Authentication**: Supabase Auth for user management
+- **Storage**: File uploads and media management
+- **Real-time**: WebSocket connections for live updates
+
+## Testing and Quality Assurance
+
+### Manual Testing
+
+- Test all user flows on different devices
+- Verify responsive design on mobile, tablet, desktop
+- Check form validation and error handling
+- Test payment flows with Stripe test mode
+
+### Performance Monitoring
+
+- Monitor Core Web Vitals
+- Check bundle size and loading times
+- Monitor API response times
+- Track user engagement metrics
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Build Errors**: Check TypeScript errors and missing dependencies
+2. **Database Issues**: Verify Supabase connection and permissions
+3. **Payment Issues**: Check Stripe configuration and webhooks
+4. **Image Upload Issues**: Verify storage bucket permissions
+
+### Debug Tools
+
+- Use browser developer tools for client-side debugging
+- Check Vercel function logs for server-side issues
+- Monitor Supabase logs for database operations
+- Use Stripe dashboard for payment debugging
+
+## Documentation
+
+### Project Documentation
+
+- **Standings Scraping**: [STANDINGS_SCRAPING.md](mdc:STANDINGS_SCRAPING.md) -
+  Data collection process
+- **Deployment**: [DEPLOYMENT_CHECKLIST.md](mdc:DEPLOYMENT_CHECKLIST.md) -
+  Deployment guide
+- **Environment**: [ENVIRONMENT_VARIABLES.md](mdc:ENVIRONMENT_VARIABLES.md) -
+  Environment setup
+- **Webhooks**: [WEBHOOK_SETUP.md](mdc:WEBHOOK_SETUP.md) - Webhook configuration
+
+### Code Documentation
+
+- Use JSDoc comments for complex functions
+- Document component props with TypeScript interfaces
+- Maintain README files for major features
+- Update documentation when adding new features description: globs: alwaysApply:
+  true
+
+---

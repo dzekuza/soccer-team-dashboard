@@ -705,7 +705,7 @@ export default function SingleFixturePage() {
                 )}
               </div>
             )}
-          </div>
+            </div>
 
           {/* Match Events Timeline */}
           {fixture.events && fixture.events.length > 0 && (

@@ -1,0 +1,76 @@
+# Coding Standards and Best Practices
+
+## TypeScript & React Standards
+
+- Use TypeScript for all new code with strict type checking
+- Prefer functional components with hooks over class components
+- Use descriptive variable names with auxiliary verbs (e.g., `isLoading`,
+  `hasError`)
+- Implement proper error handling with early returns and guard clauses
+- Use React Server Components (RSC) when possible, minimize `"use client"` usage
+
+## Component Structure
+
+- Export components as named exports: `export function ComponentName()`
+- Structure files: exported component, subcomponents, helpers, static content
+- Use PascalCase for component names and camelCase for variables/functions
+- Implement proper prop types and interfaces for all components
+
+## State Management
+
+- Use Zustand for global state management
+- Use React Context for intermediate state sharing
+- Prefer local state with `useState` for component-specific state
+- Use `useEffect` sparingly and always include cleanup functions
+
+## Styling Guidelines
+
+- Use Tailwind CSS utility classes for rapid development
+- Leverage Shadcn UI components from [components/ui/](mdc:components/ui/)
+- Use the `cn()` utility from [lib/utils.ts](mdc:lib/utils.ts) for conditional
+  classes
+- Follow mobile-first responsive design approach
+- Use CSS variables for theme colors defined in
+  [tailwind.config.ts](mdc:tailwind.config.ts)
+
+## Form Handling
+
+- Use React Hook Form with Zod validation
+- Implement proper form validation (client-side and server-side)
+- Use controlled components for form inputs
+- Handle form submission states (loading, success, error)
+
+## Error Handling
+
+- Prioritize error handling and edge cases
+- Use early returns for error conditions
+- Implement guard clauses for preconditions
+- Use custom error types for consistent error handling
+- Provide user-friendly error messages
+
+## Performance Optimization
+
+- Minimize client-side JavaScript with Server Components
+- Use dynamic imports for code splitting
+- Implement proper image optimization with Next.js Image component
+- Use React.memo() and useCallback() when appropriate
+- Optimize bundle size with tree shaking
+
+## File Organization
+
+- Use lowercase with dashes for directory names
+- Place components in [components/](mdc:components/) directory
+- Store utilities in [lib/](mdc:lib/) directory
+- Keep custom hooks in [hooks/](mdc:hooks/) directory
+- Use barrel exports for clean imports
+
+## Import Conventions
+
+- Use absolute imports with `@/` prefix (configured in
+  [tsconfig.json](mdc:tsconfig.json))
+- Group imports: React, third-party libraries, internal modules, relative
+  imports
+- Use named imports over default imports when possible description: globs:
+  alwaysApply: true
+
+---

@@ -1,0 +1,55 @@
+# Soccer Team Dashboard - Project Overview
+
+This is a Next.js 14 soccer team dashboard application for FK Banga with the
+following key features:
+
+## Tech Stack
+
+- **Framework**: Next.js 14 with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS with Shadcn UI components
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Payments**: Stripe integration
+- **State Management**: Zustand + React Context
+- **UI Components**: Radix UI primitives with Shadcn UI
+- **Icons**: Lucide React
+- **Forms**: React Hook Form with Zod validation
+
+## Key Features
+
+- **Public Pages**: Landing page, news, fixtures, results, standings, shop,
+  tickets
+- **Dashboard**: Admin panel for managing events, tickets, subscriptions,
+  players
+- **E-commerce**: Shop with cart functionality and Stripe checkout
+- **Ticketing System**: Event creation, ticket generation with QR codes
+- **Subscription Management**: Recurring payments and subscription types
+- **News Management**: Blog posts with image uploads
+- **Player Management**: Player profiles and statistics
+
+## Project Structure
+
+- **Entry Point**: [app/page.tsx](mdc:app/page.tsx) - Landing page with hero
+  carousel
+- **Layout**: [app/layout.tsx](mdc:app/layout.tsx) - Root layout with providers
+- **Components**: [components/](mdc:components/) - Reusable UI components
+- **UI Library**: [components/ui/](mdc:components/ui/) - Shadcn UI components
+- **Utilities**: [lib/utils.ts](mdc:lib/utils.ts) - Common utility functions
+- **Types**: [lib/types.ts](mdc:lib/types.ts) - TypeScript type definitions
+- **Services**: [lib/](mdc:lib/) - Database, PDF, notification services
+- **Hooks**: [hooks/](mdc:hooks/) - Custom React hooks
+- **Context**: [context/](mdc:context/) - React context providers
+
+## Key Configuration Files
+
+- **Package Config**: [package.json](mdc:package.json) - Dependencies and
+  scripts
+- **Tailwind Config**: [tailwind.config.ts](mdc:tailwind.config.ts) - Styling
+  configuration
+- **TypeScript Config**: [tsconfig.json](mdc:tsconfig.json) - TypeScript
+  settings
+- **Shadcn Config**: [components.json](mdc:components.json) - UI component
+  configuration description: globs: alwaysApply: true
+
+---

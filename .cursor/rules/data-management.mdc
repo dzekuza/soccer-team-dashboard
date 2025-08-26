@@ -1,0 +1,203 @@
+# Data Management and API Patterns
+
+## Supabase Integration
+
+The project uses Supabase for database and authentication:
+
+### Database Services
+
+- **Main Service**: [lib/supabase-service.ts](mdc:lib/supabase-service.ts) -
+  Core database operations
+- **Client Setup**: [lib/supabase.ts](mdc:lib/supabase.ts) - Server-side client
+- **Browser Setup**: [lib/supabase-browser.ts](mdc:lib/supabase-browser.ts) -
+  Client-side client
+- **Types**: [lib/types.ts](mdc:lib/types.ts) - Database type definitions
+
+### Authentication
+
+- **Auth Context**: [lib/auth-context.tsx](mdc:lib/auth-context.tsx) -
+  Authentication provider
+- **Auth Hook**: [hooks/use-auth.ts](mdc:hooks/use-auth.ts) - Authentication
+  utilities
+- **Auth Guard**: [components/auth-guard.tsx](mdc:components/auth-guard.tsx) -
+  Route protection
+
+## State Management
+
+### Global State (Zustand)
+
+Use Zustand for global application state:
+
+```tsx
+import { create } from "zustand";
+
+interface AppState {
+    user: User | null;
+    isLoading: boolean;
+    setUser: (user: User | null) => void;
+    setLoading: (loading: boolean) => void;
+}
+
+export const useAppStore = create<AppState>((set) => ({
+    user: null,
+    isLoading: false,
+    setUser: (user) => set({ user }),
+    setLoading: (loading) => set({ isLoading: loading }),
+}));
+```
+
+### Context Providers
+
+- **Cart Context**: [context/cart-context.tsx](mdc:context/cart-context.tsx) -
+  Shopping cart state
+- **Theme Provider**:
+  [components/theme-provider.tsx](mdc:components/theme-provider.tsx) - Theme
+  management
+
+## API Patterns
+
+### Server Actions
+
+Use Next.js Server Actions for form submissions and data mutations:
+
+```tsx
+"use server";
+
+import { createClient } from "@/lib/supabase";
+
+export async function createEvent(formData: FormData) {
+    const supabase = createClient();
+
+    try {
+        const { data, error } = await supabase
+            .from("events")
+            .insert([{/* event data */}]);
+
+        if (error) throw error;
+        return { success: true, data };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+```
+
+### API Routes
+
+Use API routes for external integrations and complex operations:
+
+- **Posts API**: `/api/posts` - News and blog posts
+- **Events API**: `/api/events` - Event management
+- **Tickets API**: `/api/tickets` - Ticket operations
+- **Stripe API**: `/api/stripe` - Payment processing
+
+## Data Fetching Patterns
+
+### Server Components
+
+Prefer Server Components for data fetching:
+
+```tsx
+import { createClient } from "@/lib/supabase";
+
+export default async function EventsPage() {
+    const supabase = createClient();
+    const { data: events } = await supabase
+        .from("events")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    return <EventsList events={events} />;
+}
+```
+
+### Client Components
+
+Use hooks for client-side data fetching:
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase-browser";
+
+export function useEvents() {
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            const supabase = createClient();
+            const { data } = await supabase.from("events").select("*");
+            setEvents(data || []);
+            setLoading(false);
+        };
+
+        fetchEvents();
+    }, []);
+
+    return { events, loading };
+}
+```
+
+## Error Handling
+
+### Database Errors
+
+Handle Supabase errors consistently:
+
+```tsx
+const { data, error } = await supabase.from("table").select("*");
+
+if (error) {
+    console.error("Database error:", error);
+    // Handle error appropriately
+    return { success: false, error: error.message };
+}
+
+return { success: true, data };
+```
+
+### API Error Responses
+
+Return consistent error responses:
+
+```tsx
+export async function apiHandler(request: Request) {
+    try {
+        // API logic
+        return Response.json({ success: true, data });
+    } catch (error) {
+        return Response.json(
+            { success: false, error: error.message },
+            { status: 500 },
+        );
+    }
+}
+```
+
+## Type Safety
+
+### Database Types
+
+Use generated types from [lib/types.ts](mdc:lib/types.ts):
+
+```tsx
+import type { Database } from "@/lib/types";
+
+type Event = Database["public"]["Tables"]["events"]["Row"];
+type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+```
+
+### API Response Types
+
+Define consistent response types:
+
+```tsx
+interface ApiResponse<T> {
+    success: boolean;
+    data?: T;
+    error?: string;
+}
+```
+
+## description: globs: alwaysApply: true

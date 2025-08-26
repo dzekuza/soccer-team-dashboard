@@ -10,6 +10,7 @@ import type { EventWithTiers, TicketWithDetails, Team } from "@/lib/types"
 import { formatCurrency } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
 import { useToast } from "@/components/ui/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface EventCardProps {
   event: EventWithTiers
@@ -17,6 +18,66 @@ interface EventCardProps {
   teams: Team[]
   onDelete: (id: string) => void
   deletingId: string | null
+}
+
+// Skeleton component for event card
+export function EventCardSkeleton() {
+  return (
+    <Card className="group flex flex-col overflow-hidden shadow-lg bg-card text-card-foreground">
+      {/* Cover Image */}
+      <div className="relative aspect-video md:aspect-auto md:h-48">
+        <Skeleton className="h-full w-full bg-gray-600" />
+        
+        {/* Delete button skeleton */}
+        <div className="absolute top-2 right-2">
+          <Skeleton className="h-8 w-8 rounded bg-gray-500" />
+        </div>
+      </div>
+      
+      {/* Event Title */}
+      <CardHeader className="pt-4">
+        <Skeleton className="h-6 w-3/4 bg-gray-600" />
+        
+        <div className="flex items-center justify-around text-center mt-4">
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="w-12 h-12 rounded bg-gray-600" />
+            <Skeleton className="h-4 w-16 bg-gray-600" />
+          </div>
+          <Skeleton className="h-4 w-8 bg-gray-600" />
+          <div className="flex flex-col items-center gap-2">
+            <Skeleton className="w-12 h-12 rounded bg-gray-600" />
+            <Skeleton className="h-4 w-16 bg-gray-600" />
+          </div>
+        </div>
+      </CardHeader>
+      
+      <CardContent className="flex-1 space-y-4 text-sm">
+        <div className="flex items-center">
+          <Skeleton className="w-4 h-4 mr-2 bg-gray-600" />
+          <Skeleton className="h-4 w-32 bg-gray-600" />
+        </div>
+        <div className="flex items-center">
+          <Skeleton className="w-4 h-4 mr-2 bg-gray-600" />
+          <Skeleton className="h-4 w-24 bg-gray-600" />
+        </div>
+        <div className="flex items-center">
+          <Skeleton className="w-4 h-4 mr-2 bg-gray-600" />
+          <Skeleton className="h-4 w-40 bg-gray-600" />
+        </div>
+        
+        {/* Progress bar */}
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-20 bg-gray-600" />
+          <Skeleton className="h-2 w-full bg-gray-600" />
+        </div>
+      </CardContent>
+      
+      <CardFooter className="flex justify-between">
+        <Skeleton className="h-10 w-24 bg-gray-600" />
+        <Skeleton className="h-10 w-24 bg-gray-600" />
+      </CardFooter>
+    </Card>
+  )
 }
 
 export function EventCard({ event, tickets, teams, onDelete, deletingId }: EventCardProps) {

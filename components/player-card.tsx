@@ -3,9 +3,62 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { Player } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface PlayerCardProps {
   player: Player
+}
+
+// Skeleton component for player card
+export function PlayerCardSkeleton() {
+  return (
+    <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden">
+      {/* Player Image Section */}
+      <div className="relative w-full h-[400px] overflow-hidden">
+        <Skeleton className="h-full w-full bg-gray-600" />
+        
+        {/* Player Number */}
+        <div className="absolute left-2 top-4">
+          <Skeleton className="h-10 w-8 bg-gray-500" />
+        </div>
+        
+        {/* Position */}
+        <div className="absolute right-2 top-4">
+          <Skeleton className="h-8 w-8 bg-gray-500" />
+        </div>
+        
+        {/* Gradient Overlay */}
+        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-b from-transparent to-[#09155a]" />
+        
+        {/* Player Name */}
+        <div className="absolute bottom-2 left-4 space-y-2">
+          <Skeleton className="h-8 w-32 bg-gray-500" />
+          <Skeleton className="h-10 w-40 bg-gray-500" />
+        </div>
+      </div>
+      
+      {/* Stats Section */}
+      <div className="w-full p-4 space-y-4">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="text-center">
+            <Skeleton className="h-6 w-16 mx-auto mb-1 bg-gray-600" />
+            <Skeleton className="h-8 w-12 mx-auto bg-gray-600" />
+          </div>
+          <div className="text-center">
+            <Skeleton className="h-6 w-16 mx-auto mb-1 bg-gray-600" />
+            <Skeleton className="h-8 w-12 mx-auto bg-gray-600" />
+          </div>
+        </div>
+        
+        {/* Progress Bar */}
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24 bg-gray-600" />
+          <Skeleton className="h-2 w-full bg-gray-600" />
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export function PlayerCard({ player }: PlayerCardProps) {

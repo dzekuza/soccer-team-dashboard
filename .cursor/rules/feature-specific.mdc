@@ -1,0 +1,181 @@
+# Feature-Specific Patterns
+
+## E-commerce Features
+
+### Shopping Cart
+
+- **Cart Context**: [context/cart-context.tsx](mdc:context/cart-context.tsx) -
+  Manages cart state with session storage
+- **Cart Sheet**: [components/cart-sheet.tsx](mdc:components/cart-sheet.tsx) -
+  Cart display component
+- **Shop Pages**: [app/shop/](mdc:app/shop/) and
+  [app/parduotuve/](mdc:app/parduotuve/) - Product listings
+
+### Stripe Integration
+
+- **Payment Processing**: Use Stripe for secure payments
+- **Checkout Flow**: [app/checkout/](mdc:app/checkout/) - Payment processing
+- **Subscription Management**: [app/prenumeratos/](mdc:app/prenumeratos/) -
+  Recurring payments
+
+## Event Management
+
+### Event Creation
+
+- **Create Event Dialog**:
+  [components/create-event-dialog.tsx](mdc:components/create-event-dialog.tsx) -
+  Event creation form
+- **Event Cards**: [components/event-card.tsx](mdc:components/event-card.tsx) -
+  Event display
+- **Public Event Cards**:
+  [components/public-event-card.tsx](mdc:components/public-event-card.tsx) -
+  Public event display
+
+### Ticket System
+
+- **Ticket Creation**:
+  [components/create-ticket-dialog.tsx](mdc:components/create-ticket-dialog.tsx) -
+  Ticket generation
+- **Ticket Preview**:
+  [components/ticket-preview.tsx](mdc:components/ticket-preview.tsx) - Ticket
+  display
+- **QR Code Service**: [lib/qr-code-service.ts](mdc:lib/qr-code-service.ts) - QR
+  code generation
+- **PDF Generation**: [lib/pdf-generator.ts](mdc:lib/pdf-generator.ts) - Ticket
+  PDF creation
+
+## News and Content
+
+### Blog Posts
+
+- **News Pages**: [app/naujienos/](mdc:app/naujienos/) - News listing and detail
+  pages
+- **Image Upload**:
+  [components/ui/image-upload.tsx](mdc:components/ui/image-upload.tsx) - Image
+  handling
+- **Content Management**: Use Supabase for post storage and retrieval
+
+### Content Scraping
+
+- **LFF Scraper**: [lib/lff-scraper.ts](mdc:lib/lff-scraper.ts) - League data
+  scraping
+- **Scraping Scripts**: [scripts/](mdc:scripts/) - Automated data collection
+
+## Sports Data
+
+### Fixtures and Results
+
+- **Fixtures Pages**: [app/fixtures/](mdc:app/fixtures/) and
+  [app/tvarkarastis/](mdc:app/tvarkarastis/) - Match schedules
+- **Results Pages**: [app/rezultatai/](mdc:app/rezultatai/) - Match results
+- **Standings**: [app/lentele/](mdc:app/lentele/) - League table
+
+### Player Management
+
+- **Player Pages**: [app/zaidejai/](mdc:app/zaidejai/) and
+  [app/players/](mdc:app/players/) - Player profiles
+- **Player Cards**:
+  [components/player-card.tsx](mdc:components/player-card.tsx) - Player display
+- **Player Dialog**:
+  [components/player-dialog.tsx](mdc:components/player-dialog.tsx) - Player
+  editing
+
+## Dashboard Features
+
+### Navigation
+
+- **Dashboard Sidebar**:
+  [components/dashboard-sidebar.tsx](mdc:components/dashboard-sidebar.tsx) -
+  Admin navigation
+- **Mobile Menu**:
+  [components/dashboard-mobile-menu.tsx](mdc:components/dashboard-mobile-menu.tsx) -
+  Mobile navigation
+- **Public Navigation**:
+  [components/public-navigation.tsx](mdc:components/public-navigation.tsx) -
+  Public site navigation
+
+### Admin Components
+
+- **Team Switcher**:
+  [components/team-switcher.tsx](mdc:components/team-switcher.tsx) - Team
+  selection
+- **Match Dialog**:
+  [components/match-dialog.tsx](mdc:components/match-dialog.tsx) - Match editing
+- **Subscription Dialogs**:
+  [components/create-subscription-dialog.tsx](mdc:components/create-subscription-dialog.tsx) -
+  Subscription management
+
+## Utility Services
+
+### PDF Generation
+
+- **PDF Service**: [lib/pdf-service.ts](mdc:lib/pdf-service.ts) - PDF utilities
+- **Simple PDF Generator**:
+  [lib/simple-pdf-generator.ts](mdc:lib/simple-pdf-generator.ts) - Basic PDF
+  creation
+- **Ticket HTML**: [lib/ticket-html.ts](mdc:lib/ticket-html.ts) - Ticket
+  templates
+
+### Notifications
+
+- **Notification Service**:
+  [lib/notification-service.ts](mdc:lib/notification-service.ts) - Email and
+  push notifications
+- **Toast System**: [components/ui/toast.tsx](mdc:components/ui/toast.tsx) -
+  In-app notifications
+
+### Storage
+
+- **Storage Service**: [lib/storage.ts](mdc:lib/storage.ts) - File upload and
+  management
+- **Redis Service**: [lib/redis.ts](mdc:lib/redis.ts) - Caching and session
+  storage
+
+## Common Patterns
+
+### Form Validation
+
+Use React Hook Form with Zod schemas for all forms:
+
+```tsx
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const eventSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    date: z.date(),
+    description: z.string().optional(),
+});
+```
+
+### Loading States
+
+Implement consistent loading patterns:
+
+```tsx
+const [isLoading, setIsLoading] = useState(false);
+
+const handleSubmit = async (data) => {
+    setIsLoading(true);
+    try {
+        // Submit logic
+    } finally {
+        setIsLoading(false);
+    }
+};
+```
+
+### Error Boundaries
+
+Use error boundaries for component error handling:
+
+```tsx
+import { ErrorBoundary } from 'react-error-boundary'
+
+<ErrorBoundary fallback={<ErrorFallback />}>
+  <Component />
+</ErrorBoundary>
+```
+
+## description: globs: alwaysApply: true

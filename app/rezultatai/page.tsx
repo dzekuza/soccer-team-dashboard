@@ -171,7 +171,7 @@ export default function ResultsPage() {
         </div>
         
         {/* Results List */}
-        <div className="w-full">
+        <div className="w-full min-h-[400px] flex flex-col">
           {currentResults.length > 0 ? (
             <div className="flex flex-col">
               {currentResults.map((match) => (
@@ -188,7 +188,7 @@ export default function ResultsPage() {
                   {/* Match Details */}
                   <div className="flex items-center justify-center gap-2 md:gap-4 flex-1 mb-2 md:mb-0">
                     {/* Home Team */}
-                    <div className="flex items-center gap-1 md:gap-2">
+                    <div className="flex items-center gap-1 md:gap-2 flex-1 justify-end">
                       <span className="text-white text-[12px] md:text-[16px] font-medium text-right min-w-[60px] md:min-w-[100px] truncate">
                         {match.home_team.name}
                       </span>
@@ -202,13 +202,13 @@ export default function ResultsPage() {
                       </div>
                     </div>
                     
-                    {/* Score */}
-                    <div className="text-white text-[16px] md:text-[20px] font-bold mx-2 md:mx-4">
+                    {/* Score - Always centered */}
+                    <div className="text-white text-[16px] md:text-[20px] font-bold mx-2 md:mx-4 flex-shrink-0">
                       {match.home_score} - {match.away_score}
                     </div>
                     
                     {/* Away Team */}
-                    <div className="flex items-center gap-1 md:gap-2">
+                    <div className="flex items-center gap-1 md:gap-2 flex-1 justify-start">
                       <div className="h-5 w-5 md:h-8 md:w-8 relative flex-shrink-0">
                         <Image 
                           src={match.away_team.logo || '/placeholder-logo.png'} 
@@ -231,7 +231,7 @@ export default function ResultsPage() {
               ))}
             </div>
           ) : (
-            <div className="flex items-center justify-center py-8 text-gray-300">
+            <div className="flex-1 flex items-center justify-center py-8 text-gray-300">
               Nėra rezultatų šiai komandai
             </div>
           )}

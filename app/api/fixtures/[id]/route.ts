@@ -19,11 +19,11 @@ export async function GET(
             );
         }
 
-        // Fetch fixture by fingerprint (which is the ID)
+        // Fetch fixture by id or fingerprint
         const { data: fixture, error } = await supabase
             .from("fixtures_all_new")
             .select("*")
-            .eq("fingerprint", id)
+            .or(`id.eq.${id},fingerprint.eq.${id}`)
             .single();
 
         if (error) {

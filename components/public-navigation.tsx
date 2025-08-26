@@ -58,12 +58,19 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
   }
 
   const navigationItems = [
+    { href: "/", label: "Pradžia", page: "home", external: false },
     { href: "https://darkorange-partridge-697021.hostingersite.com/klubas/", label: "Klubas", page: "klubas", external: true },
     { href: "/naujienos", label: "Naujienos", page: "naujienos", external: false },
-    { href: "https://darkorange-partridge-697021.hostingersite.com/komandos/", label: "Komandos", page: "komandos", external: true },
-    { href: "/zaidejai", label: "Žaidėjai", page: "zaidejai", external: false },
-    { href: "/lentele", label: "Lentelė", page: "lentele", external: false },
-    { href: "/rezultatai", label: "Rezultatai", page: "rezultatai", external: false },
+    { 
+      label: "Komandos", 
+      page: "komandos",
+      dropdown: true,
+      items: [
+        { href: "/zaidejai?team=BANGA A", label: "Banga A", page: "zaidejai", external: false },
+        { href: "/zaidejai?team=BANGA B", label: "Banga B", page: "zaidejai", external: false },
+        { href: "/zaidejai?team=BANGA M", label: "Banga M", page: "zaidejai", external: false }
+      ]
+    },
     { 
       label: "Bilietai ir abonementai", 
       page: "tickets-subscriptions",

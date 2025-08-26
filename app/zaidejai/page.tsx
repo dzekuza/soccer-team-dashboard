@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
 import { PublicNavigation } from "@/components/public-navigation"
 import { PublicFooter } from "@/components/public-footer"
 import { PlayerCard } from "@/components/player-card"
@@ -12,12 +13,20 @@ interface PlayerGroup {
   players: Player[]
 }
 
-export default function PlayersPage() {
+function PlayersContent() {
+  const searchParams = useSearchParams()
   const [players, setPlayers] = useState<Player[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<string>("all")
-  const [searchTerm, setSearchTerm] = useState("")
+
+  // Handle URL parameter for team selection
+  useEffect(() => {
+    const teamParam = searchParams.get('team')
+    if (teamParam) {
+      setSelectedTeam(teamParam)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     const fetchPlayers = async () => {
@@ -50,12 +59,10 @@ export default function PlayersPage() {
     return index === firstIndex
   })
 
-  // Filter players based on search term and team selection
+  // Filter players based on team selection
   const filteredPlayers = uniquePlayers.filter(player => {
-    const fullName = `${player.name || ''} ${player.surname || ''}`.toLowerCase()
-    const matchesSearch = fullName.includes(searchTerm.toLowerCase())
     const matchesTeam = selectedTeam === "all" || player.team_key === selectedTeam
-    return matchesSearch && matchesTeam
+    return matchesTeam
   })
 
   // Group players by position
@@ -140,26 +147,16 @@ export default function PlayersPage() {
           />
         </div>
         
-        {/* Filters */}
-        <div className="p-4 space-y-4">
-          {/* Search */}
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Ieškoti žaidėjų..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 bg-[#232C62] text-white border border-[#F15601] rounded focus:outline-none focus:border-[#F15601]"
-            />
-          </div>
-        </div>
+
         
         {/* Players Grid */}
-        <div className="p-4">
+        <div className="w-full">
           {groupPlayersByPosition(filteredPlayers).map((group) => (
-            <div key={group.title} className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-[#F15601]">{group.title}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div key={group.title} className="border-b border-[rgba(95,95,113,0.39)]">
+              <div className="px-4 md:px-16 py-4">
+                <h2 className="text-xl font-bold text-white">{group.title}</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {group.players.map((player) => (
                   <PlayerCard key={player.id} player={player} />
                 ))}
@@ -171,5 +168,19 @@ export default function PlayersPage() {
 
       <PublicFooter />
     </div>
+  )
+}
+
+export default function PlayersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0A165B]">
+        <div className="flex items-center justify-center h-screen">
+          <div className="text-white text-xl">Kraunama...</div>
+        </div>
+      </div>
+    }>
+      <PlayersContent />
+    </Suspense>
   )
 }

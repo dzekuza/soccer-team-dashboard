@@ -30,17 +30,17 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-1">
               <li>
-                <Link href="/zaidejai" className="text-white hover:text-[#F15601] transition-colors">
+                <Link href="/zaidejai?team=BANGA A" className="text-white hover:text-[#F15601] transition-colors">
                   Banga
                 </Link>
               </li>
               <li>
-                <Link href="/zaidejai?team=banga-b" className="text-white hover:text-[#F15601] transition-colors">
+                <Link href="/zaidejai?team=BANGA B" className="text-white hover:text-[#F15601] transition-colors">
                   Banga B
                 </Link>
               </li>
               <li>
-                <Link href="/zaidejai?team=merginos" className="text-white hover:text-[#F15601] transition-colors">
+                <Link href="/zaidejai?team=BANGA M" className="text-white hover:text-[#F15601] transition-colors">
                   Merginos
                 </Link>
               </li>
@@ -59,12 +59,12 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/rungtynes" className="text-white hover:text-[#F15601] transition-colors">
+                <Link href="/tvarkarastis" className="text-white hover:text-[#F15601] transition-colors">
                   Tvarkaraštis
                 </Link>
               </li>
               <li>
-                <Link href="/lentele" className="text-white hover:text-[#F15601] transition-colors">
+                <Link href="/rezultatai" className="text-white hover:text-[#F15601] transition-colors">
                   Rezultatai
                 </Link>
               </li>

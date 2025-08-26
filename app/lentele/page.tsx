@@ -139,8 +139,8 @@ export default function StandingsPage() {
         {/* Responsive Table Container */}
         <div className="w-full overflow-x-auto">
           {/* Table Header */}
-          <div className="bg-[#0a2065] h-[70px] relative rounded-tr-[8px] border-b border-[rgba(95,95,113,0.39)] min-w-[600px]">
-            <div className="flex items-center justify-between px-4 md:px-16 h-full">
+          <div className="bg-[#0a2065] relative rounded-tr-[8px] border-b border-[rgba(95,95,113,0.39)] min-w-[600px]">
+            <div className="flex items-center justify-between px-4 md:px-16 py-6">
               <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium w-[19px] text-center">Vt</div>
               <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium w-[120px] md:w-[233px]">Komanda</div>
               <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[15px]">R</div>
@@ -158,7 +158,7 @@ export default function StandingsPage() {
               currentStandings.map((row) => (
                 <div 
                   key={row.position}
-                  className={`flex items-center justify-between px-4 md:px-16 py-2 border-b border-[rgba(95,95,113,0.39)] ${
+                  className={`flex items-center justify-between px-4 md:px-16 py-6 border-b border-[rgba(95,95,113,0.39)] ${
                     row.team.name.toLowerCase().includes('banga') ? "bg-[#f15601]" : "bg-[#0a165b]"
                   }`}
                 >

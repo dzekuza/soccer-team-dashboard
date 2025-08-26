@@ -99,6 +99,7 @@ export function DashboardSidebarNew({ ...props }: React.ComponentProps<typeof Si
       icon: Calendar,
       isActive: pathname === "/dashboard/renginiai",
       subItems: [
+        { title: "Renginiai", url: "/dashboard/renginiai" },
         { title: "Bilietai", url: "/dashboard/bilietai" },
         { title: "Prenumeratos", url: "/dashboard/prenumeratos" },
         { title: "Prenumeratos tipai", url: "/dashboard/subscription-types" },
