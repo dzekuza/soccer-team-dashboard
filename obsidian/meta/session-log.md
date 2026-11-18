@@ -24,8 +24,13 @@ Entry format:
 - **Status:** anon read verified. Riteriai is listed with all zeros, as on the club site. B / M tabs on the landing page still have no table.
 - **Next:** `ii_lyga_a` (Banga B) and `moteru_a_lyga` (Banga M) tables + fixtures; refresh the tables after matches (no scheduled scrape yet).
 
+## 2026-11-18 — pending role + ticket update guard (migration …17)
+- **Changed:** `20261118000017_pending_role_and_ticket_update_guard.sql` applied remotely: role CHECK now allows `pending` (default), later signups are `pending`, trigger `restrict_staff_ticket_updates` blocks staff from editing anything but validation fields. Committed locally, not pushed.
+- **Status:** 0 users in DB. First registrant still becomes admin while signup is open.
+- **Next:** user registers first, then disables signup in Supabase Auth; push the commit when ready.
+
 ## 2026-11-18 — security hardening migration applied
-- **Changed:** wrote `supabase/migrations/20261118000016_harden_roles_and_policies.sql` (first signup admin / later staff, admin-only writes, staff read tickets+subscriptions, admin-only storage writes). Applied to the remote DB after user approval; committed and pushed to the feature branch.
+- **Changed:** wrote `supabase/migrations/20261118000016_harden_roles_and_policies.sql` (first signup admin / later staff, admin-only writes, staff read tickets+subscriptions, admin-only storage writes). Applied to the remote DB after user approval; committed (`9116a45`) and pushed to `feat/supabase-rebuild-and-site-content`.
 - **Status:** remote DB has 0 users; no open write policies remain; anon reads still work.
 - **Next:** user disables open signup in Supabase Auth; the first account to register becomes admin, promote others with SQL.
 

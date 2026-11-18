@@ -24,8 +24,10 @@ Database currently has zero users, so tightening breaks nobody.
 public storage buckets become admin-only; staff can read tickets/subscriptions and update
 tickets (scanner validation). Open signup should also be disabled in Supabase Auth.
 
+**Amendment (migration `…17`, applied).** Later signups are now `pending` (no privileges at all), not `staff`; staff must be promoted explicitly. A trigger limits staff updates on `tickets` to `is_validated`/`validated_at`/`status`/`updated_at` (the scanner uses the user session, so UPDATE can't be dropped). Known residual risk: while signup is open, whoever registers first becomes admin — register first, then disable signup (or switch to seeding the admin by SQL).
+
 **Consequences.** New teammates must be promoted with
-`update public.users set role='admin' where email=...`. Dashboard writes done with a staff
+`update public.users set role='staff' where email=...` (or `'admin'`). Dashboard writes done with a staff
 session will be rejected by RLS.
 
 ---

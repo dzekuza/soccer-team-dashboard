@@ -9,6 +9,10 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Pending role
+
+- New signups default to `pending`; staff ticket updates limited to validation fields (migration `…17`).
+
 ## 2026-11-18 — Security hardening
 
 - Signup trigger: first user admin, later users staff; admin-only writes on content tables and storage; staff read tickets/subscriptions (migration `…16`).

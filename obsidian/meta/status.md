@@ -29,10 +29,11 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## In progress
 
-- Nothing half-done. Hero carousel (`app/page.tsx`) and logo swaps are type-checked but not yet viewed in a browser.
+- Branch `feat/supabase-rebuild-and-site-content` (4 commits, last `9116a45`) is pushed but not merged into `master`; no pull request opened yet.
 
 ## Next up
 
+- Merge the feature branch (or open a PR), then set the Supabase vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`) in Vercel.
 - Banga B / Banga M: import schedules and league tables (landing tabs empty).
 - Import Banga B / M schedules; point `teams.logo` at the new `team-logo` bucket files.
 - Verify partner logo names/order and optionally add partner links (`components/partners-section.tsx`).
@@ -47,7 +48,8 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## Blockers & open questions
 
-- Open signup is still enabled in Supabase Auth (user to disable); first signup becomes admin.
+- Open signup is still enabled in Supabase Auth: register your own account first (becomes admin), then disable signup. Later signups are `pending`.
+- Commit with migration `…17` is local only (not pushed).
 - `.env.local` lacks `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (see `.env.example`); `/api/players` 500s until added.
 - Old project inaccessible, so hand-made table schemas are guesses.
 - `supabase-soccer` MCP needs a session restart to load.
