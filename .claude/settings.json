@@ -1,0 +1,36 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"PROJECT GUIDE — soccer-team-dashboard. All project documentation lives in the obsidian/ vault, which is the single source of truth. Before doing project work this session, read obsidian/README.md (the Map of Content) and obsidian/workflows/ai-agent-guide.md (the hard rules), then open the topic note relevant to the task before writing code.\"}}'",
+            "statusMessage": "Loading project guide"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '{\"hookSpecificOutput\":{\"hookEventName\":\"UserPromptSubmit\",\"additionalContext\":\"VAULT REMINDER: consult the relevant obsidian/ guide before acting on this request — obsidian/frontend/design-system.md for styling, obsidian/frontend/component-conventions.md for components, obsidian/workflows/new-feature.md to build a feature, obsidian/backend/api-architecture.md for API work. If your work changes code, behaviour, dependencies, or architecture, update the matching vault docs in the SAME turn: catalog notes under obsidian/frontend/, obsidian/meta/changelog.md, and obsidian/meta/decisions-log.md.\"}}'"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/vault-stop-check.sh\"",
+            "statusMessage": "Checking vault docs are in sync"
+          }
+        ]
+      }
+    ]
+  }
+}
