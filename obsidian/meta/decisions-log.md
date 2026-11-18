@@ -10,6 +10,26 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0006 — API routes opt out of Next's fetch cache
+
+- **Status:** Accepted for `/api/posts` and `/api/posts/[id]`; other `createClient` routes pending.
+- **Date:** 2026-11-18
+
+**Context.** The hero's news slide was empty. `/api/posts?limit=1` returned `[]` even
+though the table had 20 public rows: Next 14 (`next@14.2.4`) had cached the supabase-js
+HTTP response from before the news import, and `export const dynamic = "force-dynamic"`
+did not prevent it. A different query string (`?limit=5`) bypassed the stale entry,
+which made it look intermittent.
+
+**Decision.** Routes that read live Supabase data export
+`fetchCache = "force-no-store"` next to `dynamic = "force-dynamic"`.
+
+**Consequences.** News is always fresh (no data-cache benefit, fine at this traffic).
+The same exposure exists in 7 other routes using `createClient` (`grep -L fetchCache`);
+add the export when touching them. Clearing `.next/cache/fetch-cache` fixes a stale local dev cache.
+
+---
+
 ## ADR-0005 — Fluid type-scale tokens replace arbitrary pixel sizes
 
 - **Status:** Accepted

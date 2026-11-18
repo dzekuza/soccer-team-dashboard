@@ -12,6 +12,7 @@ primitives, reused across features.
 |-----------|------|---------|--------|
 | [[public-navigation|PublicNavigation]] | `components/public-navigation.tsx` | Sticky public header with match bar, nav, cart | #wip |
 | PartnersSection | `components/partners-section.tsx` | Grid of sponsor logos from `public/partners/` (static list) | #wip |
+| TicketsApparelSection | `components/tickets-apparel-section.tsx` | Landing "Įsigykite" heading + Atributika/Bilietai promo tiles (local `PromoTile`); Figma 1100:81335; assets in `public/landing/`; tiles clip fully when stacked, players may rise into the heading band from `md` | #wip |
 | | | | #wip |
 
 ## Related

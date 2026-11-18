@@ -9,12 +9,14 @@ updated: 2026-11-18
 
 ## Current focus
 
-Polishing the public site (header, footer, hero carousel, partners, news) on the new Supabase project "Banga" (`bjrddghusbkpxjgwbwlm`).
+Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwlm`): design-system cleanup from the typography/layout audit (palette, fonts, type scale done), then hero and section fidelity against Figma.
 
 ## Done recently
 
-- Hero news slide fixed (stale fetch cache) and landing Įsigykite section rebuilt from Figma.
-- Type scale tokens (ADR-0005) and brand palette + DM Sans via `next/font` (ADR-0004).
+- Landing "Įsigykite" section rebuilt from Figma node 1100:81335 (`components/tickets-apparel-section.tsx`, assets in `public/landing/`).
+- Hero news slide fixed: Next 14 cached an empty supabase-js response for `/api/posts?limit=1`; routes now use `fetchCache = "force-no-store"` (ADR-0006).
+- Fluid type-scale tokens `text-display` / `text-headline` / `text-title` replace arbitrary px sizes (ADR-0005).
+- Brand palette tokenised (664 arbitrary hex classes replaced) and DM Sans loaded via `next/font/google` (ADR-0004).
 - Role hardening applied (migration `…16`, ADR-0003): first signup admin, then staff; admin-only writes.
 - Toplyga 2026 league table imported (`standings` a_lyga + `standings_al`).
 - Landing match strip falls back to recent results off-season (`components/upcoming-matches.tsx`).
@@ -31,21 +33,19 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## In progress
 
-- Nothing half-done. `master` = `e9797f1` (feature branch merged by fast-forward and pushed).
+- Nothing half-done. Local `master` is ahead of `origin/master` (palette/fonts, type scale, posts cache fix, Įsigykite section, docs); not pushed yet.
 
 ## Next up
 
-- Hero: slides 2-3 images missing; one `<h1>` per slide (5 per page) should be one. Add `fetchCache = "force-no-store"` to the other 7 API routes using `createClient`.
-- Typography/layout audit follow-ups: shared `(public)` layout, remove duplicate EN/LT routes, `<h1>`/`<main>`, reduced-motion.
-- Set the Supabase env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_*`) in Vercel; deployment from `master` may already be building.
-- Banga B / Banga M: import schedules and league tables (landing tabs empty).
-- Import Banga B / M schedules; point `teams.logo` at the new `team-logo` bucket files.
+- Hero: slides 2-3 point at missing `/ticketsbg.png` / `/shopbg.png` (add images or reuse `public/landing/*`); every slide renders an `<h1>` (5 per page), should be one.
+- Add `fetchCache = "force-no-store"` to the other 7 API routes using `createClient` (same stale-cache exposure as posts).
+- Audit follow-ups: shared `(public)` layout (24 pages import nav/footer by hand), remove duplicate EN/LT routes, `<h1>`/`<main>` on pages missing them, reduced-motion + hero pause control, remaining non-token colours (`#FFCC00`, `#FF3B30`, `#111111`, `#222222`, `#5F5F71`, hero gradients).
+- Set the Supabase env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_*`) in Vercel; deployment from `master` may already be building. `npm run build` locally also needs a Stripe key (fails at `/api/checkout/shop` without it).
+- Banga B / Banga M: import schedules and league tables (landing tabs empty); point `teams.logo` at the new `team-logo` bucket files.
 - Verify partner logo names/order and optionally add partner links (`components/partners-section.tsx`).
 - Unify `posts` / `banga_posts`: news list reads `posts`, detail reads `banga_posts`.
-- Hero slides 2–3 point at missing `/ticketsbg.png` / `/shopbg.png`; add the images or switch to `public/ticketbg.jpg`.
-- Replace remaining `/Banga-1.png` references (dashboard sidebars, subscriptions, event page; header and footer done) with `/banga-logo.svg`.
+- Replace remaining `/Banga-1.png` references (dashboard sidebars, subscriptions, event page) with `/banga-logo.svg`.
 - Fix position grouping on `app/players/page.tsx` (saugas/saugė are midfielders, currently under Gynėjai).
-- Verify `.env.local` has the new URL, anon key and service-role key; smoke-test the app.
 - Fix column mismatches for inferred tables with new migrations.
 - Decide `subscriptions` vs `user_subscriptions`, and the "every signup becomes admin" trigger.
 - Re-upload team logos (seed URLs still point at the old project's bucket).
@@ -53,9 +53,9 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 ## Blockers & open questions
 
 - Open signup is still enabled in Supabase Auth: register your own account first (becomes admin), then disable signup. Later signups are `pending`.
-- `.env.local` lacks `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (see `.env.example`); `/api/players` 500s until added.
+- `.env.local` URL and anon key point at Banga (verified); `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` still need checking (see `.env.example`); `/api/players` 500s until present.
 - Old project inaccessible, so hand-made table schemas are guesses.
-- `supabase-soccer` MCP needs a session restart to load.
+- Two `next dev` servers in this folder share `.next` and break each other's chunks; run one.
 
 ## Environment
 
