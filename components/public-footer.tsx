@@ -106,7 +106,7 @@ export function PublicFooter() {
             <ul className="space-y-1">
               <li>
                 <Link
-                  href="/contact"
+                  href="/kontaktai"
                   className="text-white hover:text-primary transition-colors"
                 >
                   Kontaktai
@@ -272,7 +272,7 @@ export function PublicFooter() {
                 <ul className="space-y-1">
                   <li>
                     <Link
-                      href="/contact"
+                      href="/kontaktai"
                       className="text-white hover:text-primary transition-colors"
                     >
                       Kontaktai

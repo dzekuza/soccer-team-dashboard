@@ -9,6 +9,11 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Klubas, Pamaina, Kontaktai pages
+
+- New own pages `/klubas`, `/pamaina`, `/kontaktai` (replacing the links to fkbanga.lt); header and footer "Kontaktai" now point at them. See ADR-0009. New shared `PageHeading` / `ContentSection`, club components, `views/`, `lib/club-content.ts`, `lib/club-documents.ts`; removed `lib/site-links.ts`.
+- Copied from the old site: club text, leadership, shareholders, 33 documents (PDFs still hosted there), academy groups and coach phones (from the poster), contacts, BANGA CAMP booking.
+
 ## 2026-11-18 — Dead header links
 
 - Header links for Klubas, Akademija and Kontaktai pointed at a dead Hostinger staging host; they now use `CLUB_SITE_LINKS` (`lib/site-links.ts`, https://www.fkbanga.lt). The unused `components/event-header.tsx` had the same host on 7 links; fixed (own routes where the app has the page).

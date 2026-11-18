@@ -18,6 +18,9 @@ updated: 2026-11-18
 
 | Route | Title | Description | OG image |
 |-------|-------|-------------|----------|
+| `/klubas` | Klubas \| FK Banga | Apie klubą: vadovybė, dalininkai, veiklos sritys, dokumentai | - |
+| `/pamaina` | Pamaina \| FK Banga | Vaikų ir jaunimo grupės, kontaktai | - |
+| `/kontaktai` | Kontaktai \| FK Banga | Adresas, telefonas, el. paštai, BANGA CAMP | - |
 | | | | |
 
 ## Related

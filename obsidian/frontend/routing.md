@@ -23,6 +23,9 @@ export default function Page() { return <AboutView />; }
 
 | Route | View | Status |
 |-------|------|--------|
+| `/klubas` | `views/club-view.tsx` | #wip |
+| `/pamaina` | `views/academy-view.tsx` | #wip |
+| `/kontaktai` | `views/contacts-view.tsx` | #wip |
 | `/` | | #wip |
 
 ## Conventions

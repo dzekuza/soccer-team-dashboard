@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronDown, Search, ShoppingBag } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
-import { CLUB_SITE_LINKS } from '@/lib/site-links';
 import type { Event, Team } from "@/lib/types"
 import {
   CalendarIcon,
@@ -73,13 +72,13 @@ const SiteHeader = () => {
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6 text-sm">
-            <NavLink href={CLUB_SITE_LINKS.club}>KLUBAS</NavLink>
+            <NavLink href="/klubas">KLUBAS</NavLink>
             <NavLink href="/naujienos">NAUJIENOS</NavLink>
             <NavLink href="/zaidejai" hasDropdown>KOMANDOS</NavLink>
             <NavLink href="/renginiai">VARŽYBŲ BILIETAI</NavLink>
-            <NavLink href={CLUB_SITE_LINKS.academy}>PAMAINA</NavLink>
+            <NavLink href="/pamaina">PAMAINA</NavLink>
             <NavLink href="/parduotuve">SHOP</NavLink>
-            <NavLink href={CLUB_SITE_LINKS.contacts}>KONTAKTAI</NavLink>
+            <NavLink href="/kontaktai">KONTAKTAI</NavLink>
           </nav>
           <div className="flex items-center space-x-4">
             <Search className="h-5 w-5 cursor-pointer hover:text-gray-300" />

@@ -10,6 +10,25 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0009 — Club info pages are static app content, not links to the old site
+
+- **Status:** Accepted
+- **Date:** 2026-11-18
+
+**Context.** The header's Klubas / Akademija / Kontaktai pointed at a dead staging host, and
+the real pages live on the club's WordPress site (fkbanga.lt), outside this app.
+
+**Decision.** Build `/klubas`, `/pamaina` and `/kontaktai` as own pages in the app, with the
+copy in typed constants (`lib/club-content.ts`, `lib/club-documents.ts`) and thin routes that
+delegate to `views/`. PDFs keep being served from fkbanga.lt. The academy page re-expresses
+the old poster (a single image) as text: birth-year groups, contact person, phone.
+
+**Consequences.** No dependency on the WordPress site for these pages, no redirects. Content
+is a copy: staff, phones and documents must be edited in `lib/` (or moved to the database later).
+PDF links still depend on fkbanga.lt staying online.
+
+---
+
 ## ADR-0008 — Motion conventions: restraint, shared curves, no page-load stagger
 
 - **Status:** Accepted (landing, players pages done; other pages pending)

@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Own Klubas / Pamaina / Kontaktai pages
+
+- **Changed:** `app/{klubas,pamaina,kontaktai}/page.tsx` (thin) + `views/*`, `components/common/*`, `components/club/*`, `lib/club-content.ts`, `lib/club-documents.ts`, `public/club/klubas-banner.jpg`; header + footer links; removed `lib/site-links.ts`; vault (routing, seo, catalogs, ADR-0009, changelog).
+- **Status:** `tsc` clean; pages render with one `<h1>` and one `<main>`, nav highlight works, accordion opens (19 reports), no horizontal overflow at 390px. Committed, not pushed.
+- **Next:** footer links `/privacy` and `/cookies` return 404; `/contact` still exists with a non-working form and a different address (Gargždų g. 1 vs Kvietinių g. 26); `event-header.tsx` is unused; fkbanga.lt still hosts Stadionas, Istorija, BANGA CAMP, Atributika pages.
+
 ## 2026-11-18 — Dead header URLs
 
 - **Changed:** new `lib/site-links.ts`; `components/public-navigation.tsx` and the unused `components/event-header.tsx` use it; utils catalog + changelog.

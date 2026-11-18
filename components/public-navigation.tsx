@@ -20,7 +20,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Match } from "@/lib/types";
-import { CLUB_SITE_LINKS } from "@/lib/site-links";
 
 interface PublicNavigationProps {
   currentPage?: string;
@@ -78,10 +77,10 @@ export function PublicNavigation({
   const navigationItems = [
     { href: "/", label: "Pradžia", page: "home", external: false },
     {
-      href: CLUB_SITE_LINKS.club,
+      href: "/klubas",
       label: "Klubas",
       page: "klubas",
-      external: true,
+      external: false,
     },
     {
       href: "/naujienos",
@@ -134,10 +133,10 @@ export function PublicNavigation({
       ],
     },
     {
-      href: CLUB_SITE_LINKS.academy,
+      href: "/pamaina",
       label: "Akademija",
-      page: "akademija",
-      external: true,
+      page: "pamaina",
+      external: false,
     },
     {
       href: "/parduotuve",
@@ -147,10 +146,10 @@ export function PublicNavigation({
     },
 
     {
-      href: CLUB_SITE_LINKS.contacts,
+      href: "/kontaktai",
       label: "Kontaktai",
       page: "kontaktai",
-      external: true,
+      external: false,
     },
   ];
 
