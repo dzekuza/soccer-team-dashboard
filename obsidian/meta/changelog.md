@@ -9,6 +9,10 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Įsigykite tiles full width
+
+- Removed the `max-w-page` / `mx-auto` wrapper from `TicketsApparelSection` (tiles span the full width) and dropped the unused `max-w-page` token.
+
 ## 2026-11-18 — Next.js 15 / React 19 upgrade
 
 - `next` 14.2.4 -> 15.5.29, `react`/`react-dom` 18 -> 19, types and `eslint-config-next` to match; both lockfiles regenerated. See ADR-0007.

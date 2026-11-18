@@ -84,9 +84,6 @@ const config: Config = {
   		height: {
   			'promo-player': '45rem'
   		},
-  		maxWidth: {
-  			page: '90rem'
-  		},
   		borderRadius: {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',

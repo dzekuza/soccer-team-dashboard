@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Įsigykite tiles full width
+
+- **Changed:** removed `mx-auto max-w-page` from the tiles wrapper in `components/tickets-apparel-section.tsx`; removed the unused `max-w-page` token; vault design-system + changelog.
+- **Status:** `tsc` clean; committed on `chore/upgrade-next-15`.
+- **Next:** see the entry below.
+
 ## 2026-11-18 — Next 15 / React 19 upgrade and caching review
 
 - **Changed:** deps + both lockfiles; 21 files by async-request codemod, 3 handlers fixed by hand, `noStore` -> `connection()` (10 pages); `next.config.mjs` (tracing root, types enforced); `/api/templates/[name]` bug; player images -> WebP; ADR-0007, tech-stack, changelog. On branch `chore/upgrade-next-15`.

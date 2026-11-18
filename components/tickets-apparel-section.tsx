@@ -87,7 +87,7 @@ export function TicketsApparelSection() {
       <h2 className="px-14 py-8 text-center text-headline font-bold text-white">
         {SECTION_TITLE}
       </h2>
-      <div className="mx-auto flex w-full max-w-page flex-col md:flex-row">
+      <div className="flex w-full flex-col md:flex-row">
         {TILES.map((tile) => (
           <PromoTile key={tile.href} {...tile} />
         ))}
