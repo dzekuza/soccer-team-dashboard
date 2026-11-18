@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Match } from "@/lib/types";
+import { CLUB_SITE_LINKS } from "@/lib/site-links";
 
 interface PublicNavigationProps {
   currentPage?: string;
@@ -77,7 +78,7 @@ export function PublicNavigation({
   const navigationItems = [
     { href: "/", label: "Pradžia", page: "home", external: false },
     {
-      href: "https://darkorange-partridge-697021.hostingersite.com/klubas/",
+      href: CLUB_SITE_LINKS.club,
       label: "Klubas",
       page: "klubas",
       external: true,
@@ -133,7 +134,7 @@ export function PublicNavigation({
       ],
     },
     {
-      href: "https://darkorange-partridge-697021.hostingersite.com/pamaina/",
+      href: CLUB_SITE_LINKS.academy,
       label: "Akademija",
       page: "akademija",
       external: true,
@@ -146,7 +147,7 @@ export function PublicNavigation({
     },
 
     {
-      href: "https://darkorange-partridge-697021.hostingersite.com/kontaktai/",
+      href: CLUB_SITE_LINKS.contacts,
       label: "Kontaktai",
       page: "kontaktai",
       external: true,

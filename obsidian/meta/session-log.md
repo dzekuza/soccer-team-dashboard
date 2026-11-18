@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Dead header URLs
+
+- **Changed:** new `lib/site-links.ts`; `components/public-navigation.tsx` and the unused `components/event-header.tsx` use it; utils catalog + changelog.
+- **Status:** the 3 old `*.hostingersite.com` links returned no connection; the new fkbanga.lt URLs return 200 and render in the header. `tsc` clean. Committed.
+- **Next:** footer and page content were not scanned for other external URLs beyond the social links (those return 200); `event-header.tsx` is unused and could be deleted.
+
 ## 2026-11-18 — Animation audit and fixes (landing, fixtures, players)
 
 - **Changed:** `app/page.tsx` (no reveals; hero pause/reduced-motion/inert), `components/player-card.tsx` (hover layers, `PlayerGridSkeleton`), `app/zaidejai/page.tsx`, `app/players/page.tsx`, `app/zaidejai/[id]/page.tsx`, `hooks/use-page-animation.ts` (`unknown[]`), `tailwind.config.ts` (easing tokens, `hoverOnlyWhenSupported`); design-system Motion section, ADR-0008, changelog.

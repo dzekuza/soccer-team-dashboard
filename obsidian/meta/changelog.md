@@ -9,6 +9,10 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Dead header links
+
+- Header links for Klubas, Akademija and Kontaktai pointed at a dead Hostinger staging host; they now use `CLUB_SITE_LINKS` (`lib/site-links.ts`, https://www.fkbanga.lt). The unused `components/event-header.tsx` had the same host on 7 links; fixed (own routes where the app has the page).
+
 ## 2026-11-18 — Motion cleanup (landing, players)
 
 - Removed staggered 1s page-load reveals on the landing and players pages; loaded content fades in 200ms. Added `ease-out-strong` / `ease-in-out-strong` and `hoverOnlyWhenSupported`. See ADR-0008.

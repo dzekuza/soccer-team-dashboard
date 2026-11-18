@@ -13,6 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
+- Header links fixed: Klubas / Akademija / Kontaktai now go to fkbanga.lt via `lib/site-links.ts` (old Hostinger staging host was dead).
 - Motion cleanup on landing + players pages (ADR-0008): no page-load stagger, calmer hero carousel, skeleton loading, hover only on hover-capable devices.
 - Next 15.5 / React 19 upgrade (ADR-0007) merged to `master` and pushed (`95a05bb`); builds and smoke-tests clean locally. Verify the Vercel deployment (needs real Stripe/Resend/QR env vars at build time).
 - Landing "Įsigykite" section rebuilt from Figma node 1100:81335 (`components/tickets-apparel-section.tsx`, assets in `public/landing/`).
