@@ -136,3 +136,16 @@ jspm_packages/
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# Site assets that must ship with the app (override the image ignores above)
+!/public/banga-logo.svg
+!/public/hero/
+!/public/hero/*
+!/public/partners/
+!/public/partners/*
+
+# Keep the env template tracked
+!.env.example
+
+# Scraped squad data contains birth dates (some minors) — never commit
+/supabase/fkbanga-squads.json
