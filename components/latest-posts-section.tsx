@@ -41,7 +41,7 @@ export function LatestPostsSection() {
 
   if (loading) {
     return (
-      <section className="w-full bg-[#0A165B]">
+      <section className="w-full bg-background">
         <div className="space-y-0">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex flex-col lg:flex-row items-stretch relative w-full">
@@ -51,7 +51,7 @@ export function LatestPostsSection() {
               </div>
               
               {/* Text Section */}
-              <div className="w-full lg:w-1/2 bg-[#0a165b] p-6 md:p-8 lg:p-16 flex items-center">
+              <div className="w-full lg:w-1/2 bg-background p-6 md:p-8 lg:p-16 flex items-center">
                 <div className="w-full space-y-4 lg:space-y-6">
                   <Skeleton className="h-6 w-32 bg-gray-600" />
                   <div className="space-y-2">
@@ -72,7 +72,7 @@ export function LatestPostsSection() {
   }
 
   return (
-    <section className="w-full bg-[#0A165B]">
+    <section className="w-full bg-background">
       {/* Posts Layout - Responsive Grid */}
       <div className="space-y-0">
         {posts.map((post, index) => (
@@ -95,7 +95,7 @@ export function LatestPostsSection() {
                 </div>
                 
                 {/* Text Section */}
-                <div className="w-full lg:w-1/2 bg-[#0a165b] p-6 md:p-8 lg:p-16 flex items-center order-2 lg:order-1">
+                <div className="w-full lg:w-1/2 bg-background p-6 md:p-8 lg:p-16 flex items-center order-2 lg:order-1">
                   <div className="w-full space-y-4 lg:space-y-6">
                     {/* Date */}
                     <div className="text-sm md:text-base text-[rgba(255,255,255,0.61)]">
@@ -131,7 +131,7 @@ export function LatestPostsSection() {
                 </div>
                 
                 {/* Text Section */}
-                <div className="w-full lg:w-1/2 bg-[#0a165b] p-6 md:p-8 lg:p-16 flex items-center order-2">
+                <div className="w-full lg:w-1/2 bg-background p-6 md:p-8 lg:p-16 flex items-center order-2">
                   <div className="w-full space-y-4 lg:space-y-6">
                     {/* Date */}
                     <div className="text-sm md:text-base text-[rgba(255,255,255,0.61)]">

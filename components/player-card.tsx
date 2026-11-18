@@ -12,7 +12,7 @@ interface PlayerCardProps {
 // Skeleton component for player card
 export function PlayerCardSkeleton() {
   return (
-    <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden">
+    <div className="bg-background flex flex-col items-start justify-start relative w-full border border-surface overflow-hidden">
       {/* Player Image Section */}
       <div className="relative w-full h-[250px] md:h-[400px] overflow-hidden">
         <Skeleton className="h-full w-full bg-gray-600" />
@@ -28,7 +28,7 @@ export function PlayerCardSkeleton() {
         </div>
         
         {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-[#09155a]" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-background" />
         
         {/* Player Name */}
         <div className="absolute bottom-2 left-4 space-y-2">
@@ -116,7 +116,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
 
   return (
     <Link href={`/zaidejai/${player.id}`} className="block">
-      <div className="bg-[#09155a] flex flex-col items-start justify-start relative w-full border border-[#232C62] overflow-hidden hover:border-[#F15601] hover:bg-orange-500 transition-all duration-300 cursor-pointer group">
+      <div className="bg-background flex flex-col items-start justify-start relative w-full border border-surface overflow-hidden hover:border-primary hover:bg-orange-500 transition-all duration-300 cursor-pointer group">
       {/* Player Image Section */}
       <div className="relative w-full h-[250px] md:h-[400px] overflow-hidden group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-orange-600">
         <Image
@@ -141,7 +141,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
         </div>
         
         {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-[#09155a] group-hover:bg-gradient-to-b group-hover:from-transparent group-hover:to-orange-500 transition-all duration-300" />
+        <div className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-background group-hover:bg-gradient-to-b group-hover:from-transparent group-hover:to-orange-500 transition-all duration-300" />
         
         {/* Player Name */}
         <div className="absolute bottom-2 left-4 text-white">
@@ -155,7 +155,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
       </div>
       
       {/* Stats Section */}
-      <div className="bg-[#09155a] group-hover:bg-orange-500 p-3 md:p-4 w-full space-y-3 md:space-y-4 transition-colors duration-300">
+      <div className="bg-background group-hover:bg-orange-500 p-3 md:p-4 w-full space-y-3 md:space-y-4 transition-colors duration-300">
         {/* Stats Row */}
         <div className="flex gap-4 md:gap-6 items-center justify-start w-full">
           <div className="flex flex-col gap-1 flex-1">
@@ -188,7 +188,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
               return (
                 <div className="flex gap-1 items-center w-full">
                   <div className="bg-white h-1.5 md:h-2 rounded-full flex-1" />
-                  <div className="bg-[#fc8231] h-1.5 md:h-2 rounded-full flex-1" />
+                  <div className="bg-primary h-1.5 md:h-2 rounded-full flex-1" />
                 </div>
               );
             }
@@ -204,7 +204,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
                   style={{ width: `${matchesPercent}%` }}
                 />
                 <div 
-                  className="bg-[#fc8231] h-1.5 md:h-2 rounded-r-full transition-all duration-300"
+                  className="bg-primary h-1.5 md:h-2 rounded-r-full transition-all duration-300"
                   style={{ width: `${goalsPercent}%` }}
                 />
               </div>
@@ -223,7 +223,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
               <div className="text-white text-xs font-normal tracking-tight">
                 Įvarčiai
               </div>
-              <div className="bg-[#f15601] rounded-sm w-2.5 h-2.5 md:w-3 md:h-3" />
+              <div className="bg-primary rounded-sm w-2.5 h-2.5 md:w-3 md:h-3" />
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { Mail, Phone, Facebook, Instagram, Youtube } from "lucide-react";
 
 export function PublicFooter() {
   return (
-    <footer className="bg-[#0a165b] text-white w-full border-t border-[rgba(95,95,113,0.3)]">
+    <footer className="bg-background text-white w-full border-t border-[rgba(95,95,113,0.3)]">
       {/* Main footer content */}
       <div className="w-full px-4 md:px-8 lg:px-16 py-6">
         {/* Desktop: 5-column grid */}
@@ -33,7 +33,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/zaidejai?team=BANGA A"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Banga
                 </Link>
@@ -41,7 +41,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/zaidejai?team=BANGA B"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Banga B
                 </Link>
@@ -49,7 +49,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/zaidejai?team=BANGA M"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Merginos
                 </Link>
@@ -66,7 +66,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/naujienos"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Naujienos
                 </Link>
@@ -74,7 +74,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/tvarkarastis"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Tvarkaraštis
                 </Link>
@@ -82,7 +82,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/rezultatai"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Rezultatai
                 </Link>
@@ -90,7 +90,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/lentele"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Turnyrinė lentelė
                 </Link>
@@ -107,7 +107,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/contact"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Kontaktai
                 </Link>
@@ -115,7 +115,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/renginiai"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Bilietai
                 </Link>
@@ -124,7 +124,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/privacy"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Privatumo politika
                 </Link>
@@ -132,7 +132,7 @@ export function PublicFooter() {
               <li>
                 <Link
                   href="/cookies"
-                  className="text-white hover:text-[#F15601] transition-colors"
+                  className="text-white hover:text-primary transition-colors"
                 >
                   Slapukų politika
                 </Link>
@@ -149,7 +149,7 @@ export function PublicFooter() {
               <li>
                 <a
                   href="mailto:pavel@fkbanga.lt"
-                  className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
+                  className="flex items-center gap-2 text-white hover:text-primary transition-colors"
                 >
                   <Mail className="w-4 h-4" />
                   pavel@fkbanga.lt
@@ -158,7 +158,7 @@ export function PublicFooter() {
               <li>
                 <a
                   href="tel:+37046452782"
-                  className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
+                  className="flex items-center gap-2 text-white hover:text-primary transition-colors"
                 >
                   <Phone className="w-4 h-4" />
                   (8-46) 452782
@@ -196,7 +196,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/zaidejai?team=BANGA A"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Banga
                     </Link>
@@ -204,7 +204,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/zaidejai?team=BANGA B"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Banga B
                     </Link>
@@ -212,7 +212,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/zaidejai?team=BANGA M"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Merginos
                     </Link>
@@ -229,7 +229,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/naujienos"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Naujienos
                     </Link>
@@ -237,7 +237,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/tvarkarastis"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Tvarkaraštis
                     </Link>
@@ -245,7 +245,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/rezultatai"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Rezultatai
                     </Link>
@@ -253,7 +253,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/lentele"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Turnyrinė lentelė
                     </Link>
@@ -273,7 +273,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/contact"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Kontaktai
                     </Link>
@@ -281,7 +281,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/renginiai"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Bilietai
                     </Link>
@@ -290,7 +290,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/privacy"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Privatumo politika
                     </Link>
@@ -298,7 +298,7 @@ export function PublicFooter() {
                   <li>
                     <Link
                       href="/cookies"
-                      className="text-white hover:text-[#F15601] transition-colors"
+                      className="text-white hover:text-primary transition-colors"
                     >
                       Slapukų politika
                     </Link>
@@ -315,7 +315,7 @@ export function PublicFooter() {
                   <li>
                     <a
                       href="mailto:pavel@fkbanga.lt"
-                      className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
+                      className="flex items-center gap-2 text-white hover:text-primary transition-colors"
                     >
                       <Mail className="w-4 h-4" />
                       pavel@fkbanga.lt
@@ -324,7 +324,7 @@ export function PublicFooter() {
                   <li>
                     <a
                       href="tel:+37046452782"
-                      className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
+                      className="flex items-center gap-2 text-white hover:text-primary transition-colors"
                     >
                       <Phone className="w-4 h-4" />
                       (8-46) 452782
@@ -338,7 +338,7 @@ export function PublicFooter() {
       </div>
 
       {/* Bottom bar */}
-      <div className="bg-[#070f40] border-t border-[rgba(95,95,113,0.35)] w-full">
+      <div className="bg-surface-deep border-t border-[rgba(95,95,113,0.35)] w-full">
         <div className="w-full px-4 md:px-8 lg:px-16 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright */}
@@ -352,7 +352,7 @@ export function PublicFooter() {
                 href="https://facebook.com/fkbanga"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#F15601] transition-colors"
+                className="text-white hover:text-primary transition-colors"
               >
                 <Facebook className="w-4 h-4" />
               </a>
@@ -360,7 +360,7 @@ export function PublicFooter() {
                 href="https://instagram.com/fkbanga"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#F15601] transition-colors"
+                className="text-white hover:text-primary transition-colors"
               >
                 <Instagram className="w-4 h-4" />
               </a>
@@ -368,7 +368,7 @@ export function PublicFooter() {
                 href="https://youtube.com/fkbanga"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-white hover:text-[#F15601] transition-colors"
+                className="text-white hover:text-primary transition-colors"
               >
                 <Youtube className="w-4 h-4" />
               </a>

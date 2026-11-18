@@ -80,7 +80,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
 
   if (loading) {
     return (
-      <div className="h-[400px] bg-[#0a165b] p-4">
+      <div className="h-[400px] bg-background p-4">
         <div className="flex items-center justify-between mb-4">
           <Skeleton className="h-8 w-48 bg-gray-600" />
           <Skeleton className="h-6 w-24 bg-gray-600" />
@@ -124,7 +124,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
 
   if (error) {
     return (
-      <div className="h-[400px] bg-[#0a165b] flex items-center justify-center">
+      <div className="h-[400px] bg-background flex items-center justify-center">
         <div className="text-white">Klaida: {error}</div>
       </div>
     )
@@ -132,7 +132,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
 
   if (standings.length === 0) {
     return (
-      <div className="h-[400px] bg-[#0a165b] flex flex-col items-center justify-center gap-4">
+      <div className="h-[400px] bg-background flex flex-col items-center justify-center gap-4">
         <div className="text-white">Nėra lentelės duomenų</div>
         <button 
           onClick={async () => {
@@ -145,7 +145,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
               console.error('Error triggering scrape:', error)
             }
           }}
-          className="px-4 py-2 bg-[#F15601] text-white rounded hover:bg-[#E04A00] transition-colors"
+          className="px-4 py-2 bg-primary text-white rounded hover:bg-primary-strong transition-colors"
         >
           Atnaujinti duomenis
         </button>
@@ -154,7 +154,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
   }
 
   return (
-    <div className="bg-[#0a165b] min-h-[400px]">
+    <div className="bg-background min-h-[400px]">
       <div className="overflow-x-auto">
         <table className="w-full text-white">
           <thead>
@@ -175,8 +175,8 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
             {standings.slice(0, 8).map((team, index) => (
                                               <tr 
                   key={index} 
-                  className={`border-b border-[rgba(95,95,113,0.1)] hover:bg-[#0a2065] transition-colors ${
-                    team.team.name?.toLowerCase().includes('banga') ? 'bg-[#070F40]/50' : ''
+                  className={`border-b border-[rgba(95,95,113,0.1)] hover:bg-surface-raised transition-colors ${
+                    team.team.name?.toLowerCase().includes('banga') ? 'bg-surface-deep/50' : ''
                   }`}
                 >
                   <td className="px-2 md:px-4 py-3 text-[14px] font-medium w-12 md:w-auto">
@@ -191,7 +191,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
                           className="w-6 h-6 object-contain"
                         />
                       )}
-                      <span className={team.team.name?.toLowerCase().includes('banga') ? 'text-[#F15601] font-semibold' : ''}>
+                      <span className={team.team.name?.toLowerCase().includes('banga') ? 'text-primary font-semibold' : ''}>
                         {team.team.name || 'Unknown Team'}
                       </span>
                     </div>
@@ -211,7 +211,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
       </div>
       
       {standings.length > 8 && (
-        <div className="bg-[#0a2065] flex flex-col items-center justify-center p-6">
+        <div className="bg-surface-raised flex flex-col items-center justify-center p-6">
           <a 
             href="/lentele" 
             className="text-white text-[16px] font-medium text-center hover:opacity-80 transition-opacity"

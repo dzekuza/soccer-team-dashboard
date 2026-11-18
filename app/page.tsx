@@ -87,7 +87,7 @@ export default function LandingPage() {
       image: latestPost?.cover_image_url || latestPost?.image_url || '/placeholder-news.jpg',
       buttonText: 'Skaityti daugiau',
       buttonLink: latestPost ? `/naujienos/${latestPost.id}` : '/naujienos',
-      bgColor: 'bg-gradient-to-r from-[#0A165B] to-[#1a2b6b]'
+      bgColor: 'bg-gradient-to-r from-background to-[#1a2b6b]'
     },
     {
       id: 2,
@@ -97,7 +97,7 @@ export default function LandingPage() {
       image: '/ticketsbg.png',
       buttonText: 'Peržiūrėti bilietus',
       buttonLink: '/renginiai',
-      bgColor: 'bg-gradient-to-r from-[#F15601] to-[#E04A00]'
+      bgColor: 'bg-gradient-to-r from-primary to-primary-strong'
     },
     {
       id: 3,
@@ -107,7 +107,7 @@ export default function LandingPage() {
       image: '/shopbg.png',
       buttonText: 'Apsipirkti',
       buttonLink: '/parduotuve',
-      bgColor: 'bg-gradient-to-r from-[#0A165B] to-[#1a2b6b]'
+      bgColor: 'bg-gradient-to-r from-background to-[#1a2b6b]'
     },
     {
       id: 4,
@@ -149,14 +149,14 @@ export default function LandingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-white text-xl">Kraunama...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B]">
+    <div className="min-h-screen bg-background">
       <PublicNavigation currentPage="home" />
       
       {/* Hero Section with Slider */}
@@ -173,7 +173,7 @@ export default function LandingPage() {
               }`}
             >
               {/* Background */}
-              <div className={`absolute inset-0 ${slide.bgColor ?? 'bg-[#0A165B]'}`}>
+              <div className={`absolute inset-0 ${slide.bgColor ?? 'bg-background'}`}>
                 {slide.image && (
                   <div className="absolute inset-0">
                     <Image
@@ -187,7 +187,7 @@ export default function LandingPage() {
                   </div>
                 )}
                 {slide.type === 'photo' && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A165B]/70 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
                 )}
               </div>
               
@@ -205,7 +205,7 @@ export default function LandingPage() {
                      <Link href={slide.buttonLink ?? '/'}>
                        <Button 
                          size="lg" 
-                         className="bg-[#F15601] hover:bg-[#E04A00] text-white text-lg px-8 py-4 h-auto rounded-none"
+                         className="bg-primary hover:bg-primary-strong text-white text-lg px-8 py-4 h-auto rounded-none"
                        >
                          {slide.buttonText}
                        </Button>
@@ -254,7 +254,7 @@ export default function LandingPage() {
       </section>
 
       {/* Upcoming Matches Section */}
-      <section className={`w-full bg-[#0a165b] transition-all duration-1000 ease-out delay-200 ${
+      <section className={`w-full bg-background transition-all duration-1000 ease-out delay-200 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
         <div className="w-full max-w-none">
@@ -272,11 +272,11 @@ export default function LandingPage() {
       </section>
 
       {/* Standings Section */}
-      <section className={`w-full bg-[#0a165b] transition-all duration-1000 ease-out delay-400 ${
+      <section className={`w-full bg-background transition-all duration-1000 ease-out delay-400 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
         <div className="w-full max-w-none">
-          <div className="text-center py-8 border-t border-b border-[#232C62]">
+          <div className="text-center py-8 border-t border-b border-surface">
             <h2 className="text-white text-2xl md:text-[48px] font-bold leading-tight md:leading-[60px]">
               Turnyrinė lentelė
             </h2>

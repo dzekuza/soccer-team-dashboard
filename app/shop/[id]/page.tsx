@@ -141,13 +141,13 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white">
+      <div className="min-h-screen bg-background text-white">
         <PublicNavigation currentPage="parduotuve" />
         <div className="w-full">
-          <div className="p-4 border-b border-[#232C62]">
+          <div className="p-4 border-b border-surface">
             <Link 
               href="/shop" 
-              className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"
+              className="inline-flex items-center text-white hover:text-primary transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Grįžti į parduotuvę
@@ -163,13 +163,13 @@ export default function ProductPage() {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white">
+      <div className="min-h-screen bg-background text-white">
         <PublicNavigation currentPage="parduotuve" />
         <div className="w-full">
-          <div className="p-4 border-b border-[#232C62]">
+          <div className="p-4 border-b border-surface">
             <Link 
               href="/shop" 
-              className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"
+              className="inline-flex items-center text-white hover:text-primary transition-colors"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Grįžti į parduotuvę
@@ -184,17 +184,17 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="parduotuve" />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
       
       {/* Main Content */}
       <div className="w-full">
         {/* Back Button */}
-        <div className="p-4 border-b border-[#232C62]">
+        <div className="p-4 border-b border-surface">
           <Link 
             href="/shop" 
-            className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"
+            className="inline-flex items-center text-white hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Grįžti į parduotuvę
@@ -204,7 +204,7 @@ export default function ProductPage() {
         {/* Product Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2">
           {/* Left Side - Product Image */}
-          <div className="border-r border-[#232C62]">
+          <div className="border-r border-surface">
             <div className="relative">
               <Image
                 src={product.image_url || "/placeholder.jpg"}
@@ -213,7 +213,7 @@ export default function ProductPage() {
                 height={600}
                 className="w-full h-96 lg:h-[600px] object-cover"
               />
-              <div className="absolute top-4 left-4 bg-[#F15601] text-white px-3 py-1 text-sm font-semibold">
+              <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 text-sm font-semibold">
                 {product.product_categories?.name || "Nekategorizuotas"}
               </div>
             </div>
@@ -227,7 +227,7 @@ export default function ProductPage() {
                 <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">
                   {product.name}
                 </h1>
-                <div className="text-[#F15601] font-bold text-3xl lg:text-4xl">
+                <div className="text-primary font-bold text-3xl lg:text-4xl">
                   €{product.price.toFixed(2)}
                 </div>
                 {product.compare_price && product.compare_price > product.price && (
@@ -256,8 +256,8 @@ export default function ProductPage() {
                         onClick={() => setSelectedSize(size)}
                         className={`px-4 py-2 text-base rounded-none ${
                           selectedSize === size
-                            ? "bg-[#F15601] text-white border-[#F15601]"
-                            : "border-[#232C62] text-white hover:bg-white/10"
+                            ? "bg-primary text-white border-primary"
+                            : "border-surface text-white hover:bg-white/10"
                         }`}
                       >
                         {size}
@@ -279,8 +279,8 @@ export default function ProductPage() {
                         onClick={() => setSelectedColor(color)}
                         className={`px-4 py-2 text-base rounded-none ${
                           selectedColor === color
-                            ? "bg-[#F15601] text-white border-[#F15601]"
-                            : "border-[#232C62] text-white hover:bg-white/10"
+                            ? "bg-primary text-white border-primary"
+                            : "border-surface text-white hover:bg-white/10"
                         }`}
                       >
                         {color}
@@ -313,7 +313,7 @@ export default function ProductPage() {
                       size="lg"
                       onClick={() => handleQuantityChange(quantity - 1)}
                       disabled={quantity <= 1}
-                      className="w-12 h-12 p-0 border-[#232C62] text-white hover:bg-white/10 disabled:opacity-50 rounded-none"
+                      className="w-12 h-12 p-0 border-surface text-white hover:bg-white/10 disabled:opacity-50 rounded-none"
                     >
                       <Minus className="w-6 h-6" />
                     </Button>
@@ -324,7 +324,7 @@ export default function ProductPage() {
                       variant="outline"
                       size="lg"
                       onClick={() => handleQuantityChange(quantity + 1)}
-                      className="w-12 h-12 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                      className="w-12 h-12 p-0 border-surface text-white hover:bg-white/10 rounded-none"
                     >
                       <Plus className="w-6 h-6" />
                     </Button>
@@ -367,7 +367,7 @@ export default function ProductPage() {
 
         {/* You Might Also Like Section */}
         {relatedProducts.length > 0 && (
-          <div className="border-t border-[#232C62]">
+          <div className="border-t border-surface">
             {/* Section Title */}
             <div className="px-4 md:px-8 lg:px-16 py-6 lg:py-8">
               <h2 className="h2-public">Jums taip pat gali patikti</h2>
@@ -379,7 +379,7 @@ export default function ProductPage() {
                 <Link 
                   key={relatedProduct.id} 
                   href={`/shop/${relatedProduct.id}`}
-                  className="block border border-[#232C62] hover:border-white transition-colors"
+                  className="block border border-surface hover:border-white transition-colors"
                 >
                   {/* Product Image */}
                   <div className="relative">
@@ -390,7 +390,7 @@ export default function ProductPage() {
                       height={400}
                       className="w-full aspect-square object-cover"
                     />
-                    <div className="absolute top-2 left-2 bg-[#F15601] text-white px-2 py-1 text-sm font-semibold">
+                    <div className="absolute top-2 left-2 bg-primary text-white px-2 py-1 text-sm font-semibold">
                       {relatedProduct.product_categories?.name || "Nekategorizuotas"}
                     </div>
                   </div>

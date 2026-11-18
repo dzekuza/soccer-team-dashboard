@@ -75,7 +75,7 @@ export default function PlayerDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     )
@@ -83,7 +83,7 @@ export default function PlayerDetailPage() {
 
   if (error || !player) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <PublicNavigation currentPage="zaidejai" />
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Player not found</div>
@@ -99,7 +99,7 @@ export default function PlayerDetailPage() {
   const lastName = nameParts.slice(1).join(' ') || ''
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
               <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Player Layout */}
@@ -127,7 +127,7 @@ export default function PlayerDetailPage() {
         </div>
         
         {/* Player Info Section */}
-        <div className={`w-full lg:w-1/2 bg-[#0A165B] flex flex-col justify-end transition-all duration-1000 ease-out delay-400 ${
+        <div className={`w-full lg:w-1/2 bg-background flex flex-col justify-end transition-all duration-1000 ease-out delay-400 ${
           isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
         }`}>
         {/* Player Name and Jersey Number - Inline */}

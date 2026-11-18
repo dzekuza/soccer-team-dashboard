@@ -102,7 +102,7 @@ export function SubscriptionCheckoutClient() {
     return (
       <div className="w-full px-4 md:px-8 lg:px-16 py-8">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F15601] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-white">Kraunama...</p>
         </div>
       </div>
@@ -117,7 +117,7 @@ export function SubscriptionCheckoutClient() {
           <p className="text-gray-300">{error || 'Prenumeratos tipas nerastas'}</p>
           <Button 
             onClick={() => window.history.back()} 
-            className="mt-4 bg-[#F15601] hover:bg-[#E04501]"
+            className="mt-4 bg-primary hover:bg-primary-strong"
           >
             Grįžti atgal
           </Button>
@@ -132,14 +132,14 @@ export function SubscriptionCheckoutClient() {
       
       <div className="grid gap-6 md:grid-cols-2">
         {/* Subscription Type Summary */}
-        <Card className="bg-[#0A165B]/50 border border-gray-700">
+        <Card className="bg-background/50 border border-gray-700">
           <CardHeader>
             <CardTitle className="text-white">{subscriptionType.title}</CardTitle>
             <CardDescription className="text-gray-300">{subscriptionType.description}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="mb-4">
-              <div className="text-3xl font-bold text-[#F15601] mb-1">
+              <div className="text-3xl font-bold text-primary mb-1">
                 {formatCurrency(subscriptionType.price)}
               </div>
               <div className="text-sm text-gray-400">
@@ -155,7 +155,7 @@ export function SubscriptionCheckoutClient() {
                 <ul className="space-y-2">
                   {subscriptionType.features.map((feature, index) => (
                     <li key={index} className="flex items-center text-sm text-gray-300">
-                      <Check className="h-4 w-4 mr-2 text-[#F15601] flex-shrink-0" />
+                      <Check className="h-4 w-4 mr-2 text-primary flex-shrink-0" />
                       {feature}
                     </li>
                   ))}
@@ -166,7 +166,7 @@ export function SubscriptionCheckoutClient() {
         </Card>
 
         {/* Purchase Form */}
-        <Card className="bg-[#0A165B]/50 border border-gray-700">
+        <Card className="bg-background/50 border border-gray-700">
           <CardHeader>
             <CardTitle className="text-white">Pirkėjo informacija</CardTitle>
             <CardDescription className="text-gray-300">Užpildykite savo duomenis prenumeratos pirkimui</CardDescription>
@@ -214,7 +214,7 @@ export function SubscriptionCheckoutClient() {
               <div className="border-t border-gray-600 pt-4">
                 <div className="flex justify-between items-center mb-4">
                   <span className="font-medium text-white">Iš viso:</span>
-                  <span className="text-xl font-bold text-[#F15601]">
+                  <span className="text-xl font-bold text-primary">
                     {formatCurrency(subscriptionType.price)}
                   </span>
                 </div>
@@ -222,7 +222,7 @@ export function SubscriptionCheckoutClient() {
                 <Button 
                   type="submit" 
                   disabled={isProcessing}
-                  className="w-full bg-[#F15601] hover:bg-[#E04501]"
+                  className="w-full bg-primary hover:bg-primary-strong"
                 >
                   {isProcessing ? "Apdorojama..." : "Pirkti prenumeratą"}
                 </Button>

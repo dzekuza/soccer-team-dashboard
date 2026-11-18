@@ -138,7 +138,7 @@ export default function SingleFixturePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white">
+      <div className="min-h-screen bg-background text-white">
         <PublicNavigation currentPage="rezultatai" />
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
@@ -149,13 +149,13 @@ export default function SingleFixturePage() {
 
   if (error || !fixture) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white">
+      <div className="min-h-screen bg-background text-white">
         <PublicNavigation currentPage="rezultatai" />
         <div className="flex flex-col items-center justify-center h-screen">
           <div className="text-white text-xl mb-4">{error || "Rungtynės nerastos"}</div>
           <Link 
             href="/rezultatai" 
-            className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"
+            className="inline-flex items-center text-white hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Grįžti į rezultatus
@@ -166,15 +166,15 @@ export default function SingleFixturePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="rezultatai" />
       
       {/* Page Header */}
-      <div className="w-full border-b border-[#232C62]">
+      <div className="w-full border-b border-surface">
         <div className="px-4 md:px-8 lg:px-16 py-4">
           <Link 
             href="/rezultatai" 
-            className="inline-flex items-center text-white hover:text-[#F15601] transition-colors mb-4"
+            className="inline-flex items-center text-white hover:text-primary transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Grįžti į rezultatus
@@ -284,7 +284,7 @@ export default function SingleFixturePage() {
               </div>
 
               {/* Divider */}
-              <div className="w-px h-14 bg-[#232C62]"></div>
+              <div className="w-px h-14 bg-surface"></div>
 
               {/* Away Team */}
               <div className="flex items-center gap-6">
@@ -310,7 +310,7 @@ export default function SingleFixturePage() {
               <div className="grid grid-cols-2 gap-8">
                 {/* Home Team Lineup */}
                 <div>
-                  <div className="bg-[#232C62] overflow-hidden">
+                  <div className="bg-surface overflow-hidden">
                     {fixture.events && fixture.events.length > 0 ? (
                       // Extract unique players from home team events
                       Array.from(new Set(
@@ -320,7 +320,7 @@ export default function SingleFixturePage() {
                       )).slice(0, 11).map((playerName, index) => {
                         const playerEvents = getPlayerEvents(playerName, fixture.events)
                         return (
-                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                             <div className="flex items-center gap-6 flex-1">
                               <div className="w-7 text-center font-medium text-white">
                                 {index === 0 ? 'GK' : index <= 4 ? 'DF' : index <= 7 ? 'MF' : 'FW'}
@@ -339,10 +339,10 @@ export default function SingleFixturePage() {
                                     <div className="w-3.5 h-5 bg-[#FF3B30]"></div>
                                   )}
                                   {event.type === 'goal' && (
-                                    <div className="w-5 h-5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-5 bg-primary"></div>
                                   )}
                                   {event.type === 'substitution' && (
-                                    <div className="w-5 h-3.5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-3.5 bg-primary"></div>
                                   )}
                                   <span className="text-sm text-white">{event.minute}'</span>
                                 </div>
@@ -354,7 +354,7 @@ export default function SingleFixturePage() {
                     ) : (
                       // Fallback if no events
                       Array.from({ length: 11 }, (_, index) => (
-                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                           <div className="flex items-center gap-6 flex-1">
                             <div className="w-7 text-center font-medium text-white">
                               {index === 0 ? 'GK' : index <= 4 ? 'DF' : index <= 7 ? 'MF' : 'FW'}
@@ -372,7 +372,7 @@ export default function SingleFixturePage() {
 
                 {/* Away Team Lineup */}
                 <div>
-                  <div className="bg-[#232C62] overflow-hidden">
+                  <div className="bg-surface overflow-hidden">
                     {fixture.events && fixture.events.length > 0 ? (
                       // Extract unique players from away team events
                       Array.from(new Set(
@@ -382,7 +382,7 @@ export default function SingleFixturePage() {
                       )).slice(0, 11).map((playerName, index) => {
                         const playerEvents = getPlayerEvents(playerName, fixture.events)
                         return (
-                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                             <div className="flex items-center gap-2">
                               {playerEvents.map((event, eventIndex) => (
                                 <div key={eventIndex} className="flex items-center gap-1.5">
@@ -393,10 +393,10 @@ export default function SingleFixturePage() {
                                     <div className="w-3.5 h-5 bg-[#FF3B30]"></div>
                                   )}
                                   {event.type === 'goal' && (
-                                    <div className="w-5 h-5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-5 bg-primary"></div>
                                   )}
                                   {event.type === 'substitution' && (
-                                    <div className="w-5 h-3.5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-3.5 bg-primary"></div>
                                   )}
                                   <span className="text-sm text-white">{event.minute}'</span>
                                 </div>
@@ -416,7 +416,7 @@ export default function SingleFixturePage() {
                     ) : (
                       // Fallback if no events
                       Array.from({ length: 11 }, (_, index) => (
-                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                           <div className="flex items-center gap-2"></div>
                           <div className="flex items-center gap-6 flex-1 justify-end">
                             <div className="flex items-center gap-3">
@@ -441,7 +441,7 @@ export default function SingleFixturePage() {
               <div className="grid grid-cols-2 gap-8">
                 {/* Home Team Substitutes */}
                 <div>
-                  <div className="bg-[#232C62] overflow-hidden">
+                  <div className="bg-surface overflow-hidden">
                     {fixture.events && fixture.events.length > 0 ? (
                       // Extract additional players from home team events (substitutes)
                       Array.from(new Set(
@@ -451,7 +451,7 @@ export default function SingleFixturePage() {
                       )).slice(11, 16).map((playerName, index) => {
                         const playerEvents = getPlayerEvents(playerName, fixture.events)
                         return (
-                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                             <div className="flex items-center gap-6 flex-1">
                               <div className="w-7 text-center font-medium text-white">
                                 {index === 0 ? 'GK' : index <= 2 ? 'DF' : index <= 4 ? 'MF' : 'FW'}
@@ -470,10 +470,10 @@ export default function SingleFixturePage() {
                                     <div className="w-3.5 h-5 bg-[#FF3B30]"></div>
                                   )}
                                   {event.type === 'goal' && (
-                                    <div className="w-5 h-5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-5 bg-primary"></div>
                                   )}
                                   {event.type === 'substitution' && (
-                                    <div className="w-5 h-3.5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-3.5 bg-primary"></div>
                                   )}
                                   <span className="text-sm text-white">{event.minute}'</span>
                                 </div>
@@ -485,7 +485,7 @@ export default function SingleFixturePage() {
                     ) : (
                       // Fallback if no events
                       Array.from({ length: 5 }, (_, index) => (
-                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                           <div className="flex items-center gap-6 flex-1">
                             <div className="w-7 text-center font-medium text-white">
                               {index === 0 ? 'GK' : index <= 2 ? 'DF' : index <= 4 ? 'MF' : 'FW'}
@@ -503,7 +503,7 @@ export default function SingleFixturePage() {
 
                 {/* Away Team Substitutes */}
                 <div>
-                  <div className="bg-[#232C62] overflow-hidden">
+                  <div className="bg-surface overflow-hidden">
                     {fixture.events && fixture.events.length > 0 ? (
                       // Extract additional players from away team events (substitutes)
                       Array.from(new Set(
@@ -513,7 +513,7 @@ export default function SingleFixturePage() {
                       )).slice(11, 16).map((playerName, index) => {
                         const playerEvents = getPlayerEvents(playerName, fixture.events)
                         return (
-                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                          <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                             <div className="flex items-center gap-2">
                               {playerEvents.map((event, eventIndex) => (
                                 <div key={eventIndex} className="flex items-center gap-1.5">
@@ -524,10 +524,10 @@ export default function SingleFixturePage() {
                                     <div className="w-3.5 h-5 bg-[#FF3B30]"></div>
                                   )}
                                   {event.type === 'goal' && (
-                                    <div className="w-5 h-5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-5 bg-primary"></div>
                                   )}
                                   {event.type === 'substitution' && (
-                                    <div className="w-5 h-3.5 bg-[#F15601]"></div>
+                                    <div className="w-5 h-3.5 bg-primary"></div>
                                   )}
                                   <span className="text-sm text-white">{event.minute}'</span>
                                 </div>
@@ -547,7 +547,7 @@ export default function SingleFixturePage() {
                     ) : (
                       // Fallback if no events
                       Array.from({ length: 5 }, (_, index) => (
-                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-[#1A1F4A] last:border-b-0">
+                        <div key={index} className="flex items-center justify-between px-6 py-5 border-b border-surface-deep last:border-b-0">
                           <div className="flex items-center gap-2"></div>
                           <div className="flex items-center gap-6 flex-1 justify-end">
                             <div className="flex items-center gap-3">
@@ -570,7 +570,7 @@ export default function SingleFixturePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Goals */}
                 {fixture.statistics.goals && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Įvarčiai</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -587,7 +587,7 @@ export default function SingleFixturePage() {
 
                 {/* Yellow Cards */}
                 {fixture.statistics.yellow_cards && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Geltonos kortelės</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -604,7 +604,7 @@ export default function SingleFixturePage() {
 
                 {/* Red Cards */}
                 {fixture.statistics.red_cards && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Raudonos kortelės</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -621,7 +621,7 @@ export default function SingleFixturePage() {
 
                 {/* Substitutions */}
                 {fixture.statistics.substitutions && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Keitimai</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -638,7 +638,7 @@ export default function SingleFixturePage() {
 
                 {/* Possession */}
                 {fixture.statistics.possession && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Puolimas</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -655,7 +655,7 @@ export default function SingleFixturePage() {
 
                 {/* Shots */}
                 {fixture.statistics.shots && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Smūgiai</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -672,7 +672,7 @@ export default function SingleFixturePage() {
 
                 {/* Corners */}
                 {fixture.statistics.corners && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Kampiniai</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -689,7 +689,7 @@ export default function SingleFixturePage() {
 
                 {/* Fouls */}
                 {fixture.statistics.fouls && (
-                  <div className="bg-[#232C62] rounded-lg p-6">
+                  <div className="bg-surface rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-white mb-4 text-center">Pažeidimai</h4>
                     <div className="flex justify-between items-center">
                       <div className="text-center">
@@ -712,10 +712,10 @@ export default function SingleFixturePage() {
             <div className="mb-8">
               <h3 className="text-2xl font-semibold text-white mb-6">Mačo eiga</h3>
               
-              <div className="bg-[#232C62] rounded-lg p-6">
+              <div className="bg-surface rounded-lg p-6">
                 <div className="space-y-4">
                   {fixture.events.map((event, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-3 bg-[#1A1F4A] rounded-lg">
+                    <div key={index} className="flex items-center space-x-4 p-3 bg-surface-deep rounded-lg">
                       <div className="text-sm text-gray-300 min-w-[60px]">
                         {event.minute}'
                       </div>
@@ -740,7 +740,7 @@ export default function SingleFixturePage() {
           )}
 
           {/* Match Details */}
-          <div className="bg-[#232C62] rounded-lg p-6">
+          <div className="bg-surface rounded-lg p-6">
             <h3 className="text-2xl font-semibold text-white mb-4">Mačo informacija</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

@@ -202,7 +202,7 @@ export function DashboardMobileMenu() {
           <Link
             key={item.name}
             href={item.href}
-            className={`flex flex-col items-center flex-1 py-2 px-1 gap-0.5 text-xs text-white hover:text-main-orange transition ${pathname === item.href ? "text-main-orange font-bold" : ""}`}
+            className={`flex flex-col items-center flex-1 py-2 px-1 gap-0.5 text-xs text-white hover:text-primary transition ${pathname === item.href ? "text-primary font-bold" : ""}`}
           >
             <item.icon className="h-6 w-6 mb-0.5" />
             <span className="leading-none text-[11px]">{item.name}</span>
@@ -210,7 +210,7 @@ export function DashboardMobileMenu() {
         ))}
         <button
           onClick={() => setModalOpen(true)}
-          className="flex flex-col items-center flex-1 py-2 px-1 text-xs text-white hover:text-main-orange transition"
+          className="flex flex-col items-center flex-1 py-2 px-1 text-xs text-white hover:text-primary transition"
           aria-label="Profilis"
         >
           <UserIcon className="h-6 w-6 mb-0.5" />
@@ -227,7 +227,7 @@ export function DashboardMobileMenu() {
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-main hover:text-main-orange text-white text-base transition"
+                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-main hover:text-primary text-white text-base transition"
                     onClick={() => setModalOpen(false)}
                   >
                     <item.icon className="h-5 w-5" />
@@ -240,7 +240,7 @@ export function DashboardMobileMenu() {
                       if (item.action) await item.action();
                       setModalOpen(false);
                     }}
-                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-main hover:text-main-orange text-white text-base w-full text-left transition"
+                    className="flex items-center gap-3 py-3 px-2 rounded hover:bg-main hover:text-primary text-white text-base w-full text-left transition"
                   >
                     <item.icon className="h-5 w-5" />
                     <span>{item.name}</span>

@@ -152,7 +152,7 @@ export function CreateSubscriptionDialog({
           </div>
 
           {selectedSubscriptionType && (
-            <div className="p-3 bg-[#0A165B]/20 border border-[#0A165B]/30 rounded-lg">
+            <div className="p-3 bg-background/20 border border-background/30 rounded-lg">
               <h4 className="font-medium text-sm mb-2 text-white">{selectedSubscriptionType.title}</h4>
               <p className="text-sm text-gray-300 mb-2">{selectedSubscriptionType.description}</p>
               <div className="text-sm text-gray-300">

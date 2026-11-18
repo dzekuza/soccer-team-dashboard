@@ -63,7 +63,7 @@ const SiteHeader = () => {
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <header className="bg-[#0A165B] text-white font-medium">
+    <header className="bg-background text-white font-medium">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
@@ -84,7 +84,7 @@ const SiteHeader = () => {
             <Search className="h-5 w-5 cursor-pointer hover:text-gray-300" />
             <Link href="/checkout" className="relative cursor-pointer hover:text-gray-300">
               <ShoppingBag className="h-5 w-5" />
-              <span className="absolute -top-2 -right-2 bg-[#F15601] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">{totalItems}</span>
+              <span className="absolute -top-2 -right-2 bg-primary text-white text-xs rounded-full h-4 w-4 flex items-center justify-center font-bold">{totalItems}</span>
             </Link>
             <div className="flex items-center space-x-2 cursor-pointer hover:text-gray-300">
               <span>LT</span>

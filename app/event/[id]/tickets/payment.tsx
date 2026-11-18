@@ -175,13 +175,13 @@ export default function PaymentPage() {
   const { event, team1, team2 } = eventData
 
   return (
-    <div className="bg-[#070F40] min-h-screen text-white">
+    <div className="bg-surface-deep min-h-screen text-white">
       {/* Stepper */}
       <div className="flex w-full max-w-5xl mx-auto pt-10 pb-8">
         {["1. BILETO PASIRINKIMAS", "2. APMOKĖJIMAS", "3. BILIETAS"].map((step, idx) => (
           <div key={step} className={cn(
             "flex-1 flex flex-col items-center justify-center text-center",
-            idx === 1 ? "text-white font-bold" : "text-[#B0B8D9] font-medium"
+            idx === 1 ? "text-white font-bold" : "text-muted-foreground font-medium"
           )}>
             <div className={cn(
               "w-full px-2 py-3 text-lg uppercase border-b-4",
@@ -193,14 +193,14 @@ export default function PaymentPage() {
       {/* Main content */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
         {/* Payment form */}
-        <Card className="bg-[#070F40] border border-[#232B5D] col-span-2 p-8">
+        <Card className="bg-surface-deep border border-surface col-span-2 p-8">
           <h2 className="text-2xl font-bold mb-8">Kur siųsti bilietus</h2>
           <div className="flex flex-col md:flex-row gap-6 mb-8">
             <div className="flex-1">
               <input
                 type="email"
                 placeholder="Email address *"
-                className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                className="w-full bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
@@ -212,7 +212,7 @@ export default function PaymentPage() {
               <input
                 type="email"
                 placeholder="Confirm address *"
-                className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                className="w-full bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                 value={confirmEmail}
                 onChange={e => setConfirmEmail(e.target.value)}
               />
@@ -230,8 +230,8 @@ export default function PaymentPage() {
           <div className="flex flex-col gap-4 mb-8">
             {paymentMethods.map(method => (
               <label key={method.id} className={cn(
-                "flex items-center border border-[#232B5D] bg-transparent px-6 py-5 cursor-pointer transition-colors",
-                payment === method.id ? "border-white bg-[#10194A]" : ""
+                "flex items-center border border-surface bg-transparent px-6 py-5 cursor-pointer transition-colors",
+                payment === method.id ? "border-white bg-surface-deep" : ""
               )}>
                 <input
                   type="radio"
@@ -239,11 +239,11 @@ export default function PaymentPage() {
                   value={method.id}
                   checked={payment === method.id}
                   onChange={() => setPayment(method.id)}
-                  className="form-radio accent-main-orange mr-4 w-5 h-5"
+                  className="form-radio accent-primary mr-4 w-5 h-5"
                 />
                 <div>
                   <div className="text-lg font-bold mb-1">{method.label}</div>
-                  <div className="text-[#B0B8D9] text-sm">{method.desc}</div>
+                  <div className="text-muted-foreground text-sm">{method.desc}</div>
                 </div>
               </label>
             ))}
@@ -251,13 +251,13 @@ export default function PaymentPage() {
 
           {/* Payment method specific fields */}
           {payment === "card" && (
-            <div className="border border-[#232B5D] bg-[#10194A] p-6">
+            <div className="border border-surface bg-surface-deep p-6">
               <h3 className="text-xl font-bold mb-4">Įveskite kortelės duomenis</h3>
               <div className="space-y-4">
                 <input
                   type="text"
                   placeholder="Card number"
-                  className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                  className="w-full bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                   value={cardNumber}
                   onChange={e => setCardNumber(formatCardNumber(e.target.value))}
                   maxLength={19}
@@ -269,7 +269,7 @@ export default function PaymentPage() {
                   <input
                     type="text"
                     placeholder="MM/YY"
-                    className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    className="bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                     value={cardExpiry}
                     onChange={e => setCardExpiry(formatExpiry(e.target.value))}
                     maxLength={5}
@@ -277,7 +277,7 @@ export default function PaymentPage() {
                   <input
                     type="text"
                     placeholder="CVC"
-                    className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    className="bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                     value={cardCvc}
                     onChange={e => setCardCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
                     maxLength={4}
@@ -286,7 +286,7 @@ export default function PaymentPage() {
                 <input
                   type="text"
                   placeholder="Cardholder name"
-                  className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                  className="w-full bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                   value={cardName}
                   onChange={e => setCardName(e.target.value)}
                 />
@@ -295,7 +295,7 @@ export default function PaymentPage() {
           )}
 
           {payment === "wallet" && (
-            <div className="border border-[#232B5D] bg-[#10194A] p-6">
+            <div className="border border-surface bg-surface-deep p-6">
               <h3 className="text-xl font-bold mb-4">Pasirinkite skaitmeninę piniginę</h3>
               <div className="space-y-3">
                 {[
@@ -304,8 +304,8 @@ export default function PaymentPage() {
                   { id: "paypal", label: "PayPal", desc: "Apmokėkite naudodami PayPal" },
                 ].map(wallet => (
                   <label key={wallet.id} className={cn(
-                    "flex items-center border border-[#232B5D] bg-transparent px-4 py-3 cursor-pointer transition-colors",
-                    selectedWallet === wallet.id ? "border-white bg-[#070F40]" : ""
+                    "flex items-center border border-surface bg-transparent px-4 py-3 cursor-pointer transition-colors",
+                    selectedWallet === wallet.id ? "border-white bg-surface-deep" : ""
                   )}>
                     <input
                       type="radio"
@@ -313,11 +313,11 @@ export default function PaymentPage() {
                       value={wallet.id}
                       checked={selectedWallet === wallet.id}
                       onChange={() => setSelectedWallet(wallet.id)}
-                      className="form-radio accent-main-orange mr-3 w-4 h-4"
+                      className="form-radio accent-primary mr-3 w-4 h-4"
                     />
                     <div>
                       <div className="text-lg font-medium">{wallet.label}</div>
-                      <div className="text-[#B0B8D9] text-sm">{wallet.desc}</div>
+                      <div className="text-muted-foreground text-sm">{wallet.desc}</div>
                     </div>
                   </label>
                 ))}
@@ -326,7 +326,7 @@ export default function PaymentPage() {
           )}
 
           {payment === "bank" && (
-            <div className="border border-[#232B5D] bg-[#10194A] p-6">
+            <div className="border border-surface bg-surface-deep p-6">
               <h3 className="text-xl font-bold mb-4">Elektroninė bankininkystė</h3>
               <div className="space-y-3">
                 {[
@@ -335,8 +335,8 @@ export default function PaymentPage() {
                   { id: "luminor", label: "Luminor", desc: "Atsiskaitykite per Luminor" },
                 ].map(bank => (
                   <label key={bank.id} className={cn(
-                    "flex items-center border border-[#232B5D] bg-transparent px-4 py-3 cursor-pointer transition-colors",
-                    selectedWallet === bank.id ? "border-white bg-[#070F40]" : ""
+                    "flex items-center border border-surface bg-transparent px-4 py-3 cursor-pointer transition-colors",
+                    selectedWallet === bank.id ? "border-white bg-surface-deep" : ""
                   )}>
                     <input
                       type="radio"
@@ -344,11 +344,11 @@ export default function PaymentPage() {
                       value={bank.id}
                       checked={selectedWallet === bank.id}
                       onChange={() => setSelectedWallet(bank.id)}
-                      className="form-radio accent-main-orange mr-3 w-4 h-4"
+                      className="form-radio accent-primary mr-3 w-4 h-4"
                     />
                     <div>
                       <div className="text-lg font-medium">{bank.label}</div>
-                      <div className="text-[#B0B8D9] text-sm">{bank.desc}</div>
+                      <div className="text-muted-foreground text-sm">{bank.desc}</div>
                     </div>
                   </label>
                 ))}
@@ -360,7 +360,7 @@ export default function PaymentPage() {
           )}
         </Card>
         {/* Order summary */}
-        <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
+        <Card className="bg-surface-deep border border-surface p-8 flex flex-col gap-6">
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-block w-3 h-3 rounded-full bg-white" />
                     <span className="text-white font-medium">Liko laiko:</span>
@@ -368,13 +368,13 @@ export default function PaymentPage() {
           </div>
           <div>
             <div className="text-lg font-bold mb-2">{team1?.team_name} – {team2?.team_name}</div>
-            <div className="text-[#B0B8D9] text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
-            <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
+            <div className="text-muted-foreground text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
+            <div className="text-muted-foreground text-sm mb-1">{event.location}</div>
           </div>
           <div>
             <div className="text-lg font-bold mb-2">Užsakymo santrauka</div>
             {selectedTiers.length === 0 ? (
-              <div className="text-[#B0B8D9]">Bilietų nepasirinkta.</div>
+              <div className="text-muted-foreground">Bilietų nepasirinkta.</div>
             ) : (
               <ul className="mb-2">
                 {selectedTiers.map(tier => (

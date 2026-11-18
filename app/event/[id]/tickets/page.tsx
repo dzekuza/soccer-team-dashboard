@@ -99,16 +99,16 @@ export default function TicketsPage() {
   }
 
   if (loading) return (
-    <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-white">
+    <div className="bg-surface-deep flex items-center justify-center min-h-screen text-white">
       <div className="text-center">
         <div className="text-2xl font-bold mb-4">Kraunama...</div>
-        <div className="text-[#B0B8D9]">Gaunami renginio duomenys</div>
+        <div className="text-muted-foreground">Gaunami renginio duomenys</div>
       </div>
     </div>
   )
   
   if (error) return (
-    <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-red-500">
+    <div className="bg-surface-deep flex items-center justify-center min-h-screen text-red-500">
       <div className="text-center">
         <div className="text-2xl font-bold mb-4">Klaida</div>
         <div className="text-lg">{error}</div>
@@ -123,10 +123,10 @@ export default function TicketsPage() {
   )
   
   if (!eventData) return (
-    <div className="bg-[#070F40] flex items-center justify-center min-h-screen text-white">
+    <div className="bg-surface-deep flex items-center justify-center min-h-screen text-white">
       <div className="text-center">
         <div className="text-2xl font-bold mb-4">Renginys nerastas</div>
-        <div className="text-[#B0B8D9]">Renginys, kurio ieškote, neegzistuoja</div>
+        <div className="text-muted-foreground">Renginys, kurio ieškote, neegzistuoja</div>
       </div>
     </div>
   )
@@ -134,13 +134,13 @@ export default function TicketsPage() {
   const { event, team1, team2 } = eventData
 
   return (
-    <div className="bg-[#070F40] min-h-screen text-white">
+    <div className="bg-surface-deep min-h-screen text-white">
       {/* Stepper */}
       <div className="flex w-full max-w-5xl mx-auto pt-10 pb-8">
         {["1. BILETO PASIRINKIMAS", "2. APMOKĖJIMAS", "3. BILIETAS"].map((label, idx) => (
           <div key={label} className={cn(
             "flex-1 flex flex-col items-center justify-center text-center",
-            step === idx + 1 ? "text-white font-bold" : "text-[#B0B8D9] font-medium"
+            step === idx + 1 ? "text-white font-bold" : "text-muted-foreground font-medium"
           )}>
             <div className={cn(
               "w-full px-2 py-3 text-lg uppercase border-b-4",
@@ -153,17 +153,17 @@ export default function TicketsPage() {
       {step === 1 ? (
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Ticket selection */}
-          <Card className="bg-[#070F40] border border-[#232B5D] col-span-2 p-8">
+          <Card className="bg-surface-deep border border-surface col-span-2 p-8">
             <h2 className="text-2xl font-bold mb-8">Pasirinkite bilietus</h2>
             {event.pricingTiers && event.pricingTiers.length > 0 ? (
-              <div className="divide-y divide-[#232B5D]">
+              <div className="divide-y divide-surface">
                 {event.pricingTiers.map(tier => (
                   <div key={tier.id} className="flex flex-col md:flex-row md:items-center py-6 gap-6 md:gap-0">
                     <div className="flex-1">
                       <div className="text-lg font-bold mb-1">{tier.name}</div>
-                      <div className="text-[#B0B8D9] text-sm mb-2">{tier.description}</div>
+                      <div className="text-muted-foreground text-sm mb-2">{tier.description}</div>
                       <div className="text-2xl font-bold mb-1">{tier.price === 0 ? "Nemokamas" : `€ ${tier.price.toFixed(2)}`}</div>
-                      <div className="text-[#B0B8D9] text-xs">Liko {tier.quantity}</div>
+                      <div className="text-muted-foreground text-xs">Liko {tier.quantity}</div>
                     </div>
                     <div className="flex items-center gap-4 mt-4 md:mt-0">
                       <Button variant="ghost" className="text-2xl px-3 py-1" onClick={() => handleQuantityChange(tier.id, -1, tier.quantity)}>-</Button>
@@ -175,21 +175,21 @@ export default function TicketsPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <div className="text-[#B0B8D9] text-lg">Šiam renginiui kainų lygių nėra</div>
+                <div className="text-muted-foreground text-lg">Šiam renginiui kainų lygių nėra</div>
               </div>
             )}
           </Card>
           {/* Order summary */}
-          <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
+          <Card className="bg-surface-deep border border-surface p-8 flex flex-col gap-6">
             <div>
               <div className="text-lg font-bold mb-2">{team1?.team_name || 'Komanda 1'} – {team2?.team_name || 'Komanda 2'}</div>
-              <div className="text-[#B0B8D9] text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
-              <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
+              <div className="text-muted-foreground text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
+              <div className="text-muted-foreground text-sm mb-1">{event.location}</div>
             </div>
             <div>
               <div className="text-lg font-bold mb-2">Užsakymo santrauka</div>
               {selectedTiers.length === 0 ? (
-                <div className="text-[#B0B8D9]">Bilietų nepasirinkta.</div>
+                <div className="text-muted-foreground">Bilietų nepasirinkta.</div>
               ) : (
                 <ul className="mb-2">
                   {selectedTiers.map(tier => (
@@ -220,20 +220,20 @@ export default function TicketsPage() {
       ) : step === 2 ? (
         <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
           {/* Payment form */}
-          <Card className="bg-[#070F40] border border-[#232B5D] col-span-2 p-8">
+          <Card className="bg-surface-deep border border-surface col-span-2 p-8">
             <h2 className="text-2xl font-bold mb-8">Where to send the tickets</h2>
             <div className="flex flex-col md:flex-row gap-6 mb-8">
               <input
                 type="email"
                 placeholder="Email address *"
-                className="flex-1 bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                className="flex-1 bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
               <input
                 type="email"
                 placeholder="Confirm address *"
-                className="flex-1 bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                className="flex-1 bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                 value={confirmEmail}
                 onChange={e => setConfirmEmail(e.target.value)}
               />
@@ -242,8 +242,8 @@ export default function TicketsPage() {
             <div className="flex flex-col gap-4">
               {paymentMethods.map(method => (
                 <label key={method.id} className={cn(
-                  "flex items-center border border-[#232B5D] bg-transparent px-6 py-5 cursor-pointer transition-colors",
-                  payment === method.id ? "border-white bg-[#10194A]" : ""
+                  "flex items-center border border-surface bg-transparent px-6 py-5 cursor-pointer transition-colors",
+                  payment === method.id ? "border-white bg-surface-deep" : ""
                 )}>
                   <input
                     type="radio"
@@ -251,46 +251,46 @@ export default function TicketsPage() {
                     value={method.id}
                     checked={payment === method.id}
                     onChange={() => setPayment(method.id)}
-                    className="form-radio accent-main-orange mr-4 w-5 h-5"
+                    className="form-radio accent-primary mr-4 w-5 h-5"
                   />
                   <div>
                     <div className="text-lg font-bold mb-1">{method.label}</div>
-                    <div className="text-[#B0B8D9] text-sm">{method.desc}</div>
+                    <div className="text-muted-foreground text-sm">{method.desc}</div>
                   </div>
                 </label>
               ))}
             </div>
             {payment === "card" && (
-              <div className="mt-6 border border-[#232B5D] bg-[#10194A] p-6">
+              <div className="mt-6 border border-surface bg-surface-deep p-6">
                 <h3 className="text-xl font-bold mb-4">Įveskite kortelės duomenis</h3>
                 <div className="space-y-4">
                   <input
                     type="text"
                     placeholder="Card number"
-                    className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    className="w-full bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                   />
                   <div className="grid grid-cols-2 gap-4">
                     <input
                       type="text"
                       placeholder="MM/YY"
-                      className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                      className="bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                     />
                     <input
                       type="text"
                       placeholder="CVC"
-                      className="bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                      className="bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                     />
                   </div>
                   <input
                     type="text"
                     placeholder="Cardholder name"
-                    className="w-full bg-transparent border border-[#232B5D] rounded-none px-4 py-3 text-white placeholder-[#B0B8D9] text-lg outline-none"
+                    className="w-full bg-transparent border border-surface rounded-none px-4 py-3 text-white placeholder-muted-foreground text-lg outline-none"
                   />
                 </div>
               </div>
             )}
             {payment === "wallet" && (
-              <div className="mt-6 border border-[#232B5D] bg-[#10194A] p-6">
+              <div className="mt-6 border border-surface bg-surface-deep p-6">
                 <h3 className="text-xl font-bold mb-4">Pasirinkite skaitmeninę piniginę</h3>
                 <div className="space-y-3">
                   {[
@@ -298,16 +298,16 @@ export default function TicketsPage() {
                     { id: "google-pay", label: "Google Pay", desc: "Apmokėkite naudodami Google Pay" },
                     { id: "paypal", label: "PayPal", desc: "Apmokėkite naudodami PayPal" },
                   ].map(wallet => (
-                    <label key={wallet.id} className="flex items-center border border-[#232B5D] bg-transparent px-4 py-3 cursor-pointer transition-colors">
+                    <label key={wallet.id} className="flex items-center border border-surface bg-transparent px-4 py-3 cursor-pointer transition-colors">
                       <input
                         type="radio"
                         name="wallet"
                         value={wallet.id}
-                        className="form-radio accent-main-orange mr-3 w-4 h-4"
+                        className="form-radio accent-primary mr-3 w-4 h-4"
                       />
                       <div>
                         <div className="text-lg font-medium">{wallet.label}</div>
-                        <div className="text-[#B0B8D9] text-sm">{wallet.desc}</div>
+                        <div className="text-muted-foreground text-sm">{wallet.desc}</div>
                       </div>
                     </label>
                   ))}
@@ -316,7 +316,7 @@ export default function TicketsPage() {
             )}
           </Card>
           {/* Order summary */}
-          <Card className="bg-[#070F40] border border-[#232B5D] p-8 flex flex-col gap-6">
+          <Card className="bg-surface-deep border border-surface p-8 flex flex-col gap-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="inline-block w-3 h-3 rounded-full bg-white" />
               <span className="text-white font-medium">Time remaining:</span>
@@ -324,13 +324,13 @@ export default function TicketsPage() {
             </div>
             <div>
               <div className="text-lg font-bold mb-2">{team1?.team_name || 'Team 1'} – {team2?.team_name || 'Team 2'}</div>
-              <div className="text-[#B0B8D9] text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
-              <div className="text-[#B0B8D9] text-sm mb-1">{event.location}</div>
+              <div className="text-muted-foreground text-sm mb-1">{event.date} {event.time && <span className="ml-2">{event.time}</span>}</div>
+              <div className="text-muted-foreground text-sm mb-1">{event.location}</div>
             </div>
             <div>
               <div className="text-lg font-bold mb-2">Order Summary</div>
               {selectedTiers.length === 0 ? (
-                <div className="text-[#B0B8D9]">No tickets selected.</div>
+                <div className="text-muted-foreground">No tickets selected.</div>
               ) : (
                 <ul className="mb-2">
                   {selectedTiers.map(tier => (

@@ -91,7 +91,7 @@ export default function PlayersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>
@@ -101,7 +101,7 @@ export default function PlayersPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Klaida: {error}</div>
         </div>
@@ -112,12 +112,12 @@ export default function PlayersPage() {
   const playerGroups = groupPlayersByPosition(filteredPlayers)
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="players" />
       
       {/* Main Content */}
       <div className="w-full">
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Žaidėjai</h1>
         </div>
         
@@ -139,7 +139,7 @@ export default function PlayersPage() {
               placeholder="Ieškoti žaidėjų..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 bg-[#232C62] border border-[#232C62] rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white"
+              className="w-full px-4 py-2 bg-surface border border-surface rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-white"
             />
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function PlayersPage() {
           {playerGroups.map((group) => (
             <div key={group.title}>
               {/* Position Heading */}
-              <div className="px-4 md:px-16 py-4 md:py-8 border-t border-b border-[#232C62]">
+              <div className="px-4 md:px-16 py-4 md:py-8 border-t border-b border-surface">
                 <h2 className="text-white text-2xl md:text-3xl font-bold">
                   {group.title}
                 </h2>

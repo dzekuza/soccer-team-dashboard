@@ -9,6 +9,11 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Design tokens and fonts
+
+- Replaced ~665 arbitrary hex classes with semantic tokens; removed colliding `.text-muted`/`.text-accent`/`.bg-accent`/`.bg-brand` utilities and `main-orange`. See ADR-0004.
+- DM Sans now loads via `next/font/google` (latin-ext for Lithuanian); removed Inter, `@font-face` and `public/fonts/`.
+
 ## 2026-11-18 — Pending role
 
 - New signups default to `pending`; staff ticket updates limited to validation fields (migration `…17`).

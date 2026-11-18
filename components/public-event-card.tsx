@@ -33,7 +33,7 @@ export function PublicEventCard({ event, team1, team2 }: PublicEventCardProps) {
   return (
     <Link 
       href={`/event/${event.id}`}
-      className="bg-[#0A165B] border border-[#232C62] hover:border-[#F15601] transition-colors duration-200 group"
+      className="bg-background border border-surface hover:border-primary transition-colors duration-200 group"
     >
       {/* Event Image */}
       <div className="relative aspect-video">
@@ -44,7 +44,7 @@ export function PublicEventCard({ event, team1, team2 }: PublicEventCardProps) {
           className="object-cover"
         />
         {/* Date Overlay */}
-        <div className="absolute top-4 left-4 bg-[#F15601] text-white px-3 py-1 rounded">
+        <div className="absolute top-4 left-4 bg-primary text-white px-3 py-1 rounded">
           <div className="text-sm font-bold">{dateInfo.day}</div>
           <div className="text-xs">{dateInfo.month}</div>
         </div>

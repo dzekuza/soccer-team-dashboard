@@ -96,7 +96,7 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
 
   if (loading) {
     return (
-      <div className="h-[146px] bg-[#0a165b] p-4">
+      <div className="h-[146px] bg-background p-4">
         <div className="flex items-center justify-between mb-4">
           <Skeleton className="h-6 w-32 bg-gray-600" />
           <div className="flex gap-2">
@@ -134,7 +134,7 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
 
   if (error) {
     return (
-      <div className="h-[146px] bg-[#0a165b] flex items-center justify-center">
+      <div className="h-[146px] bg-background flex items-center justify-center">
         <div className="text-white">Klaida: {error}</div>
       </div>
     )
@@ -142,7 +142,7 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
 
   if (matches.length === 0) {
     return (
-      <div className="h-[146px] bg-[#0a165b] flex items-center justify-center">
+      <div className="h-[146px] bg-background flex items-center justify-center">
         <div className="text-white">Nėra artimiausių rungtynių</div>
       </div>
     )
@@ -159,7 +159,7 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
             <Link 
               key={match.id || index} 
               href={`/fixtures/${match.id}`}
-              className="flex-shrink-0 w-[300px] md:w-[350px] h-[146px] bg-[#0a165b] border-r border-[rgba(95,95,113,0.25)] relative hover:bg-[#0a2065] transition-colors cursor-pointer"
+              className="flex-shrink-0 w-[300px] md:w-[350px] h-[146px] bg-background border-r border-[rgba(95,95,113,0.25)] relative hover:bg-surface-raised transition-colors cursor-pointer"
             >
             {/* Teams and Score Row */}
             <div className="absolute top-[25px] left-0 right-0 flex items-center justify-between px-6">

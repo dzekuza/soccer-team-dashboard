@@ -17,8 +17,8 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep, onStepChan
             type="button"
             className={`relative z-10 w-12 h-12 flex items-center justify-center rounded-full border-2 transition-colors font-semibold text-lg
               ${idx === currentStep
-                ? 'bg-[#F15601] border-[#F15601] text-white'
-                : 'bg-[#0A165B] border-[#0A165B] text-[#B6C1E2]'
+                ? 'bg-primary border-primary text-white'
+                : 'bg-background border-background text-muted-foreground'
               }
             `}
             onClick={() => onStepChange(idx)}
@@ -27,7 +27,7 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentStep, onStepChan
           >
             {idx + 1}
           </button>
-          <span className={`mt-2 text-xs sm:text-sm text-center ${idx === currentStep ? 'text-white font-bold' : 'text-[#B6C1E2]'}`}>{label}</span>
+          <span className={`mt-2 text-xs sm:text-sm text-center ${idx === currentStep ? 'text-white font-bold' : 'text-muted-foreground'}`}>{label}</span>
         </div>
       ))}
     </div>

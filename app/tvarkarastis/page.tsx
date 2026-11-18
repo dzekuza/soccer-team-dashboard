@@ -179,7 +179,7 @@ export default function SchedulePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>
@@ -189,7 +189,7 @@ export default function SchedulePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Klaida: {error}</div>
         </div>
@@ -200,12 +200,12 @@ export default function SchedulePage() {
   const currentFixtures = getCurrentFixtures()
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="tvarkarastis" />
       
       {/* Main Content */}
       <div className="w-full">
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Tvarkaraštis</h1>
         </div>
         
@@ -226,13 +226,13 @@ export default function SchedulePage() {
                 <Link 
                   key={fixture.id}
                   href={`/fixtures/${fixture.id}`}
-                  className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-16 py-4 border-b border-[rgba(95,95,113,0.39)] bg-[#0a165b] hover:bg-[#0a2065] transition-colors cursor-pointer"
+                  className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-16 py-4 border-b border-[rgba(95,95,113,0.39)] bg-background hover:bg-surface-raised transition-colors cursor-pointer"
                 >
                   {/* Date and Time */}
                   <div className="text-white text-[14px] md:text-[16px] font-medium w-full md:w-[200px] mb-2 md:mb-0">
                     <div>{formatDate(fixture.date)}</div>
                     {fixture.time && (
-                      <div className="text-[#F15601] font-semibold">{formatTime(fixture.time)}</div>
+                      <div className="text-primary font-semibold">{formatTime(fixture.time)}</div>
                     )}
                   </div>
                   
@@ -254,7 +254,7 @@ export default function SchedulePage() {
                     </div>
                     
                     {/* VS */}
-                    <div className="text-white text-[16px] md:text-[20px] font-bold mx-2 md:mx-4 flex-shrink-0 text-[#F15601]">
+                    <div className="text-white text-[16px] md:text-[20px] font-bold mx-2 md:mx-4 flex-shrink-0 text-primary">
                       VS
                     </div>
                     
@@ -282,7 +282,7 @@ export default function SchedulePage() {
                     {fixture.hasEvent && fixture.eventId && (
                       <Link 
                         href={`/event/${fixture.eventId}`}
-                        className="bg-[#F15601] hover:bg-[#E04A00] text-white text-[12px] md:text-[14px] font-semibold px-3 py-1.5 rounded transition-colors whitespace-nowrap"
+                        className="bg-primary hover:bg-primary-strong text-white text-[12px] md:text-[14px] font-semibold px-3 py-1.5 rounded transition-colors whitespace-nowrap"
                       >
                         Bilietai
                       </Link>

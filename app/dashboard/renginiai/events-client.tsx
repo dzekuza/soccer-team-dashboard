@@ -685,7 +685,7 @@ export default function EventsClient({
               return true
             })
             .map((d) => (
-            <div key={d.id} className="border p-4 bg-[#0A165B] text-white">
+            <div key={d.id} className="border p-4 bg-background text-white">
               <div className="font-bold mb-1">{d.title || 'Juodraštis'}</div>
               <div className="text-white/70 text-sm mb-2">{d.date || ''} {d.time || ''}</div>
               <div className="text-white/70 text-sm mb-4">{d.team1_name || ''} vs {d.team2_name || ''}</div>
@@ -697,7 +697,7 @@ export default function EventsClient({
 
       {/* Event Preview Modal */}
       <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
-        <DialogContent className="max-w-2xl bg-[#0A165B] border-[#0A2065]">
+        <DialogContent className="max-w-2xl bg-background border-surface-raised">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold text-white">
               Renginio peržiūra
@@ -724,7 +724,7 @@ export default function EventsClient({
                     </div>
                   </div>
                 </div>
-                <Badge variant="secondary" className="bg-[#F15601] text-white">
+                <Badge variant="secondary" className="bg-primary text-white">
                   {selectedEvent.pricingTiers?.length || 0} kainų lygiai
                 </Badge>
               </div>
@@ -743,13 +743,13 @@ export default function EventsClient({
                   <h4 className="font-medium text-white mb-3">Kainų lygiai</h4>
                   <div className="space-y-2">
                     {selectedEvent.pricingTiers.map((tier) => (
-                      <div key={tier.id} className="flex items-center justify-between p-3 bg-[#0A2065] rounded-lg">
+                      <div key={tier.id} className="flex items-center justify-between p-3 bg-surface-raised rounded-lg">
                         <div>
                           <span className="font-medium text-white">{tier.name}</span>
                           <p className="text-sm text-gray-300">Kiekis: {tier.quantity}</p>
                         </div>
                         <div className="text-right">
-                          <span className="font-bold text-[#F15601]">{formatCurrency(tier.price)}</span>
+                          <span className="font-bold text-primary">{formatCurrency(tier.price)}</span>
                         </div>
                       </div>
                     ))}
@@ -758,7 +758,7 @@ export default function EventsClient({
               )}
 
               {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-[#0A2065]">
+              <div className="flex gap-3 pt-4 border-t border-surface-raised">
                 <Button 
                   variant="outline" 
                   className="flex-1 border-gray-600 text-white hover:bg-gray-700"

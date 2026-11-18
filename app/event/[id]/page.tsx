@@ -136,19 +136,19 @@ export default function EventPage() {
 
   if (loading)
     return (
-      <div className="bg-[#0A165B] flex items-center justify-center min-h-screen text-white">
+      <div className="bg-background flex items-center justify-center min-h-screen text-white">
         Kraunama...
       </div>
     )
   if (error)
     return (
-      <div className="bg-[#0A165B] flex items-center justify-center min-h-screen text-red-500">
+      <div className="bg-background flex items-center justify-center min-h-screen text-red-500">
         {error}
       </div>
     )
   if (!eventData)
     return (
-      <div className="bg-[#0A165B] flex items-center justify-center min-h-screen text-white">
+      <div className="bg-background flex items-center justify-center min-h-screen text-white">
         Renginys nerastas.
       </div>
     )
@@ -158,7 +158,7 @@ export default function EventPage() {
   const hasTicketsInCart = cart.some(item => item.eventId === event.id && item.quantity > 0)
 
   return (
-    <div className="bg-[#0A165B] text-white min-h-screen">
+    <div className="bg-background text-white min-h-screen">
       <PublicNavigation currentPage="events" />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
 
@@ -219,7 +219,7 @@ export default function EventPage() {
           
           {/* Left Column - Event Information */}
           <div>
-            <div className="bg-[#0A165B] border-l border-t border-b border-[#232C62] p-6 h-full">
+            <div className="bg-background border-l border-t border-b border-surface p-6 h-full">
               <h2 className="text-white text-xl font-bold mb-4">APIE RENGINĮ</h2>
               <p className="text-gray-300 leading-relaxed mb-6">
                 {event.description || `Svarbus mačas tarp FK "Banga" ir "${team2?.team_name || 'Kauno Žalgiris'}" ${event.location} stadione ${dateInfo.day} ${dateInfo.month}. Namų komanda sieks atsigauti po nesėkmių ir stiprinti savo poziciją lygos lentelėje, įrodant savo stiprybę prieš vieną iš čempionato lyderių ir atkurti gerbėjų pasitikėjimą.`}
@@ -238,7 +238,7 @@ export default function EventPage() {
 
           {/* Right Column - Ticket Selection */}
           <div>
-            <div ref={ticketsSectionRef} className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full">
+            <div ref={ticketsSectionRef} className="bg-background border-l border-r border-t border-b border-surface p-6 h-full">
               <h2 className="text-white text-xl font-bold mb-6">BILIETAI</h2>
               
               {/* Ticket Types */}
@@ -250,7 +250,7 @@ export default function EventPage() {
                   const remaining = Math.max(0, totalQuantity - soldQuantity)
                   
                   return (
-                    <div key={tier.id} className="border border-[#232C62] p-4">
+                    <div key={tier.id} className="border border-surface p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <h3 className="text-white font-semibold text-lg">{tier.name}</h3>
@@ -271,7 +271,7 @@ export default function EventPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleQuantityChange(tier.id, Math.max(0, quantity - 1))}
-                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10"
+                            className="w-8 h-8 p-0 border-surface text-white hover:bg-white/10"
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
@@ -282,7 +282,7 @@ export default function EventPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleQuantityChange(tier.id, quantity + 1)}
-                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10"
+                            className="w-8 h-8 p-0 border-surface text-white hover:bg-white/10"
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
@@ -297,7 +297,7 @@ export default function EventPage() {
               </div>
 
               {/* Event Details Summary */}
-              <div className="border-t border-[#232C62] pt-4 mb-6">
+              <div className="border-t border-surface pt-4 mb-6">
                 <div className="text-center text-gray-300 space-y-1">
                   <div className="font-semibold">{team1?.team_name || 'FK „Banga"'} - {team2?.team_name || '„K. Žalgiris"'}</div>
                   <div>{dateInfo.year} m. {dateInfo.month} {dateInfo.day} d. ({dateInfo.dayOfWeek}), {event.time} EEST</div>
@@ -306,7 +306,7 @@ export default function EventPage() {
               </div>
 
               {/* Order Summary */}
-              <div className="border-t border-[#232C62] pt-4 mb-6">
+              <div className="border-t border-surface pt-4 mb-6">
                 <h3 className="text-white font-semibold mb-3">Užsakymo suvestinė</h3>
                 <div className="space-y-2">
                   {event.pricingTiers?.map((tier) => {
@@ -321,7 +321,7 @@ export default function EventPage() {
                     )
                   })}
                 </div>
-                <div className="border-t border-[#232C62] pt-2 mt-3">
+                <div className="border-t border-surface pt-2 mt-3">
                   <div className="flex justify-between text-white font-bold text-lg">
                     <span>SUMA</span>
                     <span>€{getTotalPrice().toFixed(2)}</span>
@@ -346,7 +346,7 @@ export default function EventPage() {
       </div>
 
       {/* Fixed Add to Cart Button - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0A165B] border-t border-[#232C62] p-4 lg:hidden z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-surface p-4 lg:hidden z-50">
         <Button
           onClick={() => {
             if (hasTicketsInCart) {

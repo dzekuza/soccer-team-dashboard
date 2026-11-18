@@ -153,7 +153,7 @@ export default function MarketingPage() {
         </p>
       </div>
 
-      <Card className="bg-[#0A165B]/50 border border-gray-700">
+      <Card className="bg-background/50 border border-gray-700">
         <CardHeader>
           <CardTitle className="text-white">El. laiško kampanija</CardTitle>
           <CardDescription className="text-gray-300">
@@ -181,10 +181,10 @@ export default function MarketingPage() {
                 </Label>
               </div>
 
-              <div className="hidden md:block bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg overflow-x-auto">
+              <div className="hidden md:block bg-background/50 border border-gray-700 rounded-lg shadow-lg overflow-x-auto">
                 <Table>
                   <TableHeader>
-                    <TableRow className="border-gray-700 hover:bg-[#0A2065]/50">
+                    <TableRow className="border-gray-700 hover:bg-surface-raised/50">
                       <TableHead className="text-gray-300 font-medium">Pasirinkti</TableHead>
                       <TableHead className="text-gray-300 font-medium">Vardas</TableHead>
                       <TableHead className="text-gray-300 font-medium">El. paštas</TableHead>
@@ -192,7 +192,7 @@ export default function MarketingPage() {
                   </TableHeader>
                   <TableBody>
                     {fans.map((fan, index) => (
-                      <TableRow key={`${fan.email}-${index}`} className="border-gray-700 hover:bg-[#0A2065]/30 transition-colors"> 
+                      <TableRow key={`${fan.email}-${index}`} className="border-gray-700 hover:bg-surface-raised/30 transition-colors"> 
                         <TableCell>
                           <Checkbox
                             checked={selectedFans.includes(fan.email)}
@@ -217,12 +217,12 @@ export default function MarketingPage() {
                 <div className="space-y-2">
                   <Label className="text-white">Naudoti šabloną</Label>
                   <Select onValueChange={handleTemplateSelect}>
-                    <SelectTrigger className="bg-white/10 border-gray-600 text-white focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1">
+                    <SelectTrigger className="bg-white/10 border-gray-600 text-white focus:border-primary focus:ring-primary focus:ring-1">
                       <SelectValue placeholder="Pasirinkite seną kampaniją..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#0A165B] border-gray-600">
+                    <SelectContent className="bg-background border-gray-600">
                       {campaigns.map((c) => (
-                        <SelectItem key={c.id} value={c.id} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
+                        <SelectItem key={c.id} value={c.id} className="text-white hover:bg-surface-raised focus:bg-surface-raised">
                           {c.subject} (Išsiųsta: {new Date(c.created_at).toLocaleDateString()})
                         </SelectItem>
                       ))}
@@ -235,17 +235,17 @@ export default function MarketingPage() {
                         <span className="w-full border-t border-gray-600" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-[#0A165B] px-2 text-gray-300">Arba</span>
+                        <span className="bg-background px-2 text-gray-300">Arba</span>
                     </div>
                 </div>
 
                 <RadioGroup value={emailFormat} onValueChange={(value: "html" | "text") => setEmailFormat(value)} className="flex space-x-4 mb-4">
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="html" id="format-html" className="text-[#F15601]" />
+                    <RadioGroupItem value="html" id="format-html" className="text-primary" />
                     <Label htmlFor="format-html" className="text-white">HTML</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="text" id="format-text" className="text-[#F15601]" />
+                    <RadioGroupItem value="text" id="format-text" className="text-primary" />
                     <Label htmlFor="format-text" className="text-white">Paprastas tekstas</Label>
                   </div>
                 </RadioGroup>
@@ -256,7 +256,7 @@ export default function MarketingPage() {
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="Jūsų laiško antraštė"
-                    className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+                    className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-primary focus:ring-primary focus:ring-1"
                   />
                 </div>
                 <div>
@@ -267,7 +267,7 @@ export default function MarketingPage() {
                     onChange={(e) => setBody(e.target.value)}
                     placeholder={emailFormat === 'html' ? "<p>Jūsų HTML turinys čia...</p>" : "Jūsų paprastas tekstas čia..."}
                     rows={15}
-                    className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+                    className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-primary focus:ring-primary focus:ring-1"
                   />
                 </div>
               </div>
@@ -285,11 +285,11 @@ export default function MarketingPage() {
                   <strong className="text-white">Turinio peržiūra:</strong>
                   {emailFormat === 'html' ? (
                     <div
-                      className="border border-gray-600 rounded-md p-4 mt-2 bg-[#0A2065] max-h-96 overflow-auto text-white"
+                      className="border border-gray-600 rounded-md p-4 mt-2 bg-surface-raised max-h-96 overflow-auto text-white"
                       dangerouslySetInnerHTML={{ __html: body }}
                     />
                   ) : (
-                    <pre className="border border-gray-600 rounded-md p-4 mt-2 bg-[#0A2065] max-h-96 overflow-auto whitespace-pre-wrap text-white">{body}</pre>
+                    <pre className="border border-gray-600 rounded-md p-4 mt-2 bg-surface-raised max-h-96 overflow-auto whitespace-pre-wrap text-white">{body}</pre>
                   )}
                 </div>
               </div>
@@ -297,15 +297,15 @@ export default function MarketingPage() {
           )}
 
           <div className="mt-6 flex flex-col-reverse sm:flex-row justify-between gap-2">
-            <Button variant="outline" onClick={handlePrevStep} disabled={step === 0} className="w-full sm:w-auto border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]">
+            <Button variant="outline" onClick={handlePrevStep} disabled={step === 0} className="w-full sm:w-auto border-gray-600 text-gray-300 hover:text-white hover:bg-surface-raised">
               Atgal
             </Button>
             {step < steps.length - 1 ? (
-              <Button onClick={handleNextStep} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white">
+              <Button onClick={handleNextStep} className="w-full sm:w-auto bg-primary hover:bg-primary-strong text-white">
                 Toliau
               </Button>
             ) : (
-              <Button onClick={handleSendEmail} disabled={isLoading} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white">
+              <Button onClick={handleSendEmail} disabled={isLoading} className="w-full sm:w-auto bg-primary hover:bg-primary-strong text-white">
                 {isLoading ? "Siunčiama..." : "Siųsti"}
               </Button>
             )}

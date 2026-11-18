@@ -188,7 +188,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
             </SelectContent>
           </Select>
         </div>
-        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-[#F15601] hover:bg-[#E04501]">
+        <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-primary hover:bg-primary-strong">
           <Plus className="h-4 w-4 mr-2" />
           Sukurti bilietą
         </Button>
@@ -279,10 +279,10 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
             }
           }}
         >
-          <div className="bg-[#0A165B] rounded-2xl p-6 shadow-md relative max-w-md w-full">
+          <div className="bg-background rounded-2xl p-6 shadow-md relative max-w-md w-full">
             <div className="flex items-center justify-between mb-2">
-              <div className="h-4 w-24 bg-[#0A2065] rounded-full" />
-              <Badge variant="default" className="bg-[#F15601] text-white font-bold px-4 py-1 rounded-full text-xs">
+              <div className="h-4 w-24 bg-surface-raised rounded-full" />
+              <Badge variant="default" className="bg-primary text-white font-bold px-4 py-1 rounded-full text-xs">
                 {previewTicket.isValidated ? "VALID" : "VALID"}
               </Badge>
             </div>
@@ -303,10 +303,10 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
               <MapPin className="h-5 w-5" />
               <span>{previewTicket.event.location}</span>
             </div>
-            <div className="bg-[#0A2065] rounded-xl p-4 mb-4 flex justify-end">
-              <span className="text-[#F15601] text-xl font-bold">{previewTicket.tier.price} €</span>
+            <div className="bg-surface-raised rounded-xl p-4 mb-4 flex justify-end">
+              <span className="text-primary text-xl font-bold">{previewTicket.tier.price} €</span>
             </div>
-            <div className="bg-[#0A2065] rounded-xl p-4 mb-4 flex flex-col items-center">
+            <div className="bg-surface-raised rounded-xl p-4 mb-4 flex flex-col items-center">
               {isLoadingPreviewQR ? (
                 <div className="flex flex-col items-center">
                   <div className="w-48 h-48 bg-gray-200 rounded animate-pulse" />
@@ -329,11 +329,11 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
               <p className="text-xs text-gray-300 mt-2">QR Code</p>
               <p className="text-xs text-gray-400">{previewTicket.id.slice(-8)}</p>
             </div>
-            <Button onClick={() => handleDownloadPDF(previewTicket)} className="w-full bg-[#F15601] hover:bg-[#E04501] text-white rounded-lg text-lg font-semibold py-3 mt-2">
+            <Button onClick={() => handleDownloadPDF(previewTicket)} className="w-full bg-primary hover:bg-primary-strong text-white rounded-lg text-lg font-semibold py-3 mt-2">
               <Download className="h-5 w-5 mr-2" />
                                           Atsisiųsti PDF
             </Button>
-            <div className="text-center text-xs text-gray-300 border-t border-[#0A2065] pt-2 mt-4">
+            <div className="text-center text-xs text-gray-300 border-t border-surface-raised pt-2 mt-4">
               <p>Ticket ID: {previewTicket.id}</p>
               <p>Generated: {new Date(previewTicket.createdAt).toLocaleDateString()}</p>
             </div>
@@ -355,7 +355,7 @@ export function TicketsClient({ initialTickets }: TicketsClientProps) {
           }}
         >
           <div className="bg-white rounded-lg p-6 shadow-lg max-w-xs w-full">
-            <h2 className="text-lg font-bold mb-2 text-[#0A165B]">QR kodas</h2>
+            <h2 className="text-lg font-bold mb-2 text-background">QR kodas</h2>
             {isLoadingQR ? (
               <div className="flex flex-col items-center">
                 <div className="w-48 h-48 bg-gray-200 rounded animate-pulse" />

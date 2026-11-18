@@ -131,7 +131,7 @@ export default function ResultsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>
@@ -141,7 +141,7 @@ export default function ResultsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Klaida: {error}</div>
         </div>
@@ -152,12 +152,12 @@ export default function ResultsPage() {
   const currentResults = getCurrentResults()
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="rezultatai" />
       
       {/* Main Content */}
       <div className="w-full">
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Rezultatai</h1>
         </div>
         
@@ -178,7 +178,7 @@ export default function ResultsPage() {
                 <Link 
                   key={match.id}
                   href={`/fixtures/${match.id}`}
-                  className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-16 py-4 border-b border-[rgba(95,95,113,0.39)] bg-[#0a165b] hover:bg-[#0a2065] transition-colors cursor-pointer"
+                  className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-16 py-4 border-b border-[rgba(95,95,113,0.39)] bg-background hover:bg-surface-raised transition-colors cursor-pointer"
                 >
                   {/* Date */}
                   <div className="text-white text-[14px] md:text-[16px] font-medium w-full md:w-[150px] mb-2 md:mb-0">

@@ -116,17 +116,17 @@ export function ImageUpload({
         className={cn(
           "border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors",
           isDragActive
-            ? "border-[#F15601] bg-[#F15601]/10"
+            ? "border-primary bg-primary/10"
             : "border-gray-300 hover:border-gray-400",
           disabled && "opacity-50 cursor-not-allowed"
         )}
       >
         <input {...getInputProps()} />
         <div className="flex flex-col items-center space-y-2">
-          <Upload className={cn("h-8 w-8", isDragActive ? "text-[#F15601]" : "text-gray-400")} />
+          <Upload className={cn("h-8 w-8", isDragActive ? "text-primary" : "text-gray-400")} />
           <div className="text-sm">
             {isDragActive ? (
-              <p className="text-[#F15601] font-medium">Palikite failus čia...</p>
+              <p className="text-primary font-medium">Palikite failus čia...</p>
             ) : (
               <div>
                 <p className="font-medium">
@@ -153,7 +153,7 @@ export function ImageUpload({
           <div className="mt-4">
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
-                className="bg-[#F15601] h-2 rounded-full transition-all duration-300"
+                className="bg-primary h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

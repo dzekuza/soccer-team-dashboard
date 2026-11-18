@@ -216,7 +216,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
             <Trash2 className="h-4 w-4 mr-2" />
             Ištrinti visas
           </Button>
-          <Button onClick={() => setIsCreateOpen(true)} className="bg-[#F15601] hover:bg-[#E04501]">
+          <Button onClick={() => setIsCreateOpen(true)} className="bg-primary hover:bg-primary-strong">
             <Plus className="h-4 w-4 mr-2" />
             Sukurti prenumeratą
           </Button>
@@ -302,7 +302,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
       <div className="md:hidden space-y-4">
         {subscriptions.length > 0 ? (
           subscriptions.map((sub) => (
-            <Card key={sub.id} className="bg-[#0A165B]/50 border border-gray-700">
+            <Card key={sub.id} className="bg-background/50 border border-gray-700">
               <CardHeader>
                 <CardTitle className="text-white">{sub.purchaser_name || "Nenurodyta"}</CardTitle>
                 <CardContent className="p-0 pt-2 text-sm text-gray-300">{sub.purchaser_email}</CardContent>
@@ -317,10 +317,10 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
                   <span>{new Date(sub.valid_to).toLocaleDateString()}</span>
                 </div>
                 <div className="flex gap-2 mt-2">
-                  <Button size="sm" variant="outline" onClick={() => handleShowQR(sub)} className="border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]">
+                  <Button size="sm" variant="outline" onClick={() => handleShowQR(sub)} className="border-gray-600 text-gray-300 hover:text-white hover:bg-surface-raised">
                     <QrCode className="h-4 w-4 mr-1" /> QR
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(sub)} className="border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]">
+                  <Button size="sm" variant="outline" onClick={() => handleDownloadPDF(sub)} className="border-gray-600 text-gray-300 hover:text-white hover:bg-surface-raised">
                     <Download className="h-4 w-4 mr-1" /> PDF
                   </Button>
                 </div>
@@ -348,7 +348,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
             }
           }}
         >
-          <div className="bg-[#0A165B] p-6 rounded-2xl shadow-xl max-w-md w-full">
+          <div className="bg-background p-6 rounded-2xl shadow-xl max-w-md w-full">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Prenumeratos peržiūra</h2>
               <button 
@@ -359,7 +359,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
               </button>
             </div>
             
-            <div className="space-y-3 bg-[#0A2065] p-4 rounded-lg">
+            <div className="space-y-3 bg-surface-raised p-4 rounded-lg">
               <div className="flex justify-between items-center">
                 <span className="font-medium text-gray-300">Pirkėjas:</span>
                 <span className="text-white">{previewSub.purchaser_name}</span>
@@ -379,7 +379,7 @@ export function SubscriptionsClient({ initialSubscriptions }: SubscriptionsClien
             </div>
             
             <div className="flex flex-col items-center space-y-3 mt-4">
-              <div className="bg-[#0A2065] p-4 rounded-lg">
+              <div className="bg-surface-raised p-4 rounded-lg">
                 {isLoadingQR ? (
                   <div className="flex flex-col items-center">
                     <div className="w-48 h-48 bg-gray-600 rounded animate-pulse" />

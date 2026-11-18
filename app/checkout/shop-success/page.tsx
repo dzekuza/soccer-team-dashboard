@@ -109,9 +109,9 @@ function ShopCheckoutSuccessContent() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0A165B]">
+    <div className="flex items-center justify-center min-h-screen bg-background">
       <div className="max-w-md w-full mx-auto p-6">
-        <div className="bg-[#0A165B]/50 border border-gray-700 rounded-lg shadow-lg p-8">
+        <div className="bg-background/50 border border-gray-700 rounded-lg shadow-lg p-8">
           <div className="text-center">
             <div className="text-green-500 text-6xl mb-4">✅</div>
             <h1 className="text-3xl font-bold mb-4 text-white">Mokėjimas sėkmingas!</h1>
@@ -122,7 +122,7 @@ function ShopCheckoutSuccessContent() {
 
           {isLoading && (
             <div className="text-center mb-6">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#F15601] mx-auto mb-2"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
               <p className="text-gray-300 text-sm">Kuriamas užsakymas...</p>
             </div>
           )}
@@ -139,35 +139,35 @@ function ShopCheckoutSuccessContent() {
                 <h2 className="font-semibold mb-4 text-white">Užsakymo informacija</h2>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <Package className="h-4 w-4 text-[#F15601]" />
+                    <Package className="h-4 w-4 text-primary" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Užsakymo numeris:</span>
                       <span className="ml-2 font-medium text-white">#{order.order_number}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Mail className="h-4 w-4 text-[#F15601]" />
+                    <Mail className="h-4 w-4 text-primary" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Klientas:</span>
                       <span className="ml-2 font-medium text-white">{order.customer_name}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <ShoppingBag className="h-4 w-4 text-[#F15601]" />
+                    <ShoppingBag className="h-4 w-4 text-primary" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Suma:</span>
                       <span className="ml-2 font-medium text-white">€{order.total_amount.toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <CheckCircle className="h-4 w-4 text-[#F15601]" />
+                    <CheckCircle className="h-4 w-4 text-primary" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Statusas:</span>
                       <span className="ml-2 font-medium text-white">Laukia apdorojimo</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Mail className="h-4 w-4 text-[#F15601]" />
+                    <Mail className="h-4 w-4 text-primary" />
                     <div className="flex-1">
                       <span className="text-gray-400 text-sm">Patvirtinimas:</span>
                       <span className="ml-2 font-medium text-white">Išsiųstas el. paštu</span>
@@ -179,7 +179,7 @@ function ShopCheckoutSuccessContent() {
           )}
 
           <div className="flex flex-col space-y-3">
-            <Button asChild className="w-full bg-[#F15601] hover:bg-[#E04501] text-white">
+            <Button asChild className="w-full bg-primary hover:bg-primary-strong text-white">
               <a href="/shop">
                 <ShoppingBag className="h-4 w-4 mr-2" />
                 Grįžti į parduotuvę

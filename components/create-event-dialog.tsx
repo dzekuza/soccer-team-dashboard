@@ -418,7 +418,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                   onDragLeave={handleDragLeave}
                   className={cn(
                     "border-2 border-dashed rounded-md p-4 text-center cursor-pointer transition-colors",
-                    isDragActive ? "border-main-orange bg-main-div-bg/70" : "border-main-border bg-main-div-bg"
+                    isDragActive ? "border-primary bg-main-div-bg/70" : "border-main-border bg-main-div-bg"
                   )}
                 >
                   <span className="block text-sm text-gray-400 mb-2">Nuvilkite paveikslėlį čia arba pasirinkite failą</span>
@@ -499,7 +499,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                 <select
                   value={clubVariant}
                   onChange={(e: ChangeEvent<HTMLSelectElement>) => setClubVariant(e.target.value as any)}
-                  className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors"
+                  className="w-full border border-main-border rounded px-3 py-2 bg-background text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none transition-colors"
                 >
                   <option value="all">Visos lygos</option>
                   <option value="banga">BANGA (TOPsport A lyga)</option>
@@ -514,7 +514,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                     <select
                       value={team1Id}
                       onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam1Id(e.target.value)}
-                      className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors appearance-none pr-10"
+                      className="w-full border border-main-border rounded px-3 py-2 bg-background text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none transition-colors appearance-none pr-10"
                     >
                       <option value="">Pasirinkite komandą</option>
                       {Array.isArray(filteredTeams) && filteredTeams.map((team: any) => (
@@ -528,7 +528,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                     </div>
                   </div>
                   {team1Id && (
-                    <div className="mt-2 flex items-center gap-2 p-2 bg-[#0A165B]/50 rounded border">
+                    <div className="mt-2 flex items-center gap-2 p-2 bg-background/50 rounded border">
                       {(() => {
                         const selectedTeam = filteredTeams.find((t: any) => t.id === team1Id);
                         return selectedTeam ? (
@@ -554,7 +554,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                     <select
                       value={team2Id}
                       onChange={(e: ChangeEvent<HTMLSelectElement>) => setTeam2Id(e.target.value)}
-                      className="w-full border border-main-border rounded px-3 py-2 bg-[#0A165B] text-white focus:border-main-orange focus:ring-2 focus:ring-main-orange focus:outline-none transition-colors appearance-none pr-10"
+                      className="w-full border border-main-border rounded px-3 py-2 bg-background text-white focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none transition-colors appearance-none pr-10"
                     >
                       <option value="">Pasirinkite komandą</option>
                       {Array.isArray(filteredTeams) && filteredTeams.map((team: any) => (
@@ -568,7 +568,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                     </div>
                   </div>
                   {team2Id && (
-                    <div className="mt-2 flex items-center gap-2 p-2 bg-[#0A165B]/50 rounded border">
+                    <div className="mt-2 flex items-center gap-2 p-2 bg-background/50 rounded border">
                       {(() => {
                         const selectedTeam = filteredTeams.find((t: any) => t.id === team2Id);
                         return selectedTeam ? (

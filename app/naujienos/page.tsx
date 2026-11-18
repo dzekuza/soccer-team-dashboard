@@ -64,7 +64,7 @@ export default function PostsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>
@@ -74,7 +74,7 @@ export default function PostsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Klaida: {error}</div>
         </div>
@@ -83,14 +83,14 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="naujienos" />
       
       {/* Main Content */}
       <div className={`w-full transition-all duration-1000 ease-out ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Naujienos</h1>
         </div>
         
@@ -100,7 +100,7 @@ export default function PostsPage() {
             <Link 
               key={post.id} 
               href={`/naujienos/${post.id}`}
-              className="bg-[#0A165B] border border-[#232C62] hover:border-[#F15601] transition-colors cursor-pointer"
+              className="bg-background border border-surface hover:border-primary transition-colors cursor-pointer"
             >
               {/* Post Image */}
               <div className="relative aspect-video">
@@ -155,7 +155,7 @@ export default function PostsPage() {
                       {post.author}
                     </span>
                   )}
-                  <span className="text-[#F15601] text-sm">
+                  <span className="text-primary text-sm">
                     Skaityti →
                   </span>
                 </div>

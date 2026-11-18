@@ -164,12 +164,12 @@ export default function CheckoutPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0A165B] text-white flex flex-col">
+        <div className="min-h-screen bg-background text-white flex flex-col">
             <PublicNavigation currentPage="tickets" />
             
             {/* Main Content */}
             <div className="w-full flex flex-col flex-1">
-                <div className="text-center py-8 border-b border-[#232C62]">
+                <div className="text-center py-8 border-b border-surface">
                     <h1 className="text-3xl md:text-4xl font-bold text-white">
                         {cart.some(item => item.eventId === "shop") ? "Apmokėjimas" : "Bilietų / Abonementų apmokėjimas"}
                     </h1>
@@ -177,12 +177,12 @@ export default function CheckoutPage() {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 flex-1 min-h-0">
                     {/* Form Section */}
-                    <div className="bg-[#0A165B] border-r border-[#232C62] p-6 h-full flex flex-col">
+                    <div className="bg-background border-r border-surface p-6 h-full flex flex-col">
                         <h2 className="text-xl font-semibold mb-6 text-white">Jūsų duomenys</h2>
                         <div className="space-y-6 flex-1">
                             {/* Personal Information */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-medium text-white border-b border-[#232C62] pb-2">Asmeninė informacija</h3>
+                                <h3 className="text-lg font-medium text-white border-b border-surface pb-2">Asmeninė informacija</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <Label htmlFor="name" className="text-white mb-2 block">Vardas *</Label>
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
                                             value={name} 
                                             onChange={(e) => setName(e.target.value)} 
                                             placeholder="Jonas" 
-                                            className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                            className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                         />
                                     </div>
                                     <div>
@@ -201,7 +201,7 @@ export default function CheckoutPage() {
                                             value={surname} 
                                             onChange={(e) => setSurname(e.target.value)} 
                                             placeholder="Jonaitis" 
-                                            className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                            className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                         />
                                     </div>
                                 </div>
@@ -213,7 +213,7 @@ export default function CheckoutPage() {
                                         value={email} 
                                         onChange={(e) => setEmail(e.target.value)} 
                                         placeholder="jonas.jonaitis@email.com" 
-                                        className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                        className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                     />
                                 </div>
                                 <div>
@@ -224,7 +224,7 @@ export default function CheckoutPage() {
                                         value={phone} 
                                         onChange={(e) => setPhone(e.target.value)} 
                                         placeholder="+370 600 00000" 
-                                        className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                        className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                     />
                                 </div>
                             </div>
@@ -232,7 +232,7 @@ export default function CheckoutPage() {
                             {/* Delivery Address - Only for shop items */}
                             {cart.some(item => item.eventId === "shop") && (
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-medium text-white border-b border-[#232C62] pb-2">Pristatymo adresas</h3>
+                                    <h3 className="text-lg font-medium text-white border-b border-surface pb-2">Pristatymo adresas</h3>
                                     <div>
                                         <Label htmlFor="streetAddress" className="text-white mb-2 block">Gatvės adresas *</Label>
                                         <Input 
@@ -240,7 +240,7 @@ export default function CheckoutPage() {
                                             value={streetAddress} 
                                             onChange={(e) => setStreetAddress(e.target.value)} 
                                             placeholder="Gedimino pr. 1" 
-                                            className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                            className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -251,7 +251,7 @@ export default function CheckoutPage() {
                                                 value={city} 
                                                 onChange={(e) => setCity(e.target.value)} 
                                                 placeholder="Vilnius" 
-                                                className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                                className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                             />
                                         </div>
                                         <div>
@@ -261,17 +261,17 @@ export default function CheckoutPage() {
                                                 value={postalCode} 
                                                 onChange={(e) => setPostalCode(e.target.value)} 
                                                 placeholder="01108" 
-                                                className="bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                                className="bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                             />
                                         </div>
                                     </div>
                                     <div>
                                         <Label htmlFor="country" className="text-white mb-2 block">Šalis *</Label>
                                         <Select value={country} onValueChange={setCountry}>
-                                            <SelectTrigger className="bg-[#232C62] border-[#232C62] text-white focus:border-white focus:ring-white rounded-none">
+                                            <SelectTrigger className="bg-surface border-surface text-white focus:border-white focus:ring-white rounded-none">
                                                 <SelectValue placeholder="Pasirinkite šalį" />
                                             </SelectTrigger>
-                                            <SelectContent className="bg-[#232C62] border-[#232C62] text-white">
+                                            <SelectContent className="bg-surface border-surface text-white">
                                                 <SelectItem value="LT">Lietuva</SelectItem>
                                                 <SelectItem value="LV">Latvija</SelectItem>
                                                 <SelectItem value="EE">Estija</SelectItem>
@@ -293,12 +293,12 @@ export default function CheckoutPage() {
                     </div>
                     
                     {/* Cart Section */}
-                    <div className="bg-[#0A165B] p-6 h-full flex flex-col">
+                    <div className="bg-background p-6 h-full flex flex-col">
                         <InteractiveCheckout />
                         
                         {/* Coupon Section */}
                         {cart.length > 0 && (
-                            <div className="border-t border-[#232C62] pt-4 mt-6">
+                            <div className="border-t border-surface pt-4 mt-6">
                                 <h3 className="text-white font-semibold mb-3">Kuponų kodas</h3>
                                 {!appliedCoupon ? (
                                     <div className="flex gap-2">
@@ -306,11 +306,11 @@ export default function CheckoutPage() {
                                             value={couponCode} 
                                             onChange={(e) => setCouponCode(e.target.value.toUpperCase())} 
                                             placeholder="Įveskite kuponų kodą" 
-                                            className="flex-1 bg-[#232C62] border-[#232C62] text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
+                                            className="flex-1 bg-surface border-surface text-white placeholder:text-gray-400 focus:border-white focus:ring-white rounded-none" 
                                         />
                                         <Button 
                                             onClick={handleApplyCoupon}
-                                            className="bg-[#F15601] hover:bg-[#F15601]/90 text-white rounded-none"
+                                            className="bg-primary hover:bg-primary/90 text-white rounded-none"
                                         >
                                             Pritaikyti
                                         </Button>
@@ -342,7 +342,7 @@ export default function CheckoutPage() {
 
                         {/* Order Summary */}
                         {cart.length > 0 && (
-                            <div className="border-t border-[#232C62] pt-4 mt-6">
+                            <div className="border-t border-surface pt-4 mt-6">
                                 <div className="space-y-2">
                                     <div className="flex justify-between text-gray-300">
                                         <span>Pradinė suma:</span>
@@ -354,7 +354,7 @@ export default function CheckoutPage() {
                                             <span>-€{discountAmount.toFixed(2)}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between text-white font-bold text-lg border-t border-[#232C62] pt-2">
+                                    <div className="flex justify-between text-white font-bold text-lg border-t border-surface pt-2">
                                         <span>Galutinė suma:</span>
                                         <span>€{finalAmount.toFixed(2)}</span>
                                     </div>
@@ -366,7 +366,7 @@ export default function CheckoutPage() {
                         {cart.length > 0 && (
                             <Button 
                                 size="lg" 
-                                className="w-full gap-2 mt-6 bg-[#F15601] hover:bg-[#F15601]/90 text-white font-bold py-4 px-6 rounded-none text-lg transition-colors duration-200" 
+                                className="w-full gap-2 mt-6 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-6 rounded-none text-lg transition-colors duration-200" 
                                 onClick={handleCheckout} 
                                 disabled={isLoading}
                             >

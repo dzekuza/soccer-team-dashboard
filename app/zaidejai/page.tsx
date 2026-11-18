@@ -110,7 +110,7 @@ function PlayersContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>
@@ -120,7 +120,7 @@ function PlayersContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Klaida: {error}</div>
         </div>
@@ -131,14 +131,14 @@ function PlayersContent() {
   const playerGroups = groupPlayersByPosition(filteredPlayers)
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Content */}
       <div className={`w-full transition-all duration-1000 ease-out ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Žaidėjai</h1>
         </div>
         
@@ -178,7 +178,7 @@ function PlayersContent() {
 export default function PlayersPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>

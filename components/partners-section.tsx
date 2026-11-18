@@ -44,7 +44,7 @@ const PARTNERS: Partner[] = [
 
 export function PartnersSection() {
   return (
-    <section className="w-full bg-[#0A165B]">
+    <section className="w-full bg-background">
       <div className="border border-[rgba(95,95,113,0.39)]">
         <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {PARTNERS.map((partner) => (

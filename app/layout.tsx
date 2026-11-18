@@ -1,13 +1,16 @@
 import "./globals.css"
-import { Inter as FontSans } from "next/font/google"
+import { DM_Sans as FontSans } from "next/font/google"
 import { cn } from "@/lib/utils"
 import { Providers } from "@/components/providers"
 import { CartProvider } from "@/context/cart-context"
 import { Toaster } from "@/components/ui/toaster"
 
+// Variable font: all weights from one self-hosted file. latin-ext carries
+// the Lithuanian letters (ą č ę ė į š ų ū ž).
 const fontSans = FontSans({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   variable: "--font-sans",
+  display: "swap",
 })
 
 export const metadata = {

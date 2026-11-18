@@ -108,7 +108,7 @@ export default function SubscriptionsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-white flex items-center justify-center">
         <div className="text-white text-xl">Kraunama...</div>
       </div>
     )
@@ -116,20 +116,20 @@ export default function SubscriptionsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-white flex items-center justify-center">
         <div className="text-red-500 text-xl">Klaida: {error}</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="subscriptions" />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
       
       {/* Main Content */}
       <div className="w-full pb-20 lg:pb-0">
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Abonementai</h1>
         </div>
         
@@ -137,7 +137,7 @@ export default function SubscriptionsPage() {
           
           {/* Left Column - About Subscriptions */}
           <div>
-            <div className="bg-[#0A165B] border-l border-t border-b border-[#232C62] p-6 h-full">
+            <div className="bg-background border-l border-t border-b border-surface p-6 h-full">
               <h2 className="h2-public mb-4">APIE ABONEMENTUS</h2>
               <p className="text-gray-300 leading-relaxed">
                 Svarbus abonementų pasiūlymas FK &quot;Banga&quot; gerbėjams. Su mūsų abonementais galėsite lankytis visuose namų rungtynių sezone, gauti specialius pasiūlymus ir būti pirmieji, kurie sužinos apie naujienas. Abonementai suteikia ne tik patogumą, bet ir finansinę naudą, nes kaina yra žemesnė nei atskirų bilietų suma. Pasirinkite jums tinkamiausią abonementą ir tapkite tikru FK &quot;Banga&quot; gerbėju!
@@ -147,7 +147,7 @@ export default function SubscriptionsPage() {
 
           {/* Right Column - Subscription Selection */}
           <div>
-            <div ref={subscriptionsSectionRef} className="bg-[#0A165B] border-l border-r border-t border-b border-[#232C62] p-6 h-full flex flex-col">
+            <div ref={subscriptionsSectionRef} className="bg-background border-l border-r border-t border-b border-surface p-6 h-full flex flex-col">
               <h2 className="h2-public mb-6">ABONEMENTAI</h2>
               
               {/* Subscription Tiers */}
@@ -157,7 +157,7 @@ export default function SubscriptionsPage() {
                   const remaining = tier.quantity - tier.soldQuantity
                   
                   return (
-                    <div key={tier.id} className="border border-[#232C62] p-4">
+                    <div key={tier.id} className="border border-surface p-4">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex-1">
                           <h3 className="text-white font-semibold text-lg">{tier.name}</h3>
@@ -178,7 +178,7 @@ export default function SubscriptionsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleQuantityChange(tier.id, Math.max(0, quantity - 1))}
-                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                            className="w-8 h-8 p-0 border-surface text-white hover:bg-white/10 rounded-none"
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
@@ -189,7 +189,7 @@ export default function SubscriptionsPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleQuantityChange(tier.id, quantity + 1)}
-                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                            className="w-8 h-8 p-0 border-surface text-white hover:bg-white/10 rounded-none"
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
@@ -201,7 +201,7 @@ export default function SubscriptionsPage() {
               </div>
 
               {/* Order Summary */}
-              <div className="border-t border-[#232C62] pt-4 mb-6">
+              <div className="border-t border-surface pt-4 mb-6">
                 <h3 className="text-white font-semibold mb-3">Jūsų užsakymas</h3>
                 <div className="space-y-2">
                   {subscriptionTiers.map((tier) => {
@@ -216,7 +216,7 @@ export default function SubscriptionsPage() {
                     )
                   })}
                 </div>
-                <div className="border-t border-[#232C62] pt-2 mt-3">
+                <div className="border-t border-surface pt-2 mt-3">
                   <div className="flex justify-between text-white font-bold text-lg">
                     <span>SUMA</span>
                     <span>€{getTotalPrice().toFixed(2)}</span>
@@ -241,7 +241,7 @@ export default function SubscriptionsPage() {
       </div>
 
       {/* Fixed Add to Cart Button - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0A165B] border-t border-[#232C62] p-4 lg:hidden z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-surface p-4 lg:hidden z-50">
         <Button
           onClick={() => {
             const hasSubscriptionInCart = cart.some(item => item.eventId === 'subscription' && item.quantity > 0)

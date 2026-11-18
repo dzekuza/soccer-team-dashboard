@@ -92,7 +92,7 @@ export default function StandingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
         </div>
@@ -102,7 +102,7 @@ export default function StandingsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Klaida: {error}</div>
         </div>
@@ -113,14 +113,14 @@ export default function StandingsPage() {
   const currentStandings = getCurrentStandings()
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="lentele" />
       
       {/* Main Content */}
       <div className={`w-full transition-all duration-1000 ease-out ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
       }`}>
-        <div className="text-center py-8 border-b border-[#232C62]">
+        <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Turnyrinė lentelė</h1>
         </div>
         
@@ -143,7 +143,7 @@ export default function StandingsPage() {
         {/* Responsive Table Container */}
         <div className="w-full overflow-x-auto">
           {/* Table Header */}
-          <div className="bg-[#0a2065] relative rounded-tr-[8px] border-b border-[rgba(95,95,113,0.39)] min-w-[600px]">
+          <div className="bg-surface-raised relative rounded-tr-[8px] border-b border-[rgba(95,95,113,0.39)] min-w-[600px]">
             <div className="flex items-center justify-between px-4 md:px-16 py-6">
               <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium w-[19px] text-center">Vt</div>
               <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium w-[120px] md:w-[233px]">Komanda</div>
@@ -163,7 +163,7 @@ export default function StandingsPage() {
                 <div 
                   key={row.position}
                   className={`flex items-center justify-between px-4 md:px-16 py-6 border-b border-[rgba(95,95,113,0.39)] ${
-                    row.team.name.toLowerCase().includes('banga') ? "bg-[#f15601]" : "bg-[#0a165b]"
+                    row.team.name.toLowerCase().includes('banga') ? "bg-primary" : "bg-background"
                   }`}
                 >
                   <div className="text-white text-[14px] md:text-[16px] font-medium w-[19px] text-center">{row.position}</div>

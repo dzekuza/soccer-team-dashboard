@@ -69,7 +69,7 @@ export default function SinglePostPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white">
+      <div className="min-h-screen bg-background text-white">
         <PublicNavigation currentPage="naujienos" />
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Kraunama...</div>
@@ -80,13 +80,13 @@ export default function SinglePostPage() {
 
   if (error || !post) {
     return (
-      <div className="min-h-screen bg-[#0A165B] text-white">
+      <div className="min-h-screen bg-background text-white">
         <PublicNavigation currentPage="naujienos" />
         <div className="flex flex-col items-center justify-center h-screen">
           <div className="text-white text-xl mb-4">{error || "Naujiena nerasta"}</div>
           <Link 
             href="/naujienos" 
-            className="inline-flex items-center text-white hover:text-[#F15601] transition-colors"
+            className="inline-flex items-center text-white hover:text-primary transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Grįžti į naujienas
@@ -97,15 +97,15 @@ export default function SinglePostPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="naujienos" />
       
       {/* Page Header */}
-      <div className="w-full border-b border-[#232C62]">
+      <div className="w-full border-b border-surface">
         <div className="px-4 md:px-8 lg:px-16 py-4">
           <Link 
             href="/naujienos" 
-            className="inline-flex items-center text-white hover:text-[#F15601] transition-colors mb-4"
+            className="inline-flex items-center text-white hover:text-primary transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Grįžti į naujienas
@@ -177,13 +177,13 @@ export default function SinglePostPage() {
 
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-[#232C62]">
+            <div className="mt-8 pt-8 border-t border-surface">
               <h3 className="text-lg font-semibold text-white mb-4">Žymės:</h3>
               <div className="flex flex-wrap gap-2">
                 {post.tags.map((tag, index) => (
                   <span 
                     key={index}
-                    className="bg-[#232C62] text-white px-3 py-1 rounded-full text-sm"
+                    className="bg-surface text-white px-3 py-1 rounded-full text-sm"
                   >
                     {tag}
                   </span>
@@ -194,12 +194,12 @@ export default function SinglePostPage() {
 
           {/* Source Link */}
           {post.url && (
-            <div className="mt-8 pt-8 border-t border-[#232C62]">
+            <div className="mt-8 pt-8 border-t border-surface">
               <a 
                 href={post.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center text-[#F15601] hover:text-[#F15601]/80 transition-colors"
+                className="inline-flex items-center text-primary hover:text-primary/80 transition-colors"
               >
                 Skaityti originalą →
               </a>

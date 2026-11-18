@@ -10,6 +10,32 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0004 — Palette and font tokenised; DM Sans via next/font
+
+- **Status:** Accepted
+- **Date:** 2026-11-18
+
+**Context.** A typography/layout audit found ~665 arbitrary hex classes
+(`bg-[#0A165B]`, `text-[#F15601]`, nine near-identical navies, four oranges)
+bypassing the tokens, utilities in `globals.css` (`.text-muted`, `.bg-accent`)
+shadowing token names, Inter loaded but unused, and DM Sans served from ~80
+unoptimised TTFs with Medium/SemiBold undeclared.
+
+**Decision.** Brand colours become semantic tokens (`background`, `card`/`surface`,
+`surface-raised`, `surface-deep`, `primary`, `primary-strong`, `muted-foreground`)
+and all arbitrary hex classes were codemodded onto them. Near-duplicates were merged
+(e.g. `#070F40`/`#1A1F4A`/`#10194A` -> `surface-deep`, `#B6C1E2` -> `muted-foreground`).
+`--primary`/`--accent`/`--ring` now equal the dominant brand orange `#F15601`
+(was `#FF6E00`), `--card` is `#232C62`. DM Sans comes from `next/font/google`
+(variable, latin + latin-ext); Inter, the `@font-face` rules and `public/fonts/` are gone.
+
+**Consequences.** Palette changes happen in one place. Merged shades shift by a few
+percent in lightness. shadcn components using `bg-primary` / `bg-card` render in the
+brand orange / surface colour. Build needs network access for Google Fonts (as Inter did).
+Remaining work: type scale, shared public layout, duplicate EN/LT routes.
+
+---
+
 ## ADR-0003 — Role hardening: first signup is admin, everyone else is staff
 
 - **Status:** Accepted — migration `20261118000016_harden_roles_and_policies.sql` applied to the remote DB.

@@ -64,7 +64,7 @@ export default function PlayerDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0A165B] flex items-center justify-center">
+      <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-white text-xl">Loading...</div>
       </div>
     )
@@ -72,7 +72,7 @@ export default function PlayerDetailPage() {
 
   if (error || !player) {
     return (
-      <div className="min-h-screen bg-[#0A165B]">
+      <div className="min-h-screen bg-background">
         <PublicNavigation currentPage="players" />
         <div className="flex items-center justify-center h-screen">
           <div className="text-white text-xl">Player not found</div>
@@ -88,7 +88,7 @@ export default function PlayerDetailPage() {
   const lastName = nameParts.slice(1).join(' ') || ''
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="players" />
       
       {/* Main Player Layout */}
@@ -112,7 +112,7 @@ export default function PlayerDetailPage() {
         </div>
         
         {/* Player Info Section */}
-        <div className="w-full lg:w-1/2 bg-[#0A165B] flex flex-col justify-end">
+        <div className="w-full lg:w-1/2 bg-background flex flex-col justify-end">
         {/* Player Name and Jersey Number - Inline */}
         <div className="flex flex-col sm:flex-row justify-between items-end p-6 lg:p-12">
           {/* Player Name and Position */}
@@ -175,7 +175,7 @@ export default function PlayerDetailPage() {
       {/* Statistics Cards - Full Width */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-4 lg:p-6">
         {/* Matches and Goals Card */}
-        <div className="bg-[#0A165B] border border-[rgba(95,95,113,0.31)] p-6 rounded-lg">
+        <div className="bg-background border border-[rgba(95,95,113,0.31)] p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
             <div className="text-white text-lg font-bold">Rungtynes</div>
             <div className="text-white text-lg font-bold">Ivarciai</div>
@@ -224,7 +224,7 @@ export default function PlayerDetailPage() {
         </div>
         
         {/* Time and Assists Card */}
-        <div className="bg-[#0A165B] border border-[rgba(95,95,113,0.31)] p-6 rounded-lg">
+        <div className="bg-background border border-[rgba(95,95,113,0.31)] p-6 rounded-lg">
           <div className="flex justify-between items-center mb-4">
             <div className="text-white text-lg font-bold">Laikas</div>
             <div className="text-white text-lg font-bold">Perdavimai</div>

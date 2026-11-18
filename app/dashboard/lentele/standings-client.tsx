@@ -180,7 +180,7 @@ export function StandingsClient() {
           <Button 
             onClick={handleScrapeStandings} 
             disabled={isScraping}
-            className="bg-[#F15601] hover:bg-[#E04501]"
+            className="bg-primary hover:bg-primary-strong"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isScraping ? 'animate-spin' : ''}`} />
             {isScraping ? 'Atnaujinama...' : 'Atnaujinti duomenis'}

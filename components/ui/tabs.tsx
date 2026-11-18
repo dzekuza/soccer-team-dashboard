@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-[#0A165B] p-1 text-white",
+      "inline-flex h-10 items-center justify-center rounded-md bg-background p-1 text-white",
       className
     )}
     {...props}
@@ -29,7 +29,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-[#070F40] data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-semibold hover:bg-[#070F40]/80",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-surface-deep data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=active]:font-semibold hover:bg-surface-deep/80",
       className
     )}
     {...props}
@@ -72,7 +72,7 @@ export function PublicTabs({ tabs, activeTab, onTabChange, className }: PublicTa
             <TabsTrigger 
               key={tab.key}
               value={tab.key}
-              className="px-8 py-6 md:py-[33px] text-white text-base font-medium bg-transparent data-[state=active]:bg-[#070F40] data-[state=active]:text-white hover:bg-[rgba(255,255,255,0.1)] rounded-none border-r border-[rgba(95,95,113,0.3)] focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50 last:border-r-0"
+              className="px-8 py-6 md:py-[33px] text-white text-base font-medium bg-transparent data-[state=active]:bg-surface-deep data-[state=active]:text-white hover:bg-[rgba(255,255,255,0.1)] rounded-none border-r border-[rgba(95,95,113,0.3)] focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none disabled:opacity-50 last:border-r-0"
             >
               {tab.label}
             </TabsTrigger>

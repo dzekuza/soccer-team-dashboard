@@ -19,9 +19,9 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="flex flex-col bg-[#0A165B] text-white border-[#232C62] w-[400px] sm:w-[450px] p-0">
+      <SheetContent className="flex flex-col bg-background text-white border-surface w-[400px] sm:w-[450px] p-0">
         {/* Header */}
-        <div className="flex flex-row items-center justify-between border-b border-[#232C62] p-4">
+        <div className="flex flex-row items-center justify-between border-b border-surface p-4">
           <SheetTitle className="text-white text-xl font-bold">Jūsų krepšelis</SheetTitle>
         </div>
 
@@ -31,7 +31,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
             <div className="flex-1 overflow-y-auto">
               <div className="space-y-0">
                 {cart.map(item => (
-                  <div key={item.id} className="flex items-start gap-4 p-4 border-b border-[#232C62] bg-[#0A165B]">
+                  <div key={item.id} className="flex items-start gap-4 p-4 border-b border-surface bg-background">
                     {/* Item Image */}
                     <div className="flex-shrink-0">
                       <Image 
@@ -71,7 +71,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => updateQuantity(item.id, -1)}
-                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                            className="w-8 h-8 p-0 border-surface text-white hover:bg-white/10 rounded-none"
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
@@ -82,7 +82,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => updateQuantity(item.id, 1)}
-                            className="w-8 h-8 p-0 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                            className="w-8 h-8 p-0 border-surface text-white hover:bg-white/10 rounded-none"
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
@@ -95,7 +95,7 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
             </div>
 
             {/* Footer */}
-            <div className="border-t border-[#232C62] p-4">
+            <div className="border-t border-surface p-4">
               <div className="w-full space-y-4">
                 {/* Total */}
                 <div className="flex justify-between items-center">
@@ -108,13 +108,13 @@ export function CartSheet({ open, onOpenChange }: CartSheetProps) {
                   <Button 
                     variant="outline" 
                     onClick={clearCart} 
-                    className="flex-1 border-[#232C62] text-white hover:bg-white/10 rounded-none"
+                    className="flex-1 border-surface text-white hover:bg-white/10 rounded-none"
                   >
                     Išvalyti
                   </Button>
                   <Button 
                     asChild 
-                    className="flex-1 bg-[#F15601] hover:bg-[#F15601]/90 text-white font-semibold rounded-none"
+                    className="flex-1 bg-primary hover:bg-primary/90 text-white font-semibold rounded-none"
                   >
                     <Link href="/checkout">Apmokėti</Link>
                   </Button>

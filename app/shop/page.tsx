@@ -142,12 +142,12 @@ export default function ShopPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A165B] text-white">
+    <div className="min-h-screen bg-background text-white">
       <PublicNavigation currentPage="parduotuve" />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
       
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#0A165B] to-[#1a237e] py-12">
+      <div className="bg-gradient-to-r from-background to-[#1a237e] py-12">
         <div className="px-6">
           <div className="text-center">
             <h1 className="h1-public mb-4">FK Banga Parduotuvė</h1>
@@ -238,7 +238,7 @@ export default function ShopPage() {
                           />
                           {product.is_featured && (
                             <div className="absolute top-2 left-2">
-                              <Badge className="bg-[#F15601] text-white">
+                              <Badge className="bg-primary text-white">
                                 <Star className="w-3 h-3 mr-1" />
                                 Išskirtas
                               </Badge>
@@ -269,7 +269,7 @@ export default function ShopPage() {
                           </p>
                           
                           <div>
-                            <div className="text-xl font-bold text-[#F15601]">
+                            <div className="text-xl font-bold text-primary">
                               €{product.price.toFixed(2)}
                             </div>
                             {product.compare_price && product.compare_price > product.price && (

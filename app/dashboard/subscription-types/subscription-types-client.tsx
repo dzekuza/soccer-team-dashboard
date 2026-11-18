@@ -105,7 +105,7 @@ export function SubscriptionTypesClient({ initialSubscriptionTypes }: Subscripti
             setEditingType(null)
             setIsCreateOpen(true)
           }} 
-          className="bg-[#F15601] hover:bg-[#E04501]"
+          className="bg-primary hover:bg-primary-strong"
         >
           <Plus className="h-4 w-4 mr-2" />
           Sukurti prenumeratos tipą
@@ -179,7 +179,7 @@ export function SubscriptionTypesClient({ initialSubscriptionTypes }: Subscripti
       <div className="md:hidden space-y-4">
         {filteredSubscriptionTypes.length > 0 ? (
           filteredSubscriptionTypes.map((type) => (
-            <Card key={type.id} className="bg-[#0A165B]/50 border border-gray-700">
+            <Card key={type.id} className="bg-background/50 border border-gray-700">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-white">{type.title}</CardTitle>
@@ -205,7 +205,7 @@ export function SubscriptionTypesClient({ initialSubscriptionTypes }: Subscripti
                     size="sm" 
                     variant="outline" 
                     onClick={() => handleEditSubscriptionType(type)} 
-                    className="border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]"
+                    className="border-gray-600 text-gray-300 hover:text-white hover:bg-surface-raised"
                   >
                     <Edit className="h-4 w-4 mr-1" /> Redaguoti
                   </Button>

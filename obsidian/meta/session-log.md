@@ -19,6 +19,13 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Typography/layout audit, tokens and fonts
+
+- **Changed:** colour tokens in `globals.css` + `tailwind.config.ts`; 664 arbitrary hex classes codemodded across 74 files; DM Sans via `next/font/google`; deleted `public/fonts/`; vault design-system table, ADR-0004, changelog.
+- **Status:** `tsc` clean, dev server renders with correct fonts/colours. `npm run build` compiles but fails collecting `/api/checkout/shop` (no Stripe key in env, unrelated). Not committed.
+- **Next:** type scale (replace `text-[14px]`, `.h1-public`), shared `(public)` layout, remove duplicate EN/LT routes, add `<h1>`/`<main>`, reduced-motion.
+
+
 ## 2026-11-18 — Toplyga 2026 league table imported
 - **Changed:** scraped `table/lentele-toplyga-2026` (columns V R P L Pr Į+ Į- Sk Tšk = pos, played, won, drawn, lost, GF, GA, GD, pts). Inserted 10 teams into `standings` (`league_key='a_lyga'`, JSON rows with bucket logos — read by the landing `StandingsTable` via `/api/standings/scrape`) and into `standings_al` (`team_key='a_lyga'`, read by the dashboard Lentelė page / `/api/standings`). Upserts, so re-runnable.
 - **Status:** anon read verified. Riteriai is listed with all zeros, as on the club site. B / M tabs on the landing page still have no table.

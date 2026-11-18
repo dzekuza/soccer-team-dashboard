@@ -108,7 +108,7 @@ export default function StandingsClient() {
           id="team-filter"
           value={selectedTeam}
           onChange={e => setSelectedTeam(e.target.value)}
-          className="border border-[#5F5F71] bg-[#070F40] text-white rounded px-3 py-2"
+          className="border border-[#5F5F71] bg-surface-deep text-white rounded px-3 py-2"
         >
           <option value="">All Teams</option>
           {teamKeys.map(key => (
@@ -122,7 +122,7 @@ export default function StandingsClient() {
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="bg-[#0A165B] text-[#B6C1E2]">
+              <TableRow className="bg-background text-muted-foreground">
                 <TableHead className="px-3 py-2">#</TableHead>
                 <TableHead className="px-3 py-2">Team</TableHead>
                 <TableHead className="px-3 py-2">Played</TableHead>

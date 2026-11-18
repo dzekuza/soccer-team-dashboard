@@ -156,11 +156,11 @@ export function PublicNavigation({
   return (
     <>
       {/* Top subnavigation (match info) */}
-      <div className="bg-[#070F40] sticky top-0 z-50">
-        <div className="border-b border-[rgba(95,95,113,0.3)] bg-gradient-to-b from-[#070f40]/80 to-transparent">
+      <div className="bg-surface-deep sticky top-0 z-50">
+        <div className="border-b border-[rgba(95,95,113,0.3)] bg-gradient-to-b from-surface-deep/80 to-transparent">
           <div className="w-full px-4 md:px-8 lg:px-16 h-10 flex items-center justify-between">
             {/* Left: date and time */}
-            <div className="flex items-center gap-2 text-[#F15601] text-sm">
+            <div className="flex items-center gap-2 text-primary text-sm">
               <Clock3 className="h-4 w-4" />
               {upcomingMatch ? (
                 <span>
@@ -193,7 +193,7 @@ export function PublicNavigation({
         </div>
 
         {/* Main navigation */}
-        <nav className="bg-[#0A165B] border-b border-[rgba(95,95,113,0.3)] h-[72px] flex items-center">
+        <nav className="bg-background border-b border-[rgba(95,95,113,0.3)] h-[72px] flex items-center">
           <div className="w-full px-4 md:px-8 lg:px-16 flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center">
@@ -220,15 +220,15 @@ export function PublicNavigation({
                           variant="ghost"
                           className={`flex items-center gap-1 transition-colors bg-transparent hover:bg-transparent focus:bg-transparent rounded-none ${
                             currentPage === item.page
-                              ? "text-[#F15601] border-b-2 border-[#F15601]"
-                              : "text-white hover:text-[#F15601] hover:border-b-2 hover:border-[#F15601]"
+                              ? "text-primary border-b-2 border-primary"
+                              : "text-white hover:text-primary hover:border-b-2 hover:border-primary"
                           }`}
                         >
                           {item.label}
                           <ChevronDown className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#0A165B] border-[#232C62] rounded-none">
+                      <DropdownMenuContent className="bg-background border-surface rounded-none">
                         {item.items?.map((dropdownItem) => (
                           <DropdownMenuItem
                             key={dropdownItem.href}
@@ -236,7 +236,7 @@ export function PublicNavigation({
                           >
                             <Link
                               href={dropdownItem.href || "#"}
-                              className="text-white hover:text-[#F15601] w-full"
+                              className="text-white hover:text-primary w-full"
                             >
                               {dropdownItem.label}
                             </Link>
@@ -253,8 +253,8 @@ export function PublicNavigation({
                     href={item.href || "#"}
                     className={`transition-colors ${
                       currentPage === item.page
-                        ? "text-[#F15601] border-b-2 border-[#F15601]"
-                        : "text-white hover:text-[#F15601] hover:border-b-2 hover:border-[#F15601]"
+                        ? "text-primary border-b-2 border-primary"
+                        : "text-white hover:text-primary hover:border-b-2 hover:border-primary"
                     }`}
                   >
                     {item.label}
@@ -270,7 +270,7 @@ export function PublicNavigation({
                 className="relative text-white hover:bg-white/10"
               >
                 <ShoppingCart className="w-6 h-6" />
-                <div className="absolute -top-2 -right-2 bg-[#F15601] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <div className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {cartItemCount}
                 </div>
               </Button>
@@ -286,7 +286,7 @@ export function PublicNavigation({
                 className="relative text-white hover:bg-white/10"
               >
                 <ShoppingCart className="w-6 h-6" />
-                <div className="absolute -top-2 -right-2 bg-[#F15601] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <div className="absolute -top-2 -right-2 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                   {cartItemCount}
                 </div>
               </Button>
@@ -307,8 +307,8 @@ export function PublicNavigation({
 
       {/* Mobile Menu Sheet */}
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-        <SheetContent className="bg-[#0A165B] text-white border-[#232C62] w-[300px] p-0">
-          <SheetHeader className="border-b border-[#232C62] p-4">
+        <SheetContent className="bg-background text-white border-surface w-[300px] p-0">
+          <SheetHeader className="border-b border-surface p-4">
             <SheetTitle className="text-white text-xl font-bold text-left">
               Meniu
             </SheetTitle>
@@ -329,8 +329,8 @@ export function PublicNavigation({
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`text-base py-2 px-8 transition-colors ${
                           currentPage === dropdownItem.page
-                            ? "text-[#F15601] border-l-2 border-[#F15601]"
-                            : "text-white hover:text-[#F15601] hover:border-l-2 hover:border-[#F15601]"
+                            ? "text-primary border-l-2 border-primary"
+                            : "text-white hover:text-primary hover:border-l-2 hover:border-primary"
                         }`}
                       >
                         {dropdownItem.label}
@@ -347,8 +347,8 @@ export function PublicNavigation({
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-lg py-3 px-4 transition-colors ${
                     currentPage === item.page
-                      ? "text-[#F15601] border-l-2 border-[#F15601]"
-                      : "text-white hover:text-[#F15601] hover:border-l-2 hover:border-[#F15601]"
+                      ? "text-primary border-l-2 border-primary"
+                      : "text-white hover:text-primary hover:border-l-2 hover:border-primary"
                   }`}
                 >
                   {item.label}

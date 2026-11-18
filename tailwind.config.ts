@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
     darkMode: ["class"],
@@ -10,8 +11,10 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+  		fontFamily: {
+  			sans: ['var(--font-sans)', ...fontFamily.sans]
+  		},
   		colors: {
-  			'main-orange': '#F15601',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -22,8 +25,14 @@ const config: Config = {
   				DEFAULT: 'hsl(var(--popover))',
   				foreground: 'hsl(var(--popover-foreground))'
   			},
+  			surface: {
+  				DEFAULT: 'hsl(var(--surface))',
+  				raised: 'hsl(var(--surface-raised))',
+  				deep: 'hsl(var(--surface-deep))'
+  			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
+  				strong: 'hsl(var(--primary-strong))',
   				foreground: 'hsl(var(--primary-foreground))'
   			},
   			secondary: {

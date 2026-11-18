@@ -159,12 +159,12 @@ export default function TemplatesPage() {
         <div className="md:hidden">
           <Label className="text-white">Pasirinkite šabloną</Label>
           <Select onValueChange={handleSelectTemplate} value={selectedTemplate?.name}>
-            <SelectTrigger className="bg-white/10 border-gray-600 text-white focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1">
+            <SelectTrigger className="bg-white/10 border-gray-600 text-white focus:border-primary focus:ring-primary focus:ring-1">
               <SelectValue placeholder="Pasirinkite šabloną..." />
             </SelectTrigger>
-            <SelectContent className="bg-[#0A165B] border-gray-600">
+            <SelectContent className="bg-background border-gray-600">
               {templates.map((template) => (
-                <SelectItem key={template.id} value={template.name} className="text-white hover:bg-[#0A2065] focus:bg-[#0A2065]">
+                <SelectItem key={template.id} value={template.name} className="text-white hover:bg-surface-raised focus:bg-surface-raised">
                   {template.name.replace(/_/g, " ")}
                 </SelectItem>
               ))}
@@ -174,7 +174,7 @@ export default function TemplatesPage() {
 
         {/* Desktop View: Sidebar for template selection */}
         <div className="hidden md:block md:col-span-1">
-          <Card className="bg-[#0A165B]/50 border border-gray-700">
+          <Card className="bg-background/50 border border-gray-700">
             <CardHeader>
               <CardTitle className="text-white">Šablonai</CardTitle>
             </CardHeader>
@@ -193,8 +193,8 @@ export default function TemplatesPage() {
                         }
                         className={`w-full justify-start ${
                           selectedTemplate?.name === template.name
-                            ? "bg-[#F15601] text-white hover:bg-[#E04501]"
-                            : "text-gray-300 hover:text-white hover:bg-[#0A2065]/50"
+                            ? "bg-primary text-white hover:bg-primary-strong"
+                            : "text-gray-300 hover:text-white hover:bg-surface-raised/50"
                         }`}
                         onClick={() => handleSelectTemplate(template.name)}
                       >
@@ -210,7 +210,7 @@ export default function TemplatesPage() {
 
         <div className="md:col-span-3">
           {isLoading && !selectedTemplate && (
-            <Card className="flex items-center justify-center h-64 bg-[#0A165B]/50 border border-gray-700">
+            <Card className="flex items-center justify-center h-64 bg-background/50 border border-gray-700">
                 <p className="text-gray-300">Kraunasi šablonai...</p>
             </Card>
           )}
@@ -221,12 +221,12 @@ export default function TemplatesPage() {
                   <TabsTrigger value="editor">Redaktorius</TabsTrigger>
                   <TabsTrigger value="preview">Peržiūra</TabsTrigger>
                 </TabsList>
-                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto bg-[#F15601] hover:bg-[#E04501] text-white" variant="default">
+                <Button onClick={handleSaveChanges} disabled={isSaving} className="w-full sm:w-auto bg-primary hover:bg-primary-strong text-white" variant="default">
                   {isSaving ? "Saugoma..." : "Išsaugoti pakeitimus"}
                 </Button>
               </div>
               <TabsContent value="editor">
-                <Card className="bg-[#0A165B]/50 border border-gray-700">
+                <Card className="bg-background/50 border border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white">Šablono redagavimas</CardTitle>
                     <CardDescription className="text-gray-300">
@@ -241,7 +241,7 @@ export default function TemplatesPage() {
                         name="subject"
                         value={selectedTemplate.subject}
                         onChange={handleInputChange}
-                        className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+                        className="bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-primary focus:ring-primary focus:ring-1"
                       />
                     </div>
                     <div className="space-y-2">
@@ -253,7 +253,7 @@ export default function TemplatesPage() {
                         value={selectedTemplate.body_html}
                         onChange={handleInputChange}
                         rows={15}
-                        className="font-mono text-sm bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-[#F15601] focus:ring-[#F15601] focus:ring-1"
+                        className="font-mono text-sm bg-white/10 border-gray-600 text-white placeholder:text-gray-400 focus:border-primary focus:ring-primary focus:ring-1"
                       />
                     </div>
                     <div>
@@ -266,7 +266,7 @@ export default function TemplatesPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => insertVariable(variable)}
-                              className="font-mono border-gray-600 text-gray-300 hover:text-white hover:bg-[#0A2065]"
+                              className="font-mono border-gray-600 text-gray-300 hover:text-white hover:bg-surface-raised"
                             >
                               {variable}
                             </Button>
@@ -278,7 +278,7 @@ export default function TemplatesPage() {
                 </Card>
               </TabsContent>
               <TabsContent value="preview">
-                <Card className="bg-[#0A165B]/50 border border-gray-700">
+                <Card className="bg-background/50 border border-gray-700">
                   <CardHeader>
                     <CardTitle className="text-white">Šablono peržiūra</CardTitle>
                     <CardDescription className="text-gray-300">
@@ -289,14 +289,14 @@ export default function TemplatesPage() {
                     <div className="space-y-4">
                       <div>
                         <Label className="text-white">Antraštė</Label>
-                        <p className="text-lg font-semibold p-3 bg-[#0A2065] rounded border border-gray-600 text-white">
+                        <p className="text-lg font-semibold p-3 bg-surface-raised rounded border border-gray-600 text-white">
                           {selectedTemplate.subject}
                         </p>
                       </div>
                       <div>
                         <Label className="text-white">Turinys</Label>
                         <div
-                          className="border border-gray-600 rounded-md p-4 min-h-[400px] bg-[#0A2065] text-white"
+                          className="border border-gray-600 rounded-md p-4 min-h-[400px] bg-surface-raised text-white"
                           dangerouslySetInnerHTML={{
                             __html: selectedTemplate.body_html,
                           }}
@@ -308,7 +308,7 @@ export default function TemplatesPage() {
               </TabsContent>
             </Tabs>
           ) : (
-            <Card className="bg-[#0A165B]/50 border border-gray-700">
+            <Card className="bg-background/50 border border-gray-700">
               <CardContent className="pt-6">
                 <p className="text-gray-300">Pasirinkite šabloną, kurį norite redaguoti.</p>
               </CardContent>

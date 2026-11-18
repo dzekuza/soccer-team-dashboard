@@ -4,7 +4,7 @@ import { PublicNavigation } from "@/components/public-navigation"
 
 export default function TicketsPage() {
   return (
-    <div className="min-h-screen bg-[#0A165B]">
+    <div className="min-h-screen bg-background">
               <PublicNavigation currentPage="bilietai" />
       
       <div className="w-full px-4 md:px-8 lg:px-16 py-8">

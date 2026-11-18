@@ -58,8 +58,8 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                             className={cn(
                                 "flex items-center gap-4",
                                 "p-4",
-                                "bg-[#0A165B]",
-                                "border-b border-[#232C62]"
+                                "bg-background",
+                                "border-b border-surface"
                             )}
                         >
                             <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-black/10">
@@ -148,7 +148,7 @@ function InteractiveCheckout({}: InteractiveCheckoutProps) {
                     layout
                     className={cn(
                         "mt-auto pt-4",
-                        "border-t border-[#232C62]"
+                        "border-t border-surface"
                     )}
                 >
                     <div className="flex items-center justify-between">

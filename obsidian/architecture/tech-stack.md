@@ -41,3 +41,7 @@ added, removed, or majorly upgraded — and add a [[changelog]] entry.
 ## Related
 
 [[system-overview]] · [[changelog]]
+
+## Typography
+
+- DM Sans (variable) via `next/font/google`, exposed as `--font-sans` and Tailwind `font-sans`. Subsets: latin, latin-ext. No self-hosted font files.

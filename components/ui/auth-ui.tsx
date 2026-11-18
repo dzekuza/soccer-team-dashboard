@@ -42,7 +42,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[#F15601] text-white hover:bg-[#A53C00]",
+        default: "bg-primary text-white hover:bg-primary-strong",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline: "border border-input dark:border-input/50 bg-background hover:bg-accent hover:text-accent-foreground",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
@@ -80,7 +80,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
       <input
         type={type}
         className={cn(
-          "flex h-12 w-full rounded-[16px] border border-[#5F5F71] bg-[#0A2065] px-5 py-3 text-base text-white placeholder:text-[#B6C1E2] focus:border-white focus:bg-[#0A2065] outline-none transition-all",
+          "flex h-12 w-full rounded-[16px] border border-[#5F5F71] bg-surface-raised px-5 py-3 text-base text-white placeholder:text-muted-foreground focus:border-white focus:bg-surface-raised outline-none transition-all",
           className
         )}
         ref={ref}

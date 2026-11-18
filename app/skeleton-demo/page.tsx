@@ -113,7 +113,7 @@ export default function SkeletonDemoPage() {
       {/* Custom Dark Theme Skeletons */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">Dark Theme Skeletons</h2>
-        <div className="bg-[#0A165B] p-6 rounded-lg">
+        <div className="bg-background p-6 rounded-lg">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Skeleton className="h-4 w-full bg-gray-600" />
             <Skeleton className="h-8 w-32 bg-gray-600" />

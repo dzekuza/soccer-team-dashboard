@@ -13,6 +13,7 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## Done recently
 
+- Design tokens: brand palette tokenised, DM Sans via `next/font` (ADR-0004); uncommitted.
 - Role hardening applied (migration `…16`, ADR-0003): first signup admin, then staff; admin-only writes.
 - Toplyga 2026 league table imported (`standings` a_lyga + `standings_al`).
 - Landing match strip falls back to recent results off-season (`components/upcoming-matches.tsx`).
@@ -33,6 +34,7 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## Next up
 
+- Typography/layout audit follow-ups: type scale tokens, shared `(public)` layout, remove duplicate EN/LT routes, `<h1>`/`<main>`, reduced-motion.
 - Set the Supabase env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_*`) in Vercel; deployment from `master` may already be building.
 - Banga B / Banga M: import schedules and league tables (landing tabs empty).
 - Import Banga B / M schedules; point `teams.logo` at the new `team-logo` bucket files.
