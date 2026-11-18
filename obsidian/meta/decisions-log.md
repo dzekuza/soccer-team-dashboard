@@ -10,6 +10,31 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0010 — Shared public layout, no full-screen loaders, server-fetched landing
+
+- **Status:** Accepted
+- **Date:** 2026-11-18
+
+**Context.** Pages felt slow. Measured: each API call 120-270ms, but every page shipped an empty
+HTML shell and fetched after hydration (6 client fetches on the landing page, the first one
+blocking the whole page behind "Kraunama..."). 24 pages each mounted their own
+`PublicNavigation`, so the match-strip request re-ran on every navigation, and pages nested
+`min-h-screen` wrappers plus five pass-through `layout.tsx` files.
+
+**Decision.** Move public pages into `app/(public)/` with one layout (nav, `<main>`, footer); the nav
+derives the active item from the pathname. Delete full-screen loading gates: render the page frame
+and show skeletons in the data area. Landing page: fetch posts on the server (`lib/posts.ts`), render via
+`views/landing-view.tsx`, `revalidate = 60`. Hero news slide is dropped if there is no post; slides 2-3
+reuse the `public/landing` images (the old ones 404ed); slide titles are `<h2>`, one sr-only `<h1>`.
+
+**Consequences.** News arrives in the HTML and is at most 60s old; nav and footer stay mounted; every
+public page has one `<main>`, a footer, and consistent spacing. Still client-fetched after hydration:
+news list, players, fixtures, results, standings, shop, events, subscriptions (they now show skeletons
+instantly): move them to server components with `revalidate` next. `PublicNavigation` no longer takes
+`currentPage`.
+
+---
+
 ## ADR-0009 — Club info pages are static app content, not links to the old site
 
 - **Status:** Accepted

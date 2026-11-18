@@ -9,6 +9,12 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Public layout, no loading screens, server-fetched landing
+
+- New `app/(public)/layout.tsx` (nav + main + footer once); 21 routes moved into the group; five wrapper-only `layout.tsx` files and every per-page nav/footer/`min-h-screen` removed. `PublicNavigation` is prop-less and highlights from the URL (dropdown parents now highlight too). See ADR-0010.
+- Removed all full-screen "Kraunama..." / "Loading..." gates; pages show skeletons (`components/common/page-skeletons.tsx`). Dropped the last `usePageAnimation` uses and a stray "Debug: Loaded N posts" line on /naujienos.
+- Landing: news fetched on the server (`lib/posts.ts`, `revalidate = 60`); split into `HeroCarousel`, `MatchesAndStandings`, `LatestPostsSection` (props); slides 2-3 use `public/landing` images; one `<h1>`.
+
 ## 2026-11-18 — Fix: public images were never committed
 
 - `.gitignore` ignored every `png/jpg/jpeg/gif/svg/ico/webp`, so `public/landing/*` (Įsigykite section) and `public/club/*` were not in git and would 404 in production. Added `!public/**` and committed them. Earlier assets were only tracked because they were force-added.

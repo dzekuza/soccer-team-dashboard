@@ -159,7 +159,7 @@ export default function EventPage() {
 
   return (
     <div className="bg-background text-white min-h-screen">
-      <PublicNavigation currentPage="events" />
+      <PublicNavigation />
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
 
       {/* Event Banner */}

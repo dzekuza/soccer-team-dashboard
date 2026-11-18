@@ -26,10 +26,11 @@ export default function Page() { return <AboutView />; }
 | `/klubas` | `views/club-view.tsx` | #wip |
 | `/pamaina` | `views/academy-view.tsx` | #wip |
 | `/kontaktai` | `views/contacts-view.tsx` | #wip |
-| `/` | | #wip |
+| `/` | `views/landing-view.tsx` (server; `revalidate = 60`) | #wip |
 
 ## Conventions
 
+- `app/(public)/` is the route group for public pages; its `layout.tsx` owns nav, `<main>` and footer (URLs unchanged).
 - Route groups `(name)/` for layout grouping without a URL segment.
 - `loading.tsx` / `error.tsx` / `not-found.tsx` at every meaningful boundary.
 - Navigation via `next/link` and `next/navigation` `useRouter`.

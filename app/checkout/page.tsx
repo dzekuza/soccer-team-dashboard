@@ -165,7 +165,7 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-background text-white flex flex-col">
-            <PublicNavigation currentPage="tickets" />
+            <PublicNavigation />
             
             {/* Main Content */}
             <div className="w-full flex flex-col flex-1">

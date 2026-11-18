@@ -1,7 +1,5 @@
 import Image from "next/image"
 import Link from "next/link"
-import { PublicNavigation } from "@/components/public-navigation"
-import { PublicFooter } from "@/components/public-footer"
 import { PageHeading } from "@/components/common/page-heading"
 import { ContentSection } from "@/components/common/content-section"
 import { ClubDocuments } from "@/components/club/club-documents"
@@ -21,10 +19,7 @@ export function ClubView() {
   const director = CLUB_CONTACT_PEOPLE[0]
 
   return (
-    <div className="min-h-screen bg-background text-white">
-      <PublicNavigation currentPage="klubas" />
-
-      <main>
+    <>
         <PageHeading title="Klubas" />
 
         <ContentSection id="apie-kluba" title="Apie klubą">
@@ -113,9 +108,6 @@ export function ClubView() {
             Visi kontaktai
           </Link>
         </ContentSection>
-      </main>
-
-      <PublicFooter />
-    </div>
+    </>
   )
 }

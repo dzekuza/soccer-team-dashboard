@@ -1,6 +1,4 @@
 import { Mail, MapPin, Phone, Tent } from "lucide-react"
-import { PublicNavigation } from "@/components/public-navigation"
-import { PublicFooter } from "@/components/public-footer"
 import { PageHeading } from "@/components/common/page-heading"
 import { ContentSection } from "@/components/common/content-section"
 import { ContactCard } from "@/components/club/contact-card"
@@ -16,10 +14,7 @@ const linkClassName = "text-primary hover:text-primary-strong"
 
 export function ContactsView() {
   return (
-    <div className="min-h-screen bg-background text-white">
-      <PublicNavigation currentPage="kontaktai" />
-
-      <main>
+    <>
         <PageHeading title="Kontaktai" />
 
         <ContentSection id="adresas" title="Adresas ir telefonas">
@@ -77,9 +72,6 @@ export function ContactsView() {
             </ContactCard>
           </div>
         </ContentSection>
-      </main>
-
-      <PublicFooter />
-    </div>
+    </>
   )
 }

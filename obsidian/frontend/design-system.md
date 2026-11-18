@@ -60,6 +60,19 @@ transition: fade an overlay layer instead.
 - **Hover is gated** (`future.hoverOnlyWhenSupported`): `hover:` only applies on hover-capable devices.
 - **Autoplay** (hero) pauses on pointer/focus and stops under `prefers-reduced-motion`; inactive slides are `inert`.
 
+## Page shell and loading
+
+- **Public pages live in `app/(public)/`.** `layout.tsx` renders the nav, `<main>` and footer once.
+  A page renders only its own content: no `PublicNavigation`, `PublicFooter`, `<main>`, or
+  `min-h-screen` wrapper (nested viewport heights add a scrollbar). Routes outside the group
+  (`checkout`, `event`, `login`, `register`, `dashboard`) own their shell.
+- **No full-screen loaders.** Never replace the page with "Kraunama...". Render the frame
+  (heading, tabs) at once and put a skeleton where the data goes: `RowListSkeleton`,
+  `CardGridSkeleton`, `ArticleSkeleton`, `ProfileSkeleton` (`components/common/page-skeletons.tsx`).
+  `Skeleton` defaults to `bg-surface`; do not override it with raw greys.
+- **Fetch on the server when the page is public content.** The landing page loads news in
+  `views/landing-view.tsx` (`lib/posts.ts`) with `revalidate = 60`, so HTML arrives complete.
+
 ## Type scale
 
 DM Sans throughout. Body/UI use Tailwind's `text-xs` 12 / `sm` 14 / `base` 16 /

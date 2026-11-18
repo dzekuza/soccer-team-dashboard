@@ -1,6 +1,4 @@
 import Link from "next/link"
-import { PublicNavigation } from "@/components/public-navigation"
-import { PublicFooter } from "@/components/public-footer"
 import { PageHeading } from "@/components/common/page-heading"
 import { ContentSection } from "@/components/common/content-section"
 import { AcademyGroupCard } from "@/components/club/academy-group-card"
@@ -17,10 +15,7 @@ export function AcademyView() {
   const youthLead = CLUB_CONTACT_PEOPLE.find((person) => person.role.startsWith("Jaunimo"))
 
   return (
-    <div className="min-h-screen bg-background text-white">
-      <PublicNavigation currentPage="pamaina" />
-
-      <main>
+    <>
         <PageHeading title="Pamaina" />
 
         <ContentSection id="futbolas-vienija" title="Futbolas vienija!">
@@ -84,9 +79,6 @@ export function AcademyView() {
             </a>
           </ContentSection>
         ) : null}
-      </main>
-
-      <PublicFooter />
-    </div>
+    </>
   )
 }

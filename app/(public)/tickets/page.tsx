@@ -1,0 +1,19 @@
+"use client"
+
+
+export default function TicketsPage() {
+  return (
+    <div className="bg-background">
+      
+      <div className="w-full px-4 md:px-8 lg:px-16 py-8">
+        <div className="text-center py-8">
+          <h2 className="text-white text-6xl font-bold tracking-tight">Bilietai</h2>
+        </div>
+        
+        <div className="text-center py-16">
+          <p className="text-white text-xl">Bilietų puslapis ruošiamas</p>
+        </div>
+      </div>
+    </div>
+  )
+}

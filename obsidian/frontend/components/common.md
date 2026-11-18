@@ -18,6 +18,10 @@ primitives, reused across features.
 | ClubDocuments | `components/club/club-documents.tsx` | Accordion of PDF groups (links open fkbanga.lt files in a new tab) | #wip |
 | ContactCard | `components/club/contact-card.tsx` | Icon + heading + details card | #wip |
 | AcademyGroupCard | `components/club/academy-group-card.tsx` | Birth-year group with contact name and phone | #wip |
+| RowListSkeleton, CardGridSkeleton, ArticleSkeleton, ProfileSkeleton | `components/common/page-skeletons.tsx` | Placeholders for a page's data area while it loads (no full-screen loaders) | #wip |
+| HeroCarousel | `components/landing/hero-carousel.tsx` | Landing hero (client): 500ms crossfade, pauses on hover/focus, stops under reduced motion. Takes `latestPost` from the server | #wip |
+| MatchesAndStandings | `components/landing/matches-and-standings.tsx` | Landing match strip + league table with team tabs (client) | #wip |
+| LatestPostsSection | `components/latest-posts-section.tsx` | Alternating news rows; props: `posts: LandingPost[]` (server data, no own fetch) | #wip |
 | | | | #wip |
 
 ## Related

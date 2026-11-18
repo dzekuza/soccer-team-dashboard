@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingCart, Menu, ChevronDown, Clock3 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/context/cart-context";
 import {
   Sheet,
@@ -21,13 +22,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Match } from "@/lib/types";
 
-interface PublicNavigationProps {
-  currentPage?: string;
+/** True when `pathname` is one of `paths` or below it (`/zaidejai/12` matches `/zaidejai`). */
+function matchesPath(pathname: string, paths: string[]) {
+  return paths.some((path) =>
+    path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(`${path}/`),
+  );
 }
 
-export function PublicNavigation({
-  currentPage = "events",
-}: PublicNavigationProps) {
+export function PublicNavigation() {
+  const pathname = usePathname();
+  const isActive = (paths: string[]) => matchesPath(pathname, paths);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartSheetOpen, setIsCartSheetOpen] = useState(false);
   const [upcomingMatch, setUpcomingMatch] = useState<Match | null>(null);
@@ -75,82 +79,33 @@ export function PublicNavigation({
   };
 
   const navigationItems = [
-    { href: "/", label: "Pradžia", page: "home", external: false },
-    {
-      href: "/klubas",
-      label: "Klubas",
-      page: "klubas",
-      external: false,
-    },
-    {
-      href: "/naujienos",
-      label: "Naujienos",
-      page: "naujienos",
-      external: false,
-    },
+    { href: "/", label: "Pradžia", page: "home", paths: ["/"] },
+    { href: "/klubas", label: "Klubas", page: "klubas", paths: ["/klubas"] },
+    { href: "/naujienos", label: "Naujienos", page: "naujienos", paths: ["/naujienos"] },
     {
       label: "Komandos",
       page: "komandos",
+      paths: ["/zaidejai", "/players"],
       dropdown: true,
       items: [
-        {
-          href: "/zaidejai?team=BANGA A",
-          label: "Banga A",
-          page: "zaidejai",
-          external: false,
-        },
-        {
-          href: "/zaidejai?team=BANGA B",
-          label: "Banga B",
-          page: "zaidejai",
-          external: false,
-        },
-        {
-          href: "/zaidejai?team=BANGA M",
-          label: "Banga M",
-          page: "zaidejai",
-          external: false,
-        },
+        { href: "/zaidejai?team=BANGA A", label: "Banga A", page: "zaidejai-a", paths: ["/zaidejai", "/players"] },
+        { href: "/zaidejai?team=BANGA B", label: "Banga B", page: "zaidejai-b", paths: ["/zaidejai", "/players"] },
+        { href: "/zaidejai?team=BANGA M", label: "Banga M", page: "zaidejai-m", paths: ["/zaidejai", "/players"] },
       ],
     },
     {
       label: "Bilietai ir abonementai",
       page: "tickets-subscriptions",
+      paths: ["/renginiai", "/event", "/prenumeratos", "/subscriptions", "/tickets", "/bilietai"],
       dropdown: true,
       items: [
-        {
-          href: "/renginiai",
-          label: "Bilietai",
-          page: "renginiai",
-          external: false,
-        },
-        {
-          href: "/prenumeratos",
-          label: "Abonementai",
-          page: "prenumeratos",
-          external: false,
-        },
+        { href: "/renginiai", label: "Bilietai", page: "renginiai", paths: ["/renginiai", "/event"] },
+        { href: "/prenumeratos", label: "Abonementai", page: "prenumeratos", paths: ["/prenumeratos", "/subscriptions"] },
       ],
     },
-    {
-      href: "/pamaina",
-      label: "Akademija",
-      page: "pamaina",
-      external: false,
-    },
-    {
-      href: "/parduotuve",
-      label: "Parduotuvė",
-      page: "parduotuve",
-      external: false,
-    },
-
-    {
-      href: "/kontaktai",
-      label: "Kontaktai",
-      page: "kontaktai",
-      external: false,
-    },
+    { href: "/pamaina", label: "Akademija", page: "pamaina", paths: ["/pamaina"] },
+    { href: "/parduotuve", label: "Parduotuvė", page: "parduotuve", paths: ["/parduotuve", "/shop"] },
+    { href: "/kontaktai", label: "Kontaktai", page: "kontaktai", paths: ["/kontaktai", "/contact"] },
   ];
 
   return (
@@ -219,7 +174,7 @@ export function PublicNavigation({
                         <Button
                           variant="ghost"
                           className={`flex items-center gap-1 transition-colors bg-transparent hover:bg-transparent focus:bg-transparent rounded-none ${
-                            currentPage === item.page
+                            isActive(item.paths)
                               ? "text-primary border-b-2 border-primary"
                               : "text-white hover:text-primary hover:border-b-2 hover:border-primary"
                           }`}
@@ -252,7 +207,7 @@ export function PublicNavigation({
                     key={item.href}
                     href={item.href || "#"}
                     className={`transition-colors ${
-                      currentPage === item.page
+                      isActive(item.paths)
                         ? "text-primary border-b-2 border-primary"
                         : "text-white hover:text-primary hover:border-b-2 hover:border-primary"
                     }`}
@@ -328,7 +283,7 @@ export function PublicNavigation({
                         href={dropdownItem.href || "#"}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`text-base py-2 px-8 transition-colors ${
-                          currentPage === dropdownItem.page
+                          isActive(dropdownItem.paths)
                             ? "text-primary border-l-2 border-primary"
                             : "text-white hover:text-primary hover:border-l-2 hover:border-primary"
                         }`}
@@ -346,7 +301,7 @@ export function PublicNavigation({
                   href={item.href || "#"}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-lg py-3 px-4 transition-colors ${
-                    currentPage === item.page
+                    isActive(item.paths)
                       ? "text-primary border-l-2 border-primary"
                       : "text-white hover:text-primary hover:border-l-2 hover:border-primary"
                   }`}

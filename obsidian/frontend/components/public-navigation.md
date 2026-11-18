@@ -11,22 +11,17 @@ updated: 2026-11-18
 
 ## Purpose
 
-Header for all public pages: upcoming-match info bar (from `/api/matches/upcoming`),
+Header for all public pages (via the `(public)` layout): upcoming-match info bar (from `/api/matches/upcoming`),
 main nav with dropdowns (Komandos, Bilietai ir abonementai), cart button, and a mobile
 menu sheet. The whole header block (info bar + nav) is `sticky top-0 z-50`, so it stays
 visible on scroll. Do not put `overflow` on page wrappers above it — that breaks sticky.
 
 ## Props
 
-```ts
-interface PublicNavigationProps {
-  currentPage?: string
-}
-```
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `currentPage` | `string` | `"events"` | Highlights the matching nav item |
+No props. It is mounted once in `app/(public)/layout.tsx` and stays mounted between pages
+(the upcoming-match request runs once, not per page). The active item comes from
+`usePathname()` via each nav item's `paths` list, including dropdown parents
+(`/zaidejai` highlights "Komandos"). Add a route to the right item's `paths` when you add a page.
 
 ## Notes
 

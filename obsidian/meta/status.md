@@ -13,6 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
+- Shared `(public)` layout, full-screen loaders removed (skeletons instead), landing news server-fetched with ISR (ADR-0010).
 - Own pages `/klubas`, `/pamaina`, `/kontaktai` built and linked from the header (ADR-0009); the dead Hostinger links are gone.
 - Motion cleanup on landing + players pages (ADR-0008): no page-load stagger, calmer hero carousel, skeleton loading, hover only on hover-capable devices.
 - Next 15.5 / React 19 upgrade (ADR-0007) merged to `master` and pushed (`95a05bb`); builds and smoke-tests clean locally. Verify the Vercel deployment (needs real Stripe/Resend/QR env vars at build time).
@@ -40,10 +41,10 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Next up
 
+- Speed: move the remaining client-fetched public pages (news list, players, fixtures, results, standings, shop, events, subscriptions) to server components with `revalidate`, like the landing page (ADR-0010). Hero slides 2-3 broken-image item is fixed.
 - **Push the image fix**: `origin/master` lacks `public/landing/*` (Įsigykite images 404 in production) until the commit that adds them is pushed. `.gitignore` now un-ignores `public/`.
 - Footer links `/privacy` and `/cookies` 404 (pages missing). `/contact` duplicates `/kontaktai` with a non-working form and a different address; decide whether to redirect it. Review the copied club content (phones, staff) with the club.
 - Finish ADR-0008 on the remaining pages: `naujienos`, `renginiai`, `parduotuve`, `lentele` still use `usePageAnimation`; fixtures detail and `/players/[id]` loading states.
-- Hero: slides 2-3 point at missing `/ticketsbg.png` / `/shopbg.png` (add images or reuse `public/landing/*`); every slide renders an `<h1>` (5 per page), should be one.
 - After the upgrade: add `revalidate`/`cache` only where caching is wanted (fetches are uncached by default now). Add `loading.tsx` / `error.tsx` / `not-found.tsx` (1 exists), server-side auth for `/dashboard` (no `middleware.ts`; `AuthGuard` is not mounted), move the 24 client pages that fetch in `useEffect` to server components, pin the 4 `latest` deps, add `favicon.ico`.
 - Audit follow-ups: shared `(public)` layout (24 pages import nav/footer by hand), remove duplicate EN/LT routes, `<h1>`/`<main>` on pages missing them, reduced-motion + hero pause control, remaining non-token colours (`#FFCC00`, `#FF3B30`, `#111111`, `#222222`, `#5F5F71`, hero gradients).
 - Set the Supabase env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_*`) in Vercel; deployment from `master` may already be building. `npm run build` locally also needs a Stripe key (fails at `/api/checkout/shop` without it).
