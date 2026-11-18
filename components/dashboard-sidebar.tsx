@@ -205,7 +205,7 @@ export function DashboardMobileMenu() {
             className={`flex flex-col items-center flex-1 py-2 px-1 gap-0.5 text-xs text-white hover:text-primary transition ${pathname === item.href ? "text-primary font-bold" : ""}`}
           >
             <item.icon className="h-6 w-6 mb-0.5" />
-            <span className="leading-none text-[11px]">{item.name}</span>
+            <span className="leading-none text-xs">{item.name}</span>
           </Link>
         ))}
         <button
@@ -214,7 +214,7 @@ export function DashboardMobileMenu() {
           aria-label="Profilis"
         >
           <UserIcon className="h-6 w-6 mb-0.5" />
-          <span className="leading-none text-[11px]">Profilis</span>
+          <span className="leading-none text-xs">Profilis</span>
         </button>
       </nav>
       {/* Modal for extra actions, only on mobile */}

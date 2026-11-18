@@ -181,7 +181,7 @@ export default function ResultsPage() {
                   className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-16 py-4 border-b border-[rgba(95,95,113,0.39)] bg-background hover:bg-surface-raised transition-colors cursor-pointer"
                 >
                   {/* Date */}
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-full md:w-[150px] mb-2 md:mb-0">
+                  <div className="text-white text-sm md:text-base font-medium w-full md:w-[150px] mb-2 md:mb-0">
                     {formatDate(match.date)}
                   </div>
                   
@@ -189,7 +189,7 @@ export default function ResultsPage() {
                   <div className="flex items-center justify-center gap-2 md:gap-4 flex-1 mb-2 md:mb-0">
                     {/* Home Team */}
                     <div className="flex items-center gap-1 md:gap-2 flex-1 justify-end">
-                      <span className="text-white text-[12px] md:text-[16px] font-medium text-right min-w-[60px] md:min-w-[100px] truncate">
+                      <span className="text-white text-xs md:text-base font-medium text-right min-w-[60px] md:min-w-[100px] truncate">
                         {match.home_team.name}
                       </span>
                       <div className="h-5 w-5 md:h-8 md:w-8 relative flex-shrink-0">
@@ -203,7 +203,7 @@ export default function ResultsPage() {
                     </div>
                     
                     {/* Score - Always centered */}
-                    <div className="text-white text-[16px] md:text-[20px] font-bold mx-2 md:mx-4 flex-shrink-0">
+                    <div className="text-white text-base md:text-xl font-bold mx-2 md:mx-4 flex-shrink-0">
                       {match.home_score} - {match.away_score}
                     </div>
                     
@@ -217,14 +217,14 @@ export default function ResultsPage() {
                           className="object-contain"
                         />
                       </div>
-                      <span className="text-white text-[12px] md:text-[16px] font-medium text-left min-w-[60px] md:min-w-[100px] truncate">
+                      <span className="text-white text-xs md:text-base font-medium text-left min-w-[60px] md:min-w-[100px] truncate">
                         {match.away_team.name}
                       </span>
                     </div>
                   </div>
                   
                   {/* Stadium */}
-                  <div className="text-white text-[11px] md:text-[14px] text-gray-300 w-full md:w-[200px] text-center md:text-right">
+                  <div className="text-white text-xs md:text-sm text-gray-300 w-full md:w-[200px] text-center md:text-right">
                     {match.stadium}
                   </div>
                 </Link>

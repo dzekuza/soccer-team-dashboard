@@ -159,16 +159,16 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
         <table className="w-full text-white">
           <thead>
             <tr className="border-b border-[rgba(95,95,113,0.3)]">
-              <th className="px-2 md:px-4 py-3 text-left font-medium text-[14px] w-12 md:w-auto">Poz.</th>
-              <th className="px-2 md:px-4 py-3 text-left font-medium text-[14px] w-32 md:w-auto">Komanda</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">R</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">L</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Lyg.</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Pr.</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Įv.</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Pr.</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Skirt.</th>
-              <th className="px-1 md:px-4 py-3 text-center font-medium text-[14px] w-8 md:w-auto">Tšk.</th>
+              <th className="px-2 md:px-4 py-3 text-left font-medium text-sm w-12 md:w-auto">Poz.</th>
+              <th className="px-2 md:px-4 py-3 text-left font-medium text-sm w-32 md:w-auto">Komanda</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">R</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">L</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">Lyg.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">Pr.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">Įv.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">Pr.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">Skirt.</th>
+              <th className="px-1 md:px-4 py-3 text-center font-medium text-sm w-8 md:w-auto">Tšk.</th>
             </tr>
           </thead>
           <tbody>
@@ -179,10 +179,10 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
                     team.team.name?.toLowerCase().includes('banga') ? 'bg-surface-deep/50' : ''
                   }`}
                 >
-                  <td className="px-2 md:px-4 py-3 text-[14px] font-medium w-12 md:w-auto">
+                  <td className="px-2 md:px-4 py-3 text-sm font-medium w-12 md:w-auto">
                     {team.position}
                   </td>
-                  <td className="px-2 md:px-4 py-3 text-[14px] font-medium w-32 md:w-auto">
+                  <td className="px-2 md:px-4 py-3 text-sm font-medium w-32 md:w-auto">
                     <div className="flex items-center gap-2">
                       {team.team.logo && (
                         <img 
@@ -196,14 +196,14 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
                       </span>
                     </div>
                   </td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.played}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.won}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.drawn}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.lost}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.goalsFor}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.goalsAgainst}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] w-8 md:w-auto">{team.goalDifference}</td>
-                  <td className="px-1 md:px-4 py-3 text-center text-[14px] font-semibold w-8 md:w-auto">{team.points}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.played}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.won}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.drawn}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.lost}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.goalsFor}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.goalsAgainst}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm w-8 md:w-auto">{team.goalDifference}</td>
+                  <td className="px-1 md:px-4 py-3 text-center text-sm font-semibold w-8 md:w-auto">{team.points}</td>
               </tr>
             ))}
           </tbody>
@@ -214,7 +214,7 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
         <div className="bg-surface-raised flex flex-col items-center justify-center p-6">
           <a 
             href="/lentele" 
-            className="text-white text-[16px] font-medium text-center hover:opacity-80 transition-opacity"
+            className="text-white text-base font-medium text-center hover:opacity-80 transition-opacity"
           >
             Rodyti pilną lentelę
           </a>

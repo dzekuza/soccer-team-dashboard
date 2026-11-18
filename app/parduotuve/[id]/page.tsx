@@ -224,7 +224,7 @@ export default function ProductPage() {
             <div className="space-y-6">
               {/* Product Title and Price */}
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                <h1 className="text-title font-bold text-white mb-2">
                   {product.name}
                 </h1>
                 <div className="text-primary font-bold text-3xl lg:text-4xl">

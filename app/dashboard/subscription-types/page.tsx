@@ -9,7 +9,7 @@ export default async function SubscriptionTypesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white">Prenumeratos tipai</h1>
+        <h1 className="text-title font-bold text-white">Prenumeratos tipai</h1>
         <p className="text-gray-300 mt-2">
           Valdykite skirtingus prenumeratos tipus su kainomis ir funkcijomis
         </p>

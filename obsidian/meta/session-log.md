@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Type scale
+
+- **Changed:** `fontSize` tokens in `tailwind.config.ts`; `*-public` helpers rebuilt on them; arbitrary px sizes and `<h1>` sizes mapped (48 files); design-system note, ADR-0005, changelog.
+- **Status:** `tsc` clean; `/naujienos` h1 is 40/48px at 390px and 64/77px at 1200px, no overflow. Committed.
+- **Next:** shared `(public)` layout, remove duplicate EN/LT routes, `<h1>`/`<main>` on pages missing them, reduced-motion.
+
 ## 2026-11-18 — Typography/layout audit, tokens and fonts
 
 - **Changed:** colour tokens in `globals.css` + `tailwind.config.ts`; 664 arbitrary hex classes codemodded across 74 files; DM Sans via `next/font/google`; deleted `public/fonts/`; vault design-system table, ADR-0004, changelog.

@@ -109,7 +109,7 @@ export default function ExportClient({ initialEvents, initialTickets, initialSta
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Eksportuoti duomenis</h1>
+        <h1 className="text-title font-bold">Eksportuoti duomenis</h1>
         <p className="text-gray-600">Eksportuokite savo renginius ir bilietus WordPress integracijai</p>
       </div>
 

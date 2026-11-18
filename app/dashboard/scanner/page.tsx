@@ -215,7 +215,7 @@ export default function ScannerPage() {
     <div className="w-full h-full flex flex-col">
       {/* Header */}
       <div className="p-4 border-b flex justify-between items-center">
-        <h1 className="text-2xl font-bold">QR Kodų Skeneris</h1>
+        <h1 className="text-title font-bold">QR Kodų Skeneris</h1>
         <button
           onClick={() => {
             setLastScan(null)

@@ -107,7 +107,7 @@ export function LatestPostsSection() {
                     </div>
                     
                     {/* Title */}
-                    <div className="text-2xl md:text-3xl lg:text-4xl xl:text-[48px] font-bold text-white leading-tight">
+                    <div className="text-headline font-bold text-white">
                       <Link href={`/naujienos/${post.id}`} className="hover:opacity-80 transition-opacity">
                         <p className="mb-0 leading-tight">
                           {post.title}
@@ -143,7 +143,7 @@ export function LatestPostsSection() {
                     </div>
                     
                     {/* Title */}
-                    <div className="text-2xl md:text-3xl lg:text-4xl xl:text-[48px] font-bold text-white leading-tight">
+                    <div className="text-headline font-bold text-white">
                       <Link href={`/naujienos/${post.id}`} className="hover:opacity-80 transition-opacity">
                         <p className="mb-0 leading-tight">
                           {post.title}

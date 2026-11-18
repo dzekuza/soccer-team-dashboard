@@ -112,7 +112,7 @@ export default function SinglePostPage() {
           </Link>
           
           {/* Post Title */}
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-white mb-2">
+          <h1 className="text-title font-semibold text-white mb-2">
             {post.title}
           </h1>
           

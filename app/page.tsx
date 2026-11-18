@@ -196,7 +196,7 @@ export default function LandingPage() {
                <div className="relative z-10 h-full flex items-end">
                  <div className="w-full px-4 md:px-16 pb-16">
                    <div className="max-w-2xl">
-                     <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                     <h1 className="text-display font-bold text-white mb-6">
                        {slide.title}
                      </h1>
                      <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed">
@@ -277,7 +277,7 @@ export default function LandingPage() {
       }`}>
         <div className="w-full max-w-none">
           <div className="text-center py-8 border-t border-b border-surface">
-            <h2 className="text-white text-2xl md:text-[48px] font-bold leading-tight md:leading-[60px]">
+            <h2 className="text-white text-headline font-bold">
               Turnyrinė lentelė
             </h2>
           </div>

@@ -14,6 +14,12 @@ const config: Config = {
   		fontFamily: {
   			sans: ['var(--font-sans)', ...fontFamily.sans]
   		},
+  		fontSize: {
+  			// Fluid display scale; body/UI sizes use Tailwind's xs/sm/base/lg/xl.
+  			display: ['clamp(2.5rem, 1.75rem + 3vw, 4rem)', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+  			headline: ['clamp(2rem, 1.6rem + 1.6vw, 3rem)', { lineHeight: '1.25' }],
+  			title: ['clamp(1.5rem, 1.3rem + 0.8vw, 2rem)', { lineHeight: '1.25' }]
+  		},
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

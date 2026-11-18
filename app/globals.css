@@ -126,21 +126,21 @@
 }
 
 @layer components {
-  /* Public typography helpers */
+  /* Public typography helpers, built from the type-scale tokens */
   .h1-public {
-    @apply text-white font-bold text-[40px] leading-[52px] md:text-[64px] md:leading-[76px];
+    @apply text-white font-bold text-display;
   }
   .h2-public {
-    @apply text-white text-center font-bold text-[32px] leading-[40px] md:text-[48px] md:leading-[60px];
+    @apply text-white text-center font-bold text-headline;
   }
   .p-public {
-    @apply text-white font-medium text-[16px] leading-[24px];
+    @apply text-white font-medium text-base;
   }
   .subheading-public {
-    @apply text-white/60 font-medium text-[16px] leading-[24px];
+    @apply text-white/60 font-medium text-base;
   }
   .link-underline-public {
-    @apply text-[#FA871C] text-center font-medium text-[16px] leading-[24px] underline underline-offset-2;
+    @apply text-primary text-center font-medium text-base underline underline-offset-2;
   }
 }
 

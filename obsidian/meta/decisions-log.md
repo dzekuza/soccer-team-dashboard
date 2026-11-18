@@ -10,6 +10,25 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0005 — Fluid type-scale tokens replace arbitrary pixel sizes
+
+- **Status:** Accepted
+- **Date:** 2026-11-18
+
+**Context.** Sizes were ad hoc: 85 `text-[Npx]` values, paired `md:` overrides, raw-px
+helper classes, and page `<h1>`s mixing `text-2xl`/`3xl`/`4xl`.
+
+**Decision.** Add `display`, `headline` and `title` fluid `clamp()` sizes to the
+Tailwind `fontSize` theme; map `text-[14/16/12/11px]` to `sm/base/xs/xs`; rebuild the
+`*-public` helpers from the tokens; every `<h1>` with a size class uses
+`text-title` (or `text-display`). See [[design-system]].
+
+**Consequences.** 11px text is now 12px. Dashboard `<h1>`s that were 24/30px now scale
+24-32px. Heading sizes live in one file. `<h2>`/`<h3>` and card titles still use plain
+Tailwind sizes and need a pass when components are extracted.
+
+---
+
 ## ADR-0004 — Palette and font tokenised; DM Sans via next/font
 
 - **Status:** Accepted

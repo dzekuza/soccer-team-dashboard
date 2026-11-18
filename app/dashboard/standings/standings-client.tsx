@@ -101,7 +101,7 @@ export default function StandingsClient() {
 
   return (
     <div className="p-8 text-white">
-      <h1 className="text-2xl font-bold mb-4">Standings</h1>
+      <h1 className="text-title font-bold mb-4">Standings</h1>
       <div className="mb-4 flex items-center gap-2">
         <label htmlFor="team-filter" className="text-sm">Filter by team key:</label>
         <select

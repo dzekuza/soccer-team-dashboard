@@ -170,7 +170,7 @@ export default function CheckoutPage() {
             {/* Main Content */}
             <div className="w-full flex flex-col flex-1">
                 <div className="text-center py-8 border-b border-surface">
-                    <h1 className="text-3xl md:text-4xl font-bold text-white">
+                    <h1 className="text-title font-bold text-white">
                         {cart.some(item => item.eventId === "shop") ? "Apmokėjimas" : "Bilietų / Abonementų apmokėjimas"}
                     </h1>
                 </div>

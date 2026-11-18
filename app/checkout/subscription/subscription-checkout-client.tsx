@@ -113,7 +113,7 @@ export function SubscriptionCheckoutClient() {
     return (
       <div className="w-full px-4 md:px-8 lg:px-16 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-400 mb-4">Klaida</h1>
+          <h1 className="text-title font-bold text-red-400 mb-4">Klaida</h1>
           <p className="text-gray-300">{error || 'Prenumeratos tipas nerastas'}</p>
           <Button 
             onClick={() => window.history.back()} 
@@ -128,7 +128,7 @@ export function SubscriptionCheckoutClient() {
 
   return (
     <div className="w-full px-4 md:px-8 lg:px-16 py-8">
-      <h1 className="text-2xl font-bold text-white mb-6">Prenumeratos pirkimas</h1>
+      <h1 className="text-title font-bold text-white mb-6">Prenumeratos pirkimas</h1>
       
       <div className="grid gap-6 md:grid-cols-2">
         {/* Subscription Type Summary */}

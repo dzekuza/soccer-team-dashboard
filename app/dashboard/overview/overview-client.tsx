@@ -41,7 +41,7 @@ export default function OverviewClient({
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div>
-        <h1 className="text-4xl font-bold mb-2">Suvestinė</h1>
+        <h1 className="text-title font-bold mb-2">Suvestinė</h1>
         <p className="text-gray-600">Pilna Jūsų futbolo komandos renginių ir bilietų apžvalga</p>
       </div>
       {/* Key Metrics */}

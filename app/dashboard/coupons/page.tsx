@@ -251,7 +251,7 @@ export default function CouponsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Kuponų kodai</h1>
+          <h1 className="text-title font-bold">Kuponų kodai</h1>
           <p className="text-gray-600">Tvarkykite nuolaidų kuponus</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

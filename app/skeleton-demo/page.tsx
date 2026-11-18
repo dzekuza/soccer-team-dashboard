@@ -15,7 +15,7 @@ export default function SkeletonDemoPage() {
   return (
     <div className="container mx-auto p-8 space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold mb-2">Skeleton Components Demo</h1>
+        <h1 className="text-title font-bold mb-2">Skeleton Components Demo</h1>
         <p className="text-muted-foreground">Showcasing all available skeleton loading states</p>
       </div>
 

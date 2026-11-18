@@ -145,14 +145,14 @@ export default function StandingsPage() {
           {/* Table Header */}
           <div className="bg-surface-raised relative rounded-tr-[8px] border-b border-[rgba(95,95,113,0.39)] min-w-[600px]">
             <div className="flex items-center justify-between px-4 md:px-16 py-6">
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium w-[19px] text-center">Vt</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium w-[120px] md:w-[233px]">Komanda</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[15px]">R</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[10px]">Perg.</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[10px]">Lyg.</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[9px]">Pr.</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[20px]">Įv.</div>
-              <div className="text-[rgba(255,255,255,0.58)] text-[14px] md:text-[16px] font-medium text-center w-[21px]">Tsk.</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium w-[19px] text-center">Vt</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium w-[120px] md:w-[233px]">Komanda</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium text-center w-[15px]">R</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium text-center w-[10px]">Perg.</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium text-center w-[10px]">Lyg.</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium text-center w-[9px]">Pr.</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium text-center w-[20px]">Įv.</div>
+              <div className="text-[rgba(255,255,255,0.58)] text-sm md:text-base font-medium text-center w-[21px]">Tsk.</div>
             </div>
           </div>
           
@@ -166,7 +166,7 @@ export default function StandingsPage() {
                     row.team.name.toLowerCase().includes('banga') ? "bg-primary" : "bg-background"
                   }`}
                 >
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[19px] text-center">{row.position}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[19px] text-center">{row.position}</div>
                   <div className="flex items-center gap-[8px] md:gap-[19px] w-[120px] md:w-[233px]">
                     <div className="h-6 w-6 md:h-8 md:w-8 relative flex-shrink-0">
                       <Image 
@@ -176,14 +176,14 @@ export default function StandingsPage() {
                         className="object-contain"
                       />
                     </div>
-                    <div className="text-white text-[12px] md:text-[16px] font-medium truncate">{row.team.name}</div>
+                    <div className="text-white text-xs md:text-base font-medium truncate">{row.team.name}</div>
                   </div>
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[15px] text-center">{row.played}</div>
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[10px] text-center">{row.won}</div>
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[10px] text-center">{row.drawn}</div>
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[9px] text-center">{row.lost}</div>
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[20px] text-center">{row.goalsFor}</div>
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-[21px] text-center">{row.points}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[15px] text-center">{row.played}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[10px] text-center">{row.won}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[10px] text-center">{row.drawn}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[9px] text-center">{row.lost}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[20px] text-center">{row.goalsFor}</div>
+                  <div className="text-white text-sm md:text-base font-medium w-[21px] text-center">{row.points}</div>
                 </div>
               ))
             ) : (

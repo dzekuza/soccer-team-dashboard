@@ -106,7 +106,7 @@ export default function PostsClient({ initialPosts }: PostsClientProps) {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Posts Management</h1>
+          <h1 className="text-title font-bold">Posts Management</h1>
           <p className="text-muted-foreground">
             Manage news posts and articles
           </p>

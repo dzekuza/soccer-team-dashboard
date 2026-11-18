@@ -49,7 +49,7 @@ export default function FansPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Fanai</h1>
+        <h1 className="text-title font-bold">Fanai</h1>
         <p className="text-muted-foreground">Jūsų komandos fanų ir pirkėjų apžvalga.</p>
       </div>
       <div className="bg-card text-card-foreground rounded shadow overflow-x-auto">

@@ -81,7 +81,7 @@ function SubscriptionSuccessContent() {
         <div className="bg-background/50 border border-gray-700 rounded-lg shadow-lg p-8">
           <div className="text-center">
             <div className="text-green-500 text-6xl mb-4">✅</div>
-            <h1 className="text-3xl font-bold mb-4 text-white">Prenumeratos pirkimas sėkmingas!</h1>
+            <h1 className="text-title font-bold mb-4 text-white">Prenumeratos pirkimas sėkmingas!</h1>
             <p className="text-gray-300 mb-6">
               Ačiū už prenumeratos pirkimą. Jūsų prenumerata buvo aktyvuota ir galioja nuo šiandien.
             </p>

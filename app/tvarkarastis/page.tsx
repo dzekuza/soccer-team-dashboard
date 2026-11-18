@@ -229,7 +229,7 @@ export default function SchedulePage() {
                   className="flex flex-col md:flex-row items-start md:items-center justify-between px-4 md:px-16 py-4 border-b border-[rgba(95,95,113,0.39)] bg-background hover:bg-surface-raised transition-colors cursor-pointer"
                 >
                   {/* Date and Time */}
-                  <div className="text-white text-[14px] md:text-[16px] font-medium w-full md:w-[200px] mb-2 md:mb-0">
+                  <div className="text-white text-sm md:text-base font-medium w-full md:w-[200px] mb-2 md:mb-0">
                     <div>{formatDate(fixture.date)}</div>
                     {fixture.time && (
                       <div className="text-primary font-semibold">{formatTime(fixture.time)}</div>
@@ -240,7 +240,7 @@ export default function SchedulePage() {
                   <div className="flex items-center justify-center gap-2 md:gap-4 flex-1 mb-2 md:mb-0">
                     {/* Home Team */}
                     <div className="flex items-center gap-1 md:gap-2 flex-1 justify-end">
-                      <span className="text-white text-[12px] md:text-[16px] font-medium text-right min-w-[60px] md:min-w-[100px] truncate">
+                      <span className="text-white text-xs md:text-base font-medium text-right min-w-[60px] md:min-w-[100px] truncate">
                         {fixture.home_team.name}
                       </span>
                       <div className="h-5 w-5 md:h-8 md:w-8 relative flex-shrink-0">
@@ -254,7 +254,7 @@ export default function SchedulePage() {
                     </div>
                     
                     {/* VS */}
-                    <div className="text-white text-[16px] md:text-[20px] font-bold mx-2 md:mx-4 flex-shrink-0 text-primary">
+                    <div className="text-white text-base md:text-xl font-bold mx-2 md:mx-4 flex-shrink-0 text-primary">
                       VS
                     </div>
                     
@@ -268,7 +268,7 @@ export default function SchedulePage() {
                           className="object-contain"
                         />
                       </div>
-                      <span className="text-white text-[12px] md:text-[16px] font-medium text-left min-w-[60px] md:min-w-[100px] truncate">
+                      <span className="text-white text-xs md:text-base font-medium text-left min-w-[60px] md:min-w-[100px] truncate">
                         {fixture.away_team.name}
                       </span>
                     </div>
@@ -276,13 +276,13 @@ export default function SchedulePage() {
                   
                   {/* Stadium and Tickets Button */}
                   <div className="flex flex-col md:flex-row items-center md:items-end gap-2 w-full md:w-[200px] text-left">
-                    <div className="text-white text-[11px] md:text-[14px] text-gray-300">
+                    <div className="text-white text-xs md:text-sm text-gray-300">
                       {fixture.stadium}
                     </div>
                     {fixture.hasEvent && fixture.eventId && (
                       <Link 
                         href={`/event/${fixture.eventId}`}
-                        className="bg-primary hover:bg-primary-strong text-white text-[12px] md:text-[14px] font-semibold px-3 py-1.5 rounded transition-colors whitespace-nowrap"
+                        className="bg-primary hover:bg-primary-strong text-white text-xs md:text-sm font-semibold px-3 py-1.5 rounded transition-colors whitespace-nowrap"
                       >
                         Bilietai
                       </Link>

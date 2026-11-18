@@ -148,7 +148,7 @@ export default function TemplatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">El. pašto šablonai</h1>
+        <h1 className="text-title font-bold text-white">El. pašto šablonai</h1>
         <p className="text-gray-300">
           Keiskite ir redaguokite siunčiamų laiškų turinį.
         </p>

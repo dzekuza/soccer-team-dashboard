@@ -15,7 +15,7 @@ export default async function PostsPage() {
     return (
         <div className="flex items-center justify-center h-full">
             <div className="text-center">
-                <h1 className="text-2xl font-bold">Error</h1>
+                <h1 className="text-title font-bold">Error</h1>
                 <p className="text-red-500">Failed to load posts data. Please try again later.</p>
             </div>
         </div>

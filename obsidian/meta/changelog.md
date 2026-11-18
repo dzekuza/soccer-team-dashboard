@@ -9,6 +9,10 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Type scale
+
+- Added fluid `text-display` / `text-headline` / `text-title` tokens; removed all `text-[Npx]`/`leading-[Npx]` values; `<h1>`s and `.h1-public`/`.h2-public` use the tokens. See ADR-0005.
+
 ## 2026-11-18 — Design tokens and fonts
 
 - Replaced ~665 arbitrary hex classes with semantic tokens; removed colliding `.text-muted`/`.text-accent`/`.bg-accent`/`.bg-brand` utilities and `main-orange`. See ADR-0004.

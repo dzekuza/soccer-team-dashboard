@@ -157,7 +157,7 @@ function SignInForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
   return (
     <form onSubmit={handleSignIn} autoComplete="on" className="flex flex-col gap-8">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Prisijungti</h1>
+        <h1 className="text-title font-bold">Prisijungti</h1>
         <p className="text-balance text-sm text-muted-foreground">Įveskite savo duomenis</p>
       </div>
       {error && (
@@ -209,7 +209,7 @@ function SignUpForm({ onAuthSuccess }: { onAuthSuccess: () => void }) {
   return (
     <form onSubmit={handleSignUp} autoComplete="on" className="flex flex-col gap-8">
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Sukurti paskyrą</h1>
+        <h1 className="text-title font-bold">Sukurti paskyrą</h1>
         <p className="text-balance text-sm text-muted-foreground">Įveskite savo duomenis registracijai</p>
       </div>
        {error && (

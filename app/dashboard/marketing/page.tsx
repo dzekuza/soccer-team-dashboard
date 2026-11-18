@@ -147,7 +147,7 @@ export default function MarketingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white">Marketingas</h1>
+        <h1 className="text-title font-bold text-white">Marketingas</h1>
         <p className="text-gray-300">
           Siųskite el. laiškus savo gerbėjams ir stebėkite kampanijų rezultatus.
         </p>

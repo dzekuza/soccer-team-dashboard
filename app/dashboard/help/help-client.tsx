@@ -73,7 +73,7 @@ export default function HelpClient({ helpSections }: HelpClientProps) {
           <HelpCircle className="h-8 w-8 text-blue-600" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Pagalba</h1>
+          <h1 className="text-title font-bold text-gray-900">Pagalba</h1>
           <p className="text-gray-600">Išsamūs nurodymai, kaip naudotis sistemos funkcijomis</p>
         </div>
       </div>

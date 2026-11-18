@@ -38,9 +38,24 @@ block of `app/globals.css`, bound to Tailwind in `tailwind.config.ts`.
 | `text-muted-foreground` | `--muted-foreground` | `#B0B8D1` | Secondary text |
 | `font-sans` | `--font-sans` | DM Sans (variable) | All text; loaded by `next/font/google` (latin + latin-ext) |
 
+## Type scale
+
+DM Sans throughout. Body/UI use Tailwind's `text-xs` 12 / `sm` 14 / `base` 16 /
+`lg` / `xl`. Three fluid tokens (in `tailwind.config.ts` `fontSize`) cover headings,
+so no `md:text-*` pairs and no `text-[Npx]`:
+
+| Class | Size (mobile -> desktop) | Line height | Use for |
+|-------|--------------------------|-------------|---------|
+| `text-display` | 40 -> 64px | 1.2, -0.02em | Hero / `.h1-public` |
+| `text-headline` | 32 -> 48px | 1.25 | Section titles / `.h2-public` |
+| `text-title` | 24 -> 32px | 1.25 | Page `<h1>` (dashboard and public) |
+
+Weights: `font-bold` for headings, `font-semibold` for sub-heads, `font-medium` for UI.
+Public helpers (`.h1-public`, `.h2-public`, `.p-public`, `.subheading-public`,
+`.link-underline-public`) in `globals.css` are composed from these tokens.
+
 Not yet tokenised (still arbitrary values): `#FFCC00`, `#FF3B30`, `#111111`,
-`#222222`, `#5F5F71`, hero gradients (`#1a2b6b`, `#1a237e`, `#0f1f6b`), and the
-type scale (`text-[14px]` etc.). `app/naujienos/test/page.tsx` is a Figma export
+`#222222`, `#5F5F71`, hero gradients (`#1a2b6b`, `#1a237e`, `#0f1f6b`). `app/naujienos/test/page.tsx` is a Figma export
 scratch page and was left untouched.
 
 ## Adding a token
