@@ -40,6 +40,10 @@ const config: Config = {
   				raised: 'hsl(var(--surface-raised))',
   				deep: 'hsl(var(--surface-deep))'
   			},
+  			booking: {
+  				yellow: 'hsl(var(--booking-yellow))',
+  				red: 'hsl(var(--booking-red))'
+  			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
   				strong: 'hsl(var(--primary-strong))',

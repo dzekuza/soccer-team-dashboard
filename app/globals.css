@@ -175,6 +175,8 @@
     --surface: 231 47% 26%;
     --surface-raised: 225 82% 22%;
     --surface-deep: 231 64% 18%;
+    --booking-yellow: 48 100% 50%;
+    --booking-red: 4 100% 59%;
     --sidebar-background: 220 100% 20%;
     --sidebar-foreground: 0 0% 100%;
     --sidebar-primary: 220 100% 30%;
@@ -221,6 +223,8 @@
     --surface: 231 47% 26%;             /* #232C62 panels, card borders */
     --surface-raised: 225 82% 22%;      /* #0A2065 hover / raised panels */
     --surface-deep: 231 64% 18%;        /* #10194A recessed areas, overlays */
+    --booking-yellow: 48 100% 50%;      /* #FFCC00 yellow card */
+    --booking-red: 4 100% 59%;          /* #FF3B30 red card */
   }
 }
 

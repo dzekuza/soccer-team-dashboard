@@ -36,6 +36,7 @@ block of `app/globals.css`, bound to Tailwind in `tailwind.config.ts`.
 | `bg-primary` / `text-primary` | `--primary` (= `--accent`, `--ring`) | `#F15601` | Brand orange: CTAs, active states |
 | `bg-primary-strong` | `--primary-strong` | `#E04501` | Hover/pressed orange |
 | `text-muted-foreground` | `--muted-foreground` | `#B0B8D1` | Secondary text |
+| `bg-booking-yellow` / `bg-booking-red` | `--booking-yellow`, `--booking-red` | `#FFCC00` / `#FF3B30` | Yellow and red cards (match timeline) |
 | `font-sans` | `--font-sans` | DM Sans (variable) | All text; loaded by `next/font/google` (latin + latin-ext) |
 
 ## Motion
@@ -70,8 +71,16 @@ transition: fade an overlay layer instead.
   (heading, tabs) at once and put a skeleton where the data goes: `RowListSkeleton`,
   `CardGridSkeleton`, `ArticleSkeleton`, `ProfileSkeleton` (`components/common/page-skeletons.tsx`).
   `Skeleton` defaults to `bg-surface`; do not override it with raw greys.
-- **Fetch on the server when the page is public content.** The landing page loads news in
-  `views/landing-view.tsx` (`lib/posts.ts`) with `revalidate = 60`, so HTML arrives complete.
+- **Fetch on the server when the page is public content.** Landing, news, results, schedule,
+  standings, players and the match page load data in a server `view` through `lib/*` helpers with
+  `revalidate = 60`, so the HTML arrives complete. Only the interactive part (squad tabs) is a
+  client "board" component that receives the data as props (`components/fixtures/fixtures-board.tsx`,
+  `components/standings/standings-board.tsx`, `components/players/players-board.tsx`).
+- **Client components never import server helpers** (`lib/fixtures.ts` uses `react.cache` + Supabase).
+  Share only types (`import type`) and client-safe code (`lib/format-date.ts`).
+- **Show only real data.** No placeholder rows or invented labels ("Nežinomas stadionas", fake lineups);
+  omit what is unknown and give an honest empty state. Route-level `loading.tsx` shows the page frame +
+  skeleton while an uncached page renders.
 
 ## Type scale
 
@@ -93,8 +102,8 @@ Weights: `font-bold` for headings, `font-semibold` for sub-heads, `font-medium` 
 Public helpers (`.h1-public`, `.h2-public`, `.p-public`, `.subheading-public`,
 `.link-underline-public`) in `globals.css` are composed from these tokens.
 
-Not yet tokenised (still arbitrary values): `#FFCC00`, `#FF3B30`, `#111111`,
-`#222222`, `#5F5F71`, hero gradients (`#1a2b6b`, `#1a237e`, `#0f1f6b`). `app/naujienos/test/page.tsx` is a Figma export
+Not yet tokenised (still arbitrary values): `#111111`, `#222222`, `#5F5F71`, hero gradients
+(`#1a237e`, `#0f1f6b`). `app/naujienos/test/page.tsx` is a Figma export
 scratch page and was left untouched.
 
 ## Adding a token

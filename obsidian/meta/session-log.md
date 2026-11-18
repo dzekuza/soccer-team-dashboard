@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Match page redesign, server-rendered public list pages
+
+- **Changed:** new `lib/{supabase-public,format-date,fixtures,standings,players}.ts` + `getPosts`; `views/{fixture,schedule,results,standings,news,players}-view.tsx`; `components/{fixtures,standings,players,news}/*`; thin routes + `loading.tsx` for 6 pages, `fixtures/[id]/{page,loading,not-found}.tsx`; tokens; scoreboard meta row centred. Vault: design-system, ADR-0011, catalogs, routing, seo, changelog.
+- **Status:** `tsc` clean; build passes (list pages ISR 1m, `/fixtures/[id]` cached per match, `/zaidejai` dynamic for `?team=`); HTML of each page contains its data (34 results, 10-team table, 20 news, players), no skeletons, one `<h1>`; tabs, row links and not-found checked in the browser. Committed.
+- **Next:** remaining client-fetched pages (renginiai, parduotuve/shop, subscriptions, detail pages for news/players, landing match strip + standings widget); delete the old `/api/*` routes nothing uses; row/cell seams on the highlighted standings row are cosmetic.
+
 ## 2026-11-18 — Įsigykite players smaller, grow on hover
 
 - **Changed:** `components/tickets-apparel-section.tsx` (bottom-anchored player, rest scale, group-hover/focus scale), `tailwind.config.ts` (`h-promo-player` 36rem, `scale-promo-rest`); design-system, catalog, changelog.

@@ -1,4 +1,4 @@
-import { createClient } from "@supabase/supabase-js"
+import { createPublicClient } from "@/lib/supabase-public"
 
 /** Post fields the landing page needs; the full article body stays on the server. */
 export interface LandingPost {
@@ -24,10 +24,7 @@ function toExcerpt(excerpt: string | null, content: string | null): string {
  * its news already in the HTML. Returns an empty list if the query fails.
  */
 export async function getLatestPosts(limit: number): Promise<LandingPost[]> {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from("posts")
@@ -46,5 +43,42 @@ export async function getLatestPosts(limit: number): Promise<LandingPost[]> {
     excerpt: toExcerpt(post.excerpt, post.content),
     imageUrl: post.image_url,
     createdAt: post.created_at,
+  }))
+}
+
+/** A post as shown on the news list. */
+export interface NewsPost {
+  id: string
+  title: string
+  excerpt: string | null
+  imageUrl: string | null
+  source: string
+  category: string | null
+  author: string | null
+  publishedDate: string | null
+}
+
+/** Newest posts for the news page, or null when the query fails. */
+export async function getPosts(limit: number): Promise<NewsPost[] | null> {
+  const { data, error } = await createPublicClient()
+    .from("posts")
+    .select("id, title, excerpt, image_url, source, category, author, published_date")
+    .order("created_at", { ascending: false })
+    .limit(limit)
+
+  if (error || !data) {
+    console.error("getPosts failed:", error?.message)
+    return null
+  }
+
+  return data.map((post) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt?.trim() || null,
+    imageUrl: post.image_url,
+    source: post.source,
+    category: post.category,
+    author: post.author,
+    publishedDate: post.published_date,
   }))
 }

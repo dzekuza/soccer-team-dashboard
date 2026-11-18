@@ -9,6 +9,12 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Server-rendered public pages and a redesigned match page
+
+- News, results, schedule, standings and players now render on the server (`views/*`, `lib/*`, `revalidate = 60`), with small client boards for tabs. Added route-level `loading.tsx`. See ADR-0011.
+- `/fixtures/[id]` redesigned: scoreboard (winner emphasis, status chip), info list, timeline and stat bars only when data exists, honest empty state, not-found page, `<h1>`, cached per match. Removed the invented 11+5 placeholder lineups; validated the id before querying.
+- Fixed: schedule rows nested a ticket link inside a row link; "Nežinomas stadionas" invented text removed; "saugas/saugė" now grouped as midfielders. New tokens `booking-yellow` / `booking-red`.
+
 ## 2026-11-18 — Įsigykite players smaller, grow on hover
 
 - Player cut-outs rest at 78% of the old size (about 450px instead of 720px), bottom-anchored, and scale up on tile hover/focus (`md`+, transform 300ms, anchored to the outer bottom corner). `h-promo-player` is now 36rem; new `scale-promo-rest`.

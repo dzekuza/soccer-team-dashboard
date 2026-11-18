@@ -22,6 +22,13 @@ primitives, reused across features.
 | HeroCarousel | `components/landing/hero-carousel.tsx` | Landing hero (client): 500ms crossfade, pauses on hover/focus, stops under reduced motion. Takes `latestPost` from the server | #wip |
 | MatchesAndStandings | `components/landing/matches-and-standings.tsx` | Landing match strip + league table with team tabs (client) | #wip |
 | LatestPostsSection | `components/latest-posts-section.tsx` | Alternating news rows; props: `posts: LandingPost[]` (server data, no own fetch) | #wip |
+| LoadError | `components/common/load-error.tsx` | Inline "could not load X" state; the page frame stays | #wip |
+| MatchSkeleton | `components/common/page-skeletons.tsx` | Scoreboard-shaped placeholder for the match page | #wip |
+| FixturesBoard | `components/fixtures/fixtures-board.tsx` | Squad tabs + fixture rows for schedule/results (client, data via props); one stretched link per row | #wip |
+| MatchScoreboard, MatchTimeline, MatchStats, TeamLogo | `components/fixtures/*` | Match page header (status, teams, score), minute timeline, paired stat bars (SVG, no inline style), crest with initials fallback | #wip |
+| StandingsBoard | `components/standings/standings-board.tsx` | League tabs + native `<table>` (client, data via props) | #wip |
+| PlayersBoard | `components/players/players-board.tsx` | Squad tabs + players grouped by position (client; `initialTeam` from `?team=`) | #wip |
+| NewsCard | `components/news/news-card.tsx` | Article card for the news list (server) | #wip |
 | | | | #wip |
 
 ## Related

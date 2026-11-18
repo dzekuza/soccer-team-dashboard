@@ -13,6 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
+- News, results, schedule, standings, players and the match page render on the server with ISR (ADR-0011); match page redesigned, fake lineups removed.
 - Shared `(public)` layout, full-screen loaders removed (skeletons instead), landing news server-fetched with ISR (ADR-0010).
 - Own pages `/klubas`, `/pamaina`, `/kontaktai` built and linked from the header (ADR-0009); the dead Hostinger links are gone.
 - Motion cleanup on landing + players pages (ADR-0008): no page-load stagger, calmer hero carousel, skeleton loading, hover only on hover-capable devices.
@@ -41,7 +42,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Next up
 
-- Speed: move the remaining client-fetched public pages (news list, players, fixtures, results, standings, shop, events, subscriptions) to server components with `revalidate`, like the landing page (ADR-0010). Hero slides 2-3 broken-image item is fixed.
+- Speed (continued): still client-fetched: renginiai, parduotuve/shop, prenumeratos/subscriptions, `naujienos/[id]`, `players/[id]`, `zaidejai/[id]` (loads all players to show one), landing match strip + standings widget. Remove unused `/api/*` routes after.
 - **Push the image fix**: `origin/master` lacks `public/landing/*` (Įsigykite images 404 in production) until the commit that adds them is pushed. `.gitignore` now un-ignores `public/`.
 - Footer links `/privacy` and `/cookies` 404 (pages missing). `/contact` duplicates `/kontaktai` with a non-working form and a different address; decide whether to redirect it. Review the copied club content (phones, staff) with the club.
 - Finish ADR-0008 on the remaining pages: `naujienos`, `renginiai`, `parduotuve`, `lentele` still use `usePageAnimation`; fixtures detail and `/players/[id]` loading states.
@@ -52,7 +53,6 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 - Verify partner logo names/order and optionally add partner links (`components/partners-section.tsx`).
 - Unify `posts` / `banga_posts`: news list reads `posts`, detail reads `banga_posts`.
 - Replace remaining `/Banga-1.png` references (dashboard sidebars, subscriptions, event page) with `/banga-logo.svg`.
-- Fix position grouping on `app/players/page.tsx` (saugas/saugė are midfielders, currently under Gynėjai).
 - Fix column mismatches for inferred tables with new migrations.
 - Decide `subscriptions` vs `user_subscriptions`, and the "every signup becomes admin" trigger.
 - Re-upload team logos (seed URLs still point at the old project's bucket).

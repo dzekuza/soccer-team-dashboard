@@ -76,3 +76,37 @@ export function ProfileSkeleton() {
     </div>
   )
 }
+
+/** Scoreboard-shaped placeholder for the match page. */
+export function MatchSkeleton() {
+  return (
+    <div aria-hidden="true">
+      <div className="border-b border-surface px-4 py-8 md:px-16 md:py-12">
+        <div className="mx-auto max-w-5xl space-y-6">
+          <Skeleton className="h-5 w-44" />
+          <Skeleton className="h-7 w-32" />
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 md:gap-10">
+            <div className="flex flex-col items-center gap-4">
+              <Skeleton className="h-14 w-14 rounded-full md:h-28 md:w-28" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+            <Skeleton className="h-16 w-36 md:h-20 md:w-56" />
+            <div className="flex flex-col items-center gap-4">
+              <Skeleton className="h-14 w-14 rounded-full md:h-28 md:w-28" />
+              <Skeleton className="h-6 w-24" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="grid gap-6 px-4 py-10 md:px-16 lg:grid-cols-3 lg:gap-12">
+        <Skeleton className="h-8 w-48" />
+        <div className="grid gap-6 sm:grid-cols-2 lg:col-span-2">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      </div>
+    </div>
+  )
+}

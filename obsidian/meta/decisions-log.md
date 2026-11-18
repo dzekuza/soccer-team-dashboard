@@ -10,6 +10,32 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0011 — Public list pages fetch on the server; match page shows only real data
+
+- **Status:** Accepted
+- **Date:** 2026-11-18
+
+**Context.** News, results, schedule, standings and players still fetched after hydration
+(extra round trip, skeletons first). The match page was worse: none of the 34 fixtures has events
+or statistics, yet it rendered 11 starters + 5 substitutes per team with positions assigned by row
+number, labelled the competition "Lygos raundas", and built its query from the raw URL
+(`.or("id.eq.${id},fingerprint.eq.${id}")`).
+
+**Decision.** Server `views/*` call typed helpers in `lib/` (anon key, public-read RLS) and render a
+thin client "board" for tab state; routes use `revalidate = 60` (players: `unstable_cache`, because
+`?team=` makes the route dynamic). `/fixtures/[id]` is cached per match (`generateStaticParams` returns
+`[]`), validates the id (uuid or 40-hex fingerprint) before querying, and shows events/statistics only when
+they exist (timeline, paired stat bars), otherwise an honest empty state. The fake lineups were removed.
+Card colours became tokens (`booking-yellow`, `booking-red`). Position grouping now treats "saugas/saugė"
+as midfielders.
+
+**Consequences.** HTML arrives with data; data is at most ~60s old. Client components may import types only
+from `lib/fixtures`/`lib/players` (the modules use server-only APIs). Lineups can return when the data model
+has real lineup data. Still client-fetched: events list, shop, subscriptions, `naujienos/[id]`,
+`players/[id]`, `zaidejai/[id]`, and the landing match strip + standings widget.
+
+---
+
 ## ADR-0010 — Shared public layout, no full-screen loaders, server-fetched landing
 
 - **Status:** Accepted

@@ -18,6 +18,8 @@ updated: 2026-11-18
 
 | Route | Title | Description | OG image |
 |-------|-------|-------------|----------|
+| `/naujienos`, `/rezultatai`, `/tvarkarastis`, `/lentele`, `/zaidejai`, `/players` | `<Section> \| FK Banga` | per page | - |
+| `/fixtures/[id]` | `Home – Away 2:1 \| FK Banga` (generateMetadata) | teams, score, competition, date | - |
 | `/klubas` | Klubas \| FK Banga | Apie klubą: vadovybė, dalininkai, veiklos sritys, dokumentai | - |
 | `/pamaina` | Pamaina \| FK Banga | Vaikų ir jaunimo grupės, kontaktai | - |
 | `/kontaktai` | Kontaktai \| FK Banga | Adresas, telefonas, el. paštai, BANGA CAMP | - |

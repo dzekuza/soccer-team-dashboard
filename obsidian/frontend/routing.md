@@ -27,6 +27,12 @@ export default function Page() { return <AboutView />; }
 | `/pamaina` | `views/academy-view.tsx` | #wip |
 | `/kontaktai` | `views/contacts-view.tsx` | #wip |
 | `/` | `views/landing-view.tsx` (server; `revalidate = 60`) | #wip |
+| `/naujienos` | `views/news-view.tsx` | #wip |
+| `/rezultatai` | `views/results-view.tsx` | #wip |
+| `/tvarkarastis` | `views/schedule-view.tsx` | #wip |
+| `/lentele` | `views/standings-view.tsx` | #wip |
+| `/zaidejai`, `/players` | `views/players-view.tsx` (`/zaidejai` reads `?team=`) | #wip |
+| `/fixtures/[id]` | `views/fixture-view.tsx` (cached per match; `not-found.tsx`, `loading.tsx`) | #wip |
 
 ## Conventions
 
