@@ -13,7 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
-- Next 15.5 / React 19 upgrade on branch `chore/upgrade-next-15` (ADR-0007): builds and smoke-tests clean; awaiting Vercel preview + merge.
+- Next 15.5 / React 19 upgrade (ADR-0007) merged to `master` and pushed (`95a05bb`); builds and smoke-tests clean locally. Verify the Vercel deployment (needs real Stripe/Resend/QR env vars at build time).
 - Landing "Įsigykite" section rebuilt from Figma node 1100:81335 (`components/tickets-apparel-section.tsx`, assets in `public/landing/`).
 - Hero news slide fixed: Next 14 cached an empty supabase-js response for `/api/posts?limit=1`; routes now use `fetchCache = "force-no-store"` (ADR-0006).
 - Fluid type-scale tokens `text-display` / `text-headline` / `text-title` replace arbitrary px sizes (ADR-0005).
@@ -34,7 +34,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## In progress
 
-- Upgrade branch `chore/upgrade-next-15` is committed locally, not merged or pushed. Local `master` is ahead of `origin/master` (palette/fonts, type scale, posts cache fix, Įsigykite section, docs); not pushed.
+- Nothing half-done. `master` = `origin/master`; the Vercel deployment of the Next 15 upgrade is unverified.
 
 ## Next up
 

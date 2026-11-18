@@ -22,12 +22,12 @@ Entry format:
 ## 2026-11-18 — Įsigykite tiles full width
 
 - **Changed:** removed `mx-auto max-w-page` from the tiles wrapper in `components/tickets-apparel-section.tsx`; removed the unused `max-w-page` token; vault design-system + changelog.
-- **Status:** `tsc` clean; committed on `chore/upgrade-next-15`.
+- **Status:** `tsc` clean; merged to `master` and pushed.
 - **Next:** see the entry below.
 
 ## 2026-11-18 — Next 15 / React 19 upgrade and caching review
 
-- **Changed:** deps + both lockfiles; 21 files by async-request codemod, 3 handlers fixed by hand, `noStore` -> `connection()` (10 pages); `next.config.mjs` (tracing root, types enforced); `/api/templates/[name]` bug; player images -> WebP; ADR-0007, tech-stack, changelog. On branch `chore/upgrade-next-15`.
+- **Changed:** deps + both lockfiles; 21 files by async-request codemod, 3 handlers fixed by hand, `noStore` -> `connection()` (10 pages); `next.config.mjs` (tracing root, types enforced); `/api/templates/[name]` bug; player images -> WebP; ADR-0007, tech-stack, changelog. Merged to `master` and pushed (`95a05bb`).
 - **Status:** `tsc` clean; full `next build` passes with dummy server env vars; isolated dev smoke test OK (11 pages, 4 APIs, no console errors). Not merged/pushed. A user `next dev` shares `.next` with builds: my `rm -rf .next` interrupted it earlier.
 - **Next:** merge branch after a real-env Vercel preview; add `loading.tsx`/`error.tsx`/`not-found.tsx`; server-side auth for `/dashboard` (no middleware, `AuthGuard` unused); convert client-fetch pages to server components; pin `latest` deps.
 
