@@ -24,6 +24,11 @@ Entry format:
 - **Status:** anon read verified. Riteriai is listed with all zeros, as on the club site. B / M tabs on the landing page still have no table.
 - **Next:** `ii_lyga_a` (Banga B) and `moteru_a_lyga` (Banga M) tables + fixtures; refresh the tables after matches (no scheduled scrape yet).
 
+## 2026-11-18 — security hardening migration applied
+- **Changed:** wrote `supabase/migrations/20261118000016_harden_roles_and_policies.sql` (first signup admin / later staff, admin-only writes, staff read tickets+subscriptions, admin-only storage writes). Applied to the remote DB after user approval; committed and pushed to the feature branch.
+- **Status:** remote DB has 0 users; no open write policies remain; anon reads still work.
+- **Next:** user disables open signup in Supabase Auth; the first account to register becomes admin, promote others with SQL.
+
 ## 2026-11-18 — landing matches strip shows results off-season
 - **Changed:** `components/upcoming-matches.tsx` — if a team has no upcoming fixtures it now shows its 10 latest completed results (newest first); score built from `team1_score`/`team2_score` (it read a non-existent `score` field); filter simplified, debug `console.log`s removed.
 - **Status:** type-checks; not viewed in a browser. Banga B / Banga M tabs are still empty (no fixtures imported for them).

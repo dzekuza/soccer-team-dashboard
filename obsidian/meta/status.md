@@ -13,6 +13,7 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## Done recently
 
+- Role hardening applied (migration `…16`, ADR-0003): first signup admin, then staff; admin-only writes.
 - Toplyga 2026 league table imported (`standings` a_lyga + `standings_al`).
 - Landing match strip falls back to recent results off-season (`components/upcoming-matches.tsx`).
 - Banga A 2026 fixtures (34) + team logos imported; public read policy on `fixtures_all_new` (migration `…15`).
@@ -46,6 +47,7 @@ Polishing the public site (header, footer, hero carousel, partners, news) on the
 
 ## Blockers & open questions
 
+- Open signup is still enabled in Supabase Auth (user to disable); first signup becomes admin.
 - `.env.local` lacks `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (see `.env.example`); `/api/players` 500s until added.
 - Old project inaccessible, so hand-made table schemas are guesses.
 - `supabase-soccer` MCP needs a session restart to load.

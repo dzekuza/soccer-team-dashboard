@@ -10,6 +10,26 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0003 — Role hardening: first signup is admin, everyone else is staff
+
+- **Status:** Accepted — migration `20261118000016_harden_roles_and_policies.sql` applied to the remote DB.
+- **Date:** 2026-11-18
+
+**Context.** Automated security review flagged: the signup trigger made every new user
+`admin`, and most tables/storage buckets allowed any authenticated user to write.
+Database currently has zero users, so tightening breaks nobody.
+
+**Decision.** `handle_new_user` makes the first user admin (bootstrap) and later users
+`staff`. Writes on events, tiers, players, standings, posts, subscription types and the
+public storage buckets become admin-only; staff can read tickets/subscriptions and update
+tickets (scanner validation). Open signup should also be disabled in Supabase Auth.
+
+**Consequences.** New teammates must be promoted with
+`update public.users set role='admin' where email=...`. Dashboard writes done with a staff
+session will be rejected by RLS.
+
+---
+
 ## ADR-0002 — Replace the legacy migration chain with a rebuilt baseline
 
 - **Status:** Accepted
