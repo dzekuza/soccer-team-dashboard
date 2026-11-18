@@ -412,7 +412,6 @@ export default function EventsClient({
     if (!window.confirm(`Ar tikrai norite ištrinti renginį "${eventToDelete.title}"? Šio veiksmo atšaukti negalėsite.`)) return;
     setDeletingId(eventId);
     
-    console.log('🗑️ Starting deletion of event:', eventId);
     
     // Check authentication status first
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -436,7 +435,6 @@ export default function EventsClient({
       return;
     }
     
-    console.log('✅ User authenticated:', user.id);
     
     // Check user role
     const { data: userProfile, error: profileError } = await supabase
@@ -447,13 +445,10 @@ export default function EventsClient({
       
     if (profileError) {
       console.error('❌ Error fetching user profile:', profileError);
-    } else {
-      console.log('👤 User role:', userProfile?.role);
     }
     
     try {
       // First, delete all tickets associated with this event
-      console.log('📋 Deleting tickets for event:', eventId);
       const { data: ticketsData, error: ticketsError } = await supabase
         .from('tickets')
         .delete()
@@ -464,12 +459,9 @@ export default function EventsClient({
         console.error('❌ Error deleting tickets:', ticketsError);
         console.error('❌ Error details:', ticketsError.message, ticketsError.details, ticketsError.hint);
         // Continue anyway, as the event deletion might still work
-      } else {
-        console.log('✅ Successfully deleted tickets:', ticketsData?.length || 0, 'tickets');
       }
 
       // Then, delete all pricing tiers associated with this event
-      console.log('💰 Deleting pricing tiers for event:', eventId);
       const { data: tiersData, error: tiersError } = await supabase
         .from('pricing_tiers')
         .delete()
@@ -480,12 +472,9 @@ export default function EventsClient({
         console.error('❌ Error deleting pricing tiers:', tiersError);
         console.error('❌ Error details:', tiersError.message, tiersError.details, tiersError.hint);
         // Continue anyway, as the event deletion might still work
-      } else {
-        console.log('✅ Successfully deleted pricing tiers:', tiersData?.length || 0, 'tiers');
       }
 
       // Finally, delete the event itself
-      console.log('🎫 Deleting event:', eventId);
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .delete()
@@ -498,7 +487,6 @@ export default function EventsClient({
         throw eventError;
       }
       
-      console.log('✅ Successfully deleted event');
       setEvents(events.filter(e => e.id !== eventId));
       toast({
         title: "Sėkmingai",

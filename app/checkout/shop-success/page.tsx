@@ -49,7 +49,6 @@ function ShopCheckoutSuccessContent() {
 
         if (!response.ok) {
           if (retryCount < 3) {
-            console.log(`Retrying order fetch (${retryCount + 1}/3)...`);
             setTimeout(() => fetchOrder(retryCount + 1), 2000);
             return;
           }

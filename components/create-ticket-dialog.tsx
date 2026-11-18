@@ -56,10 +56,8 @@ export function CreateTicketDialog({ open, onOpenChange, onTicketCreated }: Crea
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
       }
       const data = await response.json()
-      console.log("Events API response:", data)
       // The API returns events with team data, extract just the events
       const eventsList = data.map((item: any) => item.event)
-      console.log("Processed events:", eventsList)
       setEvents(eventsList)
     } catch (error) {
       console.error("Failed to fetch events:", error)

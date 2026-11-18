@@ -58,13 +58,11 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
       });
 
       fileName = `ticket-${ticket.id}.pdf`;
-      console.log("Generated PDF ticket successfully using PDF service");
     } catch (pdfError) {
       console.warn("PDF generation failed with PDF service:", pdfError);
 
       // Fallback: Try using pdf-lib as a last resort
       try {
-        console.log("Attempting fallback PDF generation with pdf-lib...");
         const { generateTicketPDF } = await import("./pdf-generator");
         const pdfArray = await generateTicketPDF(
           ticket,
@@ -73,7 +71,6 @@ async function sendTicketConfirmation(ticketId: string): Promise<void> {
         );
         pdfBytes = Buffer.from(pdfArray as any);
         fileName = `ticket-${ticket.id}.pdf`;
-        console.log("Generated PDF ticket successfully using fallback method");
       } catch (fallbackError) {
         console.warn("Fallback PDF generation also failed:", fallbackError);
         // Continue without PDF attachment
@@ -442,7 +439,6 @@ async function sendBulkEmail(
 
     await resend.emails.send(payload);
 
-    console.log(`Bulk email sent successfully to ${to.length} recipients.`);
   } catch (error) {
     console.error("Error sending bulk email:", error);
     throw error;

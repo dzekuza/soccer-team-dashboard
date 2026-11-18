@@ -45,14 +45,11 @@ export default function TicketsPage() {
       setLoading(true)
       setError(null)
       try {
-        console.log("Fetching event data for ID:", id)
         const [eventRes, tiersRes] = await Promise.all([
           fetch(`/api/events/${id}`),
           fetch(`/api/events/${id}/pricing-tiers`),
         ])
         
-        console.log("Event response status:", eventRes.status)
-        console.log("Tiers response status:", tiersRes.status)
         
         if (!eventRes.ok) {
           const errorText = await eventRes.text()
@@ -68,8 +65,6 @@ export default function TicketsPage() {
         const { event, team1, team2 } = await eventRes.json()
         const pricingTiers = await tiersRes.json()
         
-        console.log("Event data:", { event, team1, team2 })
-        console.log("Pricing tiers:", pricingTiers)
         
         setEventData({
           event: { ...event, pricingTiers: pricingTiers || [] },

@@ -76,7 +76,7 @@ export default function SubscriptionsPage() {
           quantity: newQuantity,
           eventId: "subscription",
           eventTitle: "Abonementai",
-          image: "/Banga-1.png",
+          image: "/banga-logo.svg",
           color: "Abonementai",
           category: "Abonementai",
         })

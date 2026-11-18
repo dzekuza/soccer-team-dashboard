@@ -33,22 +33,17 @@ export async function generatePDFFromHTML(
 
     try {
         // Try serverless-compatible approach first
-        console.log("Attempting to launch browser with @sparticuz/chromium...");
         browser = await puppeteer.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath(),
             headless: chromium.headless,
         });
-        console.log("Browser launched with @sparticuz/chromium successfully");
     } catch (error) {
         console.warn("Failed to launch with @sparticuz/chromium:", error);
 
         // Fallback to standard Puppeteer for local development
         try {
-            console.log(
-                "Attempting to launch browser with standard Puppeteer...",
-            );
             browser = await puppeteer.launch({
                 headless: true,
                 args: [
@@ -62,9 +57,6 @@ export async function generatePDFFromHTML(
                     "--disable-gpu",
                 ],
             });
-            console.log(
-                "Browser launched with standard Puppeteer successfully",
-            );
         } catch (fallbackError) {
             console.error(
                 "Failed to launch browser with both methods:",
@@ -122,13 +114,11 @@ export async function generatePDFFromHTML(
         }
 
         const pdfBuffer = await page.pdf(pdfOptions);
-        console.log("PDF generated successfully");
 
         return pdfBuffer as Buffer;
     } finally {
         if (browser) {
             await browser.close();
-            console.log("Browser closed");
         }
     }
 }

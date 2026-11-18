@@ -107,7 +107,7 @@ export default function EventPage() {
           quantity: newQuantity,
           eventId: eventData.event.id,
           eventTitle: eventData.event.title,
-          image: eventData.event.coverImageUrl || "/Banga-1.png",
+          image: eventData.event.coverImageUrl || "/banga-logo.svg",
           color: `${eventData.team1?.team_name || 'TBD'} vs ${eventData.team2?.team_name || 'TBD'}`,
           category: "Bilietai",
         })
@@ -165,7 +165,7 @@ export default function EventPage() {
       {/* Event Banner */}
       <div className="relative w-full h-64 md:h-80 overflow-hidden">
         <Image
-          src={event.coverImageUrl || '/Banga-1.png'}
+          src={event.coverImageUrl || '/banga-logo.svg'}
           alt={event.title}
           fill
           className="object-cover"
@@ -178,7 +178,7 @@ export default function EventPage() {
             <div className="flex items-center justify-center gap-8 mb-6">
               <div className="flex flex-col items-center">
                 <Image 
-                  src={team1?.logo || '/Banga-1.png'} 
+                  src={team1?.logo || '/banga-logo.svg'} 
                   alt={team1?.team_name || 'Komanda 1'} 
                   width={80}
                   height={80}

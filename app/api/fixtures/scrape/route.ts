@@ -24,7 +24,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("Starting fixtures scraping with statistics...");
 
     // Scrape all fixtures with statistics
     const scrapedFixtures = await LFFScraper.scrapeAllFixturesWithStatistics();
@@ -81,9 +80,6 @@ export async function POST(request: NextRequest) {
       }, { status: 500 });
     }
 
-    console.log(
-      `Successfully scraped and saved ${fixturesToInsert.length} fixtures`,
-    );
 
     return NextResponse.json({
       success: true,

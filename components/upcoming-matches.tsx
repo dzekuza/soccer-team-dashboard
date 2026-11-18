@@ -171,10 +171,10 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
                     alt={match.team1}
                     width={24}
                     height={24}
-                    className="rounded"
+                    className="h-6 w-6 rounded object-contain"
                   />
                 ) : (
-                  <div className="w-6 h-6 bg-gray-400 rounded"></div>
+                  <div className="h-6 w-6 rounded bg-surface"></div>
                 )}
                 <span className="text-white text-sm font-medium truncate">{match.team1}</span>
               </div>
@@ -195,10 +195,10 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
                     alt={match.team2}
                     width={24}
                     height={24}
-                    className="rounded"
+                    className="h-6 w-6 rounded object-contain"
                   />
                 ) : (
-                  <div className="w-6 h-6 bg-gray-400 rounded"></div>
+                  <div className="h-6 w-6 rounded bg-surface"></div>
                 )}
               </div>
             </div>

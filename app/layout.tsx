@@ -16,6 +16,7 @@ const fontSans = FontSans({
 export const metadata = {
   title: "FK Banga bilietų valdymas",
   description: "Futbolo komandos renginių ir bilietų valdymas",
+  icons: { icon: "/banga-logo.svg" },
 };
 
 export default function RootLayout({

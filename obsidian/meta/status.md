@@ -13,6 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
+- Console clean-up: Stripe only on checkout, no debug logs, missing assets fixed, favicon (ADR-0012).
 - News, results, schedule, standings, players and the match page render on the server with ISR (ADR-0011); match page redesigned, fake lineups removed.
 - Shared `(public)` layout, full-screen loaders removed (skeletons instead), landing news server-fetched with ISR (ADR-0010).
 - Own pages `/klubas`, `/pamaina`, `/kontaktai` built and linked from the header (ADR-0009); the dead Hostinger links are gone.
@@ -42,6 +43,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Next up
 
+- Remove the now-unused `@stripe/react-stripe-js` dependency and regenerate `package-lock.json` + `pnpm-lock.yaml`.
 - Speed (continued): still client-fetched: renginiai, parduotuve/shop, prenumeratos/subscriptions, `naujienos/[id]`, `players/[id]`, `zaidejai/[id]` (loads all players to show one), landing match strip + standings widget. Remove unused `/api/*` routes after.
 - **Push the image fix**: `origin/master` lacks `public/landing/*` (Įsigykite images 404 in production) until the commit that adds them is pushed. `.gitignore` now un-ignores `public/`.
 - Footer links `/privacy` and `/cookies` 404 (pages missing). `/contact` duplicates `/kontaktai` with a non-working form and a different address; decide whether to redirect it. Review the copied club content (phones, staff) with the club.
@@ -52,7 +54,6 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 - Banga B / Banga M: import schedules and league tables (landing tabs empty); point `teams.logo` at the new `team-logo` bucket files.
 - Verify partner logo names/order and optionally add partner links (`components/partners-section.tsx`).
 - Unify `posts` / `banga_posts`: news list reads `posts`, detail reads `banga_posts`.
-- Replace remaining `/Banga-1.png` references (dashboard sidebars, subscriptions, event page) with `/banga-logo.svg`.
 - Fix column mismatches for inferred tables with new migrations.
 - Decide `subscriptions` vs `user_subscriptions`, and the "every signup becomes admin" trigger.
 - Re-upload team logos (seed URLs still point at the old project's bucket).

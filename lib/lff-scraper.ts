@@ -269,7 +269,6 @@ export class LFFScraper {
 
         // Process all found tables
         fixturesTables.forEach((fixturesTable, tableIndex) => {
-            console.log(`Processing table ${tableIndex + 1} for ${league}`);
 
             const rows = fixturesTable.querySelectorAll("tbody tr");
 
@@ -461,13 +460,9 @@ export class LFFScraper {
         league: string,
     ): Promise<StandingRow[]> {
         try {
-            console.log(`Scraping ${league} from ${url}`);
             const html = await this.fetchWithRetry(url);
             const standings = this.parseStandingsTable(html, league);
 
-            console.log(
-                `Successfully scraped ${standings.length} teams for ${league}`,
-            );
             return standings;
         } catch (error) {
             console.error(`Failed to scrape ${league}:`, error);
@@ -480,13 +475,9 @@ export class LFFScraper {
         league: string,
     ): Promise<FixtureRow[]> {
         try {
-            console.log(`Scraping fixtures for ${league} from ${url}`);
             const html = await this.fetchWithRetry(url);
             const fixtures = this.parseFixturesTable(html, league);
 
-            console.log(
-                `Successfully scraped ${fixtures.length} Banga fixtures for ${league}`,
-            );
             return fixtures;
         } catch (error) {
             console.error(`Failed to scrape fixtures for ${league}:`, error);
@@ -534,7 +525,6 @@ export class LFFScraper {
         matchUrl: string,
     ): Promise<MatchStatistics | null> {
         try {
-            console.log(`Scraping match statistics from ${matchUrl}`);
             const html = await this.fetchWithRetry(matchUrl);
             const dom = new JSDOM(html);
             const document = dom.window.document;
@@ -544,9 +534,6 @@ export class LFFScraper {
                 '[data-tab="3"], [data-tabname="stats_tab"], #stats_tab, .stats_tab, [data-tab="stats"]',
             );
             if (!statsTab) {
-                console.log(
-                    "Match Progress tab not found, trying to find statistics in the page",
-                );
             }
 
             // Try to find statistics in the current page or stats tab
@@ -559,7 +546,6 @@ export class LFFScraper {
                 ".lff-match-timeline",
             );
             if (matchTimeline) {
-                console.log("Found match timeline, extracting statistics...");
 
                 // Count different types of events
                 let homeGoals = 0;
@@ -574,7 +560,6 @@ export class LFFScraper {
                 const matchItems = matchTimeline.querySelectorAll(
                     ".match-item",
                 );
-                console.log(`Found ${matchItems.length} match events`);
 
                 matchItems.forEach((item, index) => {
                     const eventElement = item.querySelector(".event");
@@ -626,9 +611,6 @@ export class LFFScraper {
                     };
                 }
 
-                console.log(
-                    `Extracted: Goals (${homeGoals}-${awayGoals}), Yellow Cards (${homeYellowCards}-${awayYellowCards}), Red Cards (${homeRedCards}-${awayRedCards}), Substitutions (${homeSubstitutions}-${awaySubstitutions})`,
-                );
             }
 
             // Extract possession (fallback to old method)
@@ -778,15 +760,9 @@ export class LFFScraper {
 
             // If we found any statistics, return them
             if (Object.keys(statistics).length > 0) {
-                console.log(
-                    `Found ${
-                        Object.keys(statistics).length
-                    } statistics categories`,
-                );
                 return statistics;
             }
 
-            console.log("No statistics found");
             return null;
         } catch (error) {
             console.error(
@@ -809,7 +785,6 @@ export class LFFScraper {
         matchUrl: string,
     ): Promise<MatchEvent[] | null> {
         try {
-            console.log(`Scraping match events from ${matchUrl}`);
             const html = await this.fetchWithRetry(matchUrl);
             const dom = new JSDOM(html);
             const document = dom.window.document;
@@ -824,14 +799,8 @@ export class LFFScraper {
             let allText = "";
 
             if (matchProgressContent) {
-                console.log(
-                    "✅ Found Match Progress tab content, extracting events...",
-                );
                 allText = matchProgressContent.textContent || "";
             } else {
-                console.log(
-                    "⚠️ Match Progress tab content not found, using fallback...",
-                );
                 allText = document.body.textContent || "";
             }
 
@@ -926,16 +895,12 @@ export class LFFScraper {
         ScrapedFixturesData[]
     > {
         try {
-            console.log("Scraping all fixtures with statistics...");
             const fixturesData = await this.scrapeAllFixtures();
 
             // For each fixture, try to scrape statistics if it has a match URL
             for (const leagueData of fixturesData) {
                 for (const fixture of leagueData.fixtures) {
                     if (fixture.match_url && fixture.status === "completed") {
-                        console.log(
-                            `Scraping statistics for ${fixture.home_team.name} vs ${fixture.away_team.name}`,
-                        );
                         const statistics = await this.scrapeMatchStatistics(
                             fixture.match_url,
                         );

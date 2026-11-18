@@ -54,7 +54,7 @@ export function PublicEventCard({ event, team1, team2 }: PublicEventCardProps) {
           <div className="flex flex-col items-center gap-2">
             {team1 ? (
               <Image 
-                src={team1.logo || '/placeholder-logo.png'} 
+                src={team1.logo || '/placeholder-logo.svg'} 
                 alt={team1.team_name} 
                 width={48} 
                 height={48} 
@@ -73,7 +73,7 @@ export function PublicEventCard({ event, team1, team2 }: PublicEventCardProps) {
           <div className="flex flex-col items-center gap-2">
             {team2 ? (
               <Image 
-                src={team2.logo || '/placeholder-logo.png'} 
+                src={team2.logo || '/placeholder-logo.svg'} 
                 alt={team2.team_name} 
                 width={48} 
                 height={48} 

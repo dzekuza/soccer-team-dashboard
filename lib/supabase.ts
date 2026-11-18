@@ -29,7 +29,6 @@ export async function testSupabaseConnection() {
     if (dbError) {
       // If it's a permissions error (PGRST301), that's actually okay - it means we're connected
       if (dbError.code === "PGRST301") {
-        console.log("Supabase connected (with expected permissions error)")
         return true
       }
       
@@ -37,7 +36,6 @@ export async function testSupabaseConnection() {
       return false
     }
 
-    console.log("Supabase connection successful")
     return true
   } catch (error) {
     console.error("Supabase connection error:", error)

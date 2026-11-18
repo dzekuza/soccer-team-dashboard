@@ -30,7 +30,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 })
     }
 
-    console.log("[PDF API] Generating HTML for ticket:", ticket.id)
 
     // Derive display values
     const title = ticket.event?.title || "Bilietas"
@@ -114,7 +113,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 </body>
 </html>`
 
-    console.log("[PDF API] Returning HTML")
 
     return new NextResponse(html, {
       status: 200,

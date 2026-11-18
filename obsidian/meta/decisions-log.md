@@ -10,6 +10,30 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0012 — Stripe loads only on checkout; no debug logging in app code
+
+- **Status:** Accepted
+- **Date:** 2026-11-18
+
+**Context.** A console review showed `js.stripe.com` loading on every page (and Stripe's
+fraud iframe warning): `components/providers.tsx` wrapped the whole app in `<Elements>` and
+called `loadStripe` at module scope. Nothing used the Stripe React context. If the publishable key
+was missing, that provider replaced the entire site with a red error banner. The codebase also
+carried 139 `console.log` debug calls (some logging whole API responses), several missing images
+(`/placeholder-logo.png`, `/Banga-1.png`) and no favicon.
+
+**Decision.** `Providers` only wraps `AuthProvider`; checkout pages keep loading Stripe themselves.
+All `console.log` calls were removed (`console.error` stays for real failures). Missing assets were
+added or repointed (`public/placeholder-logo.svg`, `/banga-logo.svg`), the favicon is set through
+`metadata.icons`, and non-square team logos are sized fully in CSS.
+
+**Consequences.** Stripe.js is no longer downloaded outside checkout; a missing Stripe key no longer
+takes the whole site down (checkout will fail on its own). `@stripe/react-stripe-js` is now unused and
+can be removed from `package.json` (and both lockfiles). Use `console.error` / a logger for real
+problems; do not commit debug logs.
+
+---
+
 ## ADR-0011 — Public list pages fetch on the server; match page shows only real data
 
 - **Status:** Accepted

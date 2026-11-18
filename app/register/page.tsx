@@ -37,7 +37,6 @@ export default function Register() {
     setIsLoading(true)
 
     try {
-      console.log(`Bandoma registruoti naują vartotoją: ${email} su vardu: ${name}`);
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -55,11 +54,8 @@ export default function Register() {
       }
 
       if (authData.user) {
-        console.log("Vartotojas sėkmingai sukurtas:", authData.user.id);
-        console.log("Atnaujinama sesija ir nukreipiama...");
         await router.refresh();
         router.replace('/dashboard/overview');
-        console.log("Nukreipimas į /dashboard/overview įvykdytas.");
       } else {
         console.warn("Registracija pavyko, bet nebuvo gauti vartotojo duomenys.");
       }

@@ -62,14 +62,12 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
       const hasCameraPermission = await checkCameraPermission()
       
       if (!hasCameraPermission) {
-        console.log("Requesting camera permission...")
       }
 
       // Create QR scanner instance
       const qrScanner = new QrScannerLib(
         videoRef.current,
         (result) => {
-          console.log("QR Code scanned:", result.data)
           onScanRef.current(result.data)
         },
         {
@@ -87,7 +85,6 @@ const QrScanner = ({ onScan }: QrScannerProps) => {
       setIsInitialized(true)
       setHasPermission(true)
       
-      console.log("QR Scanner initialized successfully")
     } catch (error) {
       console.error("Failed to initialize QR scanner:", error)
       setHasPermission(false)

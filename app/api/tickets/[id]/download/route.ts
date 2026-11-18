@@ -85,13 +85,11 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ id: 
           left: "0",
         },
       });
-      console.log("Generated PDF ticket successfully using PDF service");
     } catch (pdfError) {
       console.warn("PDF generation failed with PDF service:", pdfError);
 
       // Fallback: Try using pdf-lib
       try {
-        console.log("Attempting fallback PDF generation with pdf-lib...");
         const { generateTicketPDF } = await import("@/lib/pdf-generator");
 
         // Get team data for the fallback
@@ -116,7 +114,6 @@ export async function GET(_request: NextRequest, props: { params: Promise<{ id: 
 
         const pdfArray = await generateTicketPDF(ticket, team1, team2);
         pdfBuffer = pdfArray;
-        console.log("Generated PDF ticket successfully using fallback method");
       } catch (fallbackError) {
         console.error("Fallback PDF generation also failed:", fallbackError);
         throw new Error(

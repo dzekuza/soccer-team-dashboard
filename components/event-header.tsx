@@ -68,7 +68,7 @@ const SiteHeader = () => {
         <div className="flex items-center justify-between h-20">
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <Image src="/Banga-1.png" alt="FK Banga" width={40} height={40} className="object-contain" />
+              <Image src="/banga-logo.svg" alt="FK Banga" width={40} height={40} className="object-contain" />
             </Link>
           </div>
           <nav className="hidden md:flex items-center space-x-6 text-sm">

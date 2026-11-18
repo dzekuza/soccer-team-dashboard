@@ -39,11 +39,6 @@ export async function POST(req: NextRequest) {
             Math.random().toString(36).substring(2)
         }.${fileExt}`;
 
-        console.log(
-            "Attempting to upload file:",
-            fileName,
-            "to bucket: team-logo",
-        );
 
         const { data, error } = await supabaseAdmin.storage
             .from("team-logo")
@@ -58,14 +53,12 @@ export async function POST(req: NextRequest) {
             throw new Error(error.message);
         }
 
-        console.log("File uploaded successfully:", data);
 
         // Get the public URL
         const { data: urlData } = supabaseAdmin.storage
             .from("team-logo")
             .getPublicUrl(fileName);
 
-        console.log("Public URL generated:", urlData.publicUrl);
 
         return NextResponse.json({
             filename: fileName,

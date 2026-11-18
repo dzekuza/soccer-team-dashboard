@@ -20,7 +20,6 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     ) return
 
     if (!isLoading && !user) {
-      console.log("No authenticated user found, redirecting to login")
       router.push("/login")
     }
   }, [user, isLoading, router, pathname])

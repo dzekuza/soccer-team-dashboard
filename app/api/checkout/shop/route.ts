@@ -40,12 +40,6 @@ export async function POST(request: NextRequest) {
             };
         });
 
-        console.log("🛒 Creating shop checkout session with metadata:", {
-            purchaserName,
-            purchaserEmail,
-            purchaserPhone,
-            itemCount: cartItems.length,
-        });
 
         // Get the origin from the request headers or environment variables
         const origin = getAppUrl(request.headers.get("origin"));
@@ -80,7 +74,6 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        console.log("✅ Shop checkout session created:", session.id);
         return NextResponse.json({ url: session.url });
     } catch (error) {
         console.error("❌ Shop Stripe Checkout session error:", error);

@@ -52,7 +52,7 @@ export function DashboardSidebar() {
         <div className="flex items-center mb-8">
           <Link href="/" className="flex items-center">
             <Image 
-              src="/Banga-1.png" 
+              src="/banga-logo.svg" 
               alt="FK Banga" 
               width={48} 
               height={48} 

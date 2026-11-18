@@ -90,7 +90,6 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
           console.error("Error fetching teams:", error);
           setTeams([]);
         } else {
-          console.log("Fetched teams:", data);
           setTeams(Array.isArray(data) ? data : []);
         }
       });
@@ -534,7 +533,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                         return selectedTeam ? (
                           <>
                             <Image 
-                              src={selectedTeam.logo || '/placeholder-logo.png'} 
+                              src={selectedTeam.logo || '/placeholder-logo.svg'} 
                               alt={selectedTeam.team_name} 
                               width={32} 
                               height={32} 
@@ -574,7 +573,7 @@ export function CreateEventDialog({ open, onOpenChange, onEventCreated, draft }:
                         return selectedTeam ? (
                           <>
                             <Image 
-                              src={selectedTeam.logo || '/placeholder-logo.png'} 
+                              src={selectedTeam.logo || '/placeholder-logo.svg'} 
                               alt={selectedTeam.team_name} 
                               width={32} 
                               height={32} 

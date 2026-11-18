@@ -143,7 +143,6 @@ export default function SinglePostPage() {
                   fill
                   className="object-cover"
                   onError={(e) => {
-                    console.log(`Image failed to load for post ${post.id}:`, post.image_url)
                     const target = e.target as HTMLImageElement
                     target.src = '/bg%20qr.jpg'
                   }}

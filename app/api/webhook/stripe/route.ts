@@ -28,7 +28,6 @@ export async function POST(req: NextRequest) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!,
     );
-    console.log(`🔔 Webhook received: ${event.type}`);
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -37,9 +36,6 @@ export async function POST(req: NextRequest) {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      console.log(`💰 Checkout session completed: ${session.id}`);
-      console.log(`📋 Session mode: ${session.mode}`);
-      console.log(`📋 Session metadata:`, session.metadata);
 
       const {
         eventId,
@@ -52,18 +48,8 @@ export async function POST(req: NextRequest) {
         durationDays,
       } = session.metadata || {};
 
-      console.log(`📋 Extracted metadata:`, {
-        eventId,
-        tierId,
-        quantity,
-        purchaserName,
-        purchaserEmail,
-        subscriptionTypeId,
-        durationDays,
-      });
 
       if (session.mode === "payment" && eventId && tierId && quantity) {
-        console.log(`🎫 Creating ${quantity} ticket(s) for event ${eventId}`);
 
         // Handle one-time payment for tickets
         const numQuantity = parseInt(quantity, 10);
@@ -83,16 +69,6 @@ export async function POST(req: NextRequest) {
           ),
         );
 
-        console.log(
-          `📊 Ticket creation results:`,
-          ticketInsertResults.map((result, index) => ({
-            ticket: index + 1,
-            status: result.status,
-            data: result.status === "fulfilled"
-              ? result.value.data
-              : result.reason,
-          })),
-        );
 
         // Update the sold quantity for the pricing tier
         const { data: currentTier, error: fetchError } = await supabaseAdmin
@@ -120,10 +96,6 @@ export async function POST(req: NextRequest) {
               `❌ Failed to update sold quantity for tier ${tierId}:`,
               updateError,
             );
-          } else {
-            console.log(
-              `✅ Updated sold quantity for tier ${tierId} from ${currentSoldQuantity} to ${newSoldQuantity}`,
-            );
           }
         }
 
@@ -135,11 +107,6 @@ export async function POST(req: NextRequest) {
             try {
               await notificationService.sendTicketConfirmation(
                 result.value.data.id,
-              );
-              console.log(
-                `✅ Ticket ${
-                  index + 1
-                } created and email sent: ${result.value.data.id}`,
               );
             } catch (err) {
               console.error(
@@ -154,14 +121,10 @@ export async function POST(req: NextRequest) {
             );
           }
         }
-        console.log(
-          `🎉 ${numQuantity} ticket(s) created and confirmation sent for event ${eventId} via Stripe webhook.`,
-        );
       } else if (
         session.mode === "payment" && subscriptionTypeId && purchaserName &&
         purchaserEmail
       ) {
-        console.log(`📅 Creating subscription for type: ${subscriptionTypeId}`);
 
         // Handle subscription purchase
         const validFrom = new Date();
@@ -190,18 +153,11 @@ export async function POST(req: NextRequest) {
             subError,
           );
         } else {
-          console.log(
-            `✅ Subscription created for user ${purchaserEmail} via Stripe webhook.`,
-          );
-          console.log(`📋 Subscription ID: ${newSubscription?.id}`);
 
           // Send subscription confirmation email
           try {
             await notificationService.sendSubscriptionConfirmation(
               newSubscription.id,
-            );
-            console.log(
-              `📧 Subscription confirmation email sent for subscription: ${newSubscription.id}`,
             );
           } catch (err) {
             console.error(
@@ -211,7 +167,6 @@ export async function POST(req: NextRequest) {
           }
         }
       } else if (session.mode === "payment" && session.metadata?.purchaseType === "shop") {
-        console.log(`🛒 Processing shop purchase for session: ${session.id}`);
         
         try {
           // Extract order details from metadata
@@ -277,13 +232,10 @@ export async function POST(req: NextRequest) {
             return;
           }
 
-          console.log(`✅ Shop order created successfully: ${order.id}`);
-          console.log(`📦 Order items created: ${orderItems.length} items`);
           
           // Send confirmation email to customer
           try {
             await notificationService.sendShopOrderConfirmation(order.id);
-            console.log(`📧 Shop order confirmation email sent to customer: ${customerEmail}`);
           } catch (err) {
             console.error(`❌ Failed to send shop order confirmation email:`, err);
           }
@@ -291,7 +243,6 @@ export async function POST(req: NextRequest) {
           // Send notification email to admin
           try {
             await notificationService.sendShopOrderNotificationToAdmin(order.id);
-            console.log(`📧 Shop order notification email sent to admin`);
           } catch (err) {
             console.error(`❌ Failed to send shop order notification to admin:`, err);
           }
@@ -299,13 +250,7 @@ export async function POST(req: NextRequest) {
         } catch (error) {
           console.error("❌ Error processing shop order:", error);
         }
-      } else {
-        console.log(
-          `⚠️  Unhandled checkout session: mode=${session.mode}, eventId=${eventId}, tierId=${tierId}, quantity=${quantity}, subscriptionTypeId=${subscriptionTypeId}, purchaseType=${session.metadata?.purchaseType}`,
-        );
       }
-    } else {
-      console.log(`ℹ️  Unhandled event type: ${event.type}`);
     }
   } catch (e) {
     console.error("❌ Error processing webhook event:", e);

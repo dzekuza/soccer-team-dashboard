@@ -161,13 +161,13 @@ export default function PostsClient({ initialPosts }: PostsClientProps) {
                   <TableCell>
                     <div className="relative w-16 h-9 rounded overflow-hidden">
                       <Image
-                        src={post.image_url || '/placeholder-logo.png'}
+                        src={post.image_url || '/placeholder-logo.svg'}
                         alt={post.title}
                         fill
                         className="object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
-                          target.src = '/placeholder-logo.png'
+                          target.src = '/placeholder-logo.svg'
                         }}
                       />
                     </div>

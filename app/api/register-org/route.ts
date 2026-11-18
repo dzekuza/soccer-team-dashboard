@@ -16,17 +16,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("Registering user with data:", {
-      ...body,
-      email: body.email.replace(/(?<=.).(?=.*@)/g, '*') // Log email with middle chars masked
-    });
 
     const user = await supabaseService.registerUserWithCorporation(body);
     
-    console.log("Successfully registered user:", {
-      userId: user.userId,
-      corporationId: user.corporationId
-    });
 
     return NextResponse.json({ success: true, user });
   } catch (e) {

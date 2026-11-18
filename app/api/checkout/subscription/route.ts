@@ -55,14 +55,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Log subscription type details for debugging
-    console.log("📋 Subscription type details:", {
-      id: subscriptionType.id,
-      title: subscriptionType.title,
-      description: subscriptionType.description,
-      price: subscriptionType.price,
-      duration_days: subscriptionType.duration_days,
-      is_active: subscriptionType.is_active
-    });
 
     // 2. Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({

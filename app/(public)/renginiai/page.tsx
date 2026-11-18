@@ -25,7 +25,6 @@ export default function EventsPage() {
         if (!response.ok) throw new Error("Nepavyko gauti renginių")
         
         const data = await response.json()
-        console.log("Fetched events:", data) // Debug log
         setEvents(data)
       } catch (e: unknown) {
         console.error("Error fetching events:", e)

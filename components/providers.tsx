@@ -1,20 +1,16 @@
 "use client"
 
-import { Elements } from '@stripe/react-stripe-js'
-import { loadStripe } from '@stripe/stripe-js'
-import { AuthProvider } from '@/lib/auth-context'
+import type { ReactNode } from "react"
+import { AuthProvider } from "@/lib/auth-context"
 
-const stripePromise = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
-  ? loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
-  : null
+interface ProvidersProps {
+  children: ReactNode
+}
 
-export function Providers({ children }: { children: React.ReactNode }) {
-  if (!stripePromise) {
-    return <div className="bg-red-900 text-white p-4 text-center font-bold">Trūksta Stripe viešojo rakto. Nustatykite NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY savo aplinkoje.</div>
-  }
-  return (
-    <AuthProvider>
-      <Elements stripe={stripePromise}>{children}</Elements>
-    </AuthProvider>
-  )
-} 
+/**
+ * App-wide providers. Stripe is not one of them: checkout pages load Stripe.js
+ * themselves, so the rest of the site does not download it.
+ */
+export function Providers({ children }: ProvidersProps) {
+  return <AuthProvider>{children}</AuthProvider>
+}

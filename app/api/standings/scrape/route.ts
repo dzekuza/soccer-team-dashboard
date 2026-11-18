@@ -18,7 +18,6 @@ export async function POST(request: NextRequest) {
     );
 
     try {
-        console.log("Starting standings scrape...");
 
         // Scrape all leagues
         const allStandings = await LFFScraper.scrapeAllLeagues();
@@ -42,10 +41,6 @@ export async function POST(request: NextRequest) {
                 console.error(
                     `Error storing ${leagueData.league} standings:`,
                     error,
-                );
-            } else {
-                console.log(
-                    `Successfully stored ${leagueData.league} standings`,
                 );
             }
         }

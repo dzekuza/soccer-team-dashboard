@@ -41,9 +41,6 @@ export async function POST(request: NextRequest, props: { params: Promise<{ id: 
                 tracking_number,
             );
 
-            console.log(
-                `📧 Shipping confirmation email sent for order ${orderId}`,
-            );
         } catch (emailError) {
             console.error(
                 "Failed to send shipping confirmation email:",

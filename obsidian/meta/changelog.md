@@ -9,6 +9,11 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Console clean-up
+
+- Stripe.js no longer loads on every page: `Providers` now only wraps `AuthProvider` (ADR-0012). Removed 139 `console.log` debug calls and the empty `else` blocks they left.
+- Added `public/placeholder-logo.svg`, repointed `/Banga-1.png` to `/banga-logo.svg`, set the favicon via `metadata.icons`, fixed the SVG logo size warning in `upcoming-matches`, deleted the Figma scratch page `/naujienos/test`.
+
 ## 2026-11-18 — Server-rendered public pages and a redesigned match page
 
 - News, results, schedule, standings and players now render on the server (`views/*`, `lib/*`, `revalidate = 60`), with small client boards for tabs. Added route-level `loading.tsx`. See ADR-0011.

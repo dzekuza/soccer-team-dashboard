@@ -40,7 +40,6 @@ export default function ScannerPage() {
 
   const handleScan = async (data: string | null) => {
     if (!data || !isScanning) return
-    console.log("Scanner received data:", data)
     
     setIsScanning(false) // Stop scanning after a result
     setLastScan(null)
@@ -60,23 +59,16 @@ export default function ScannerPage() {
         // Could be ticket or subscription
         ticketId = data
         subId = data
-        console.log("Valid UUID detected:", data)
-      } else {
-        console.log("Invalid UUID format:", data)
       }
       
       let result: ScanResult | null = null
       // Try ticket first
       if (ticketId) {
-        console.log("Attempting ticket validation for:", ticketId)
         result = await handleTicketValidation(ticketId)
-        console.log("Ticket validation result:", result)
         
         if (result.status === "error" && result.message.includes("not found")) {
           // Try as subscription if not found as ticket
-          console.log("Ticket not found, trying subscription validation for:", subId)
           result = await handleSubscriptionValidation(subId!)
-          console.log("Subscription validation result:", result)
         }
       } else {
         result = {
@@ -109,11 +101,8 @@ export default function ScannerPage() {
   }
 
   const handleTicketValidation = async (ticketId: string): Promise<ScanResult> => {
-    console.log("Calling ticket validation API for:", ticketId)
     const response = await fetch(`/api/validate-ticket/${ticketId}`)
     const result = await response.json()
-    console.log("Ticket API response status:", response.status)
-    console.log("Ticket API response:", result)
     
     if (!response.ok) {
       return { status: "error", message: result.error || "Bilieto patikrinti nepavyko." }
@@ -133,11 +122,8 @@ export default function ScannerPage() {
   }
 
   const handleSubscriptionValidation = async (subId: string): Promise<ScanResult> => {
-    console.log("Calling subscription validation API for:", subId)
     const response = await fetch(`/api/validate-subscription/${subId}`)
     const result = await response.json()
-    console.log("Subscription API response status:", response.status)
-    console.log("Subscription API response:", result)
     
     if (!response.ok) {
       if (response.status === 410) {

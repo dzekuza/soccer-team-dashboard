@@ -40,7 +40,6 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
         if (!response.ok) throw new Error("Nepavyko gauti lentelės duomenų")
         
         const result = await response.json()
-        console.log('Standings API response:', result)
         
         if (result.success) {
           // Map team names to league keys
@@ -51,17 +50,12 @@ export function StandingsTable({ selectedTeam }: StandingsTableProps) {
           }
           
           const leagueKey = teamToLeagueMap[selectedTeam]
-          console.log('Looking for league key:', leagueKey)
-          console.log('Available data:', result.data)
           
           const currentData = result.data.find((data: any) => data.league_key === leagueKey)
-          console.log('Found data for league:', currentData)
           
           if (currentData?.standings_data) {
-            console.log('Standings data:', currentData.standings_data)
             setStandings(currentData.standings_data)
           } else {
-            console.log('No standings data found')
             setStandings([])
           }
         } else {

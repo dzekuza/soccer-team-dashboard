@@ -70,17 +70,14 @@ class StorageService {
   // Events
   getEvents(): Event[] {
     const events = safelyParseJSON(STORAGE_KEYS.EVENTS, [])
-    console.log("Storage: Retrieved events:", events)
     return events
   }
 
   setEvents(events: Event[]): void {
-    console.log("Storage: Setting events:", events)
     safelyStoreJSON(STORAGE_KEYS.EVENTS, events)
   }
 
   addEvent(event: Event): void {
-    console.log("Storage: Adding event:", event)
     const events = this.getEvents()
     events.push(event)
     this.setEvents(events)
@@ -113,12 +110,10 @@ class StorageService {
   }
 
   setPricingTiers(pricingTiers: PricingTier[]): void {
-    console.log("Storage: Setting pricing tiers:", pricingTiers)
     safelyStoreJSON(STORAGE_KEYS.PRICING_TIERS, pricingTiers)
   }
 
   addPricingTier(pricingTier: PricingTier): void {
-    console.log("Storage: Adding pricing tier:", pricingTier)
     const pricingTiers = this.getPricingTiers()
     pricingTiers.push(pricingTier)
     this.setPricingTiers(pricingTiers)
@@ -203,35 +198,29 @@ class StorageService {
   }
 
   addUser(user: User): void {
-    console.log("Adding new user:", user)
     const users = this.getUsers()
     users.push(user)
     this.setUsers(users)
-    console.log("Updated users list:", users)
   }
 
   getUserByEmail(email: string): User | undefined {
     const users = this.getUsers()
     const user = users.find((u) => u.email === email)
-    console.log(`Looking up user by email ${email}:`, user || "Not found")
     return user
   }
 
   getCurrentUser(): User | null {
     const user = safelyParseJSON(STORAGE_KEYS.CURRENT_USER, null)
-    console.log("Getting current user:", user)
     return user
   }
 
   setCurrentUser(user: User | null): void {
-    console.log("Setting current user:", user)
     safelyStoreJSON(STORAGE_KEYS.CURRENT_USER, user)
   }
 
   // Initialize with default admin user if none exists
   initializeUsers(): void {
     const users = this.getUsers()
-    console.log("Initializing users. Current users:", users)
     if (users.length === 0) {
       const adminUser = {
         id: `user_${Date.now()}`,
@@ -241,7 +230,6 @@ class StorageService {
         role: "admin" as const,
         createdAt: new Date().toISOString(),
       }
-      console.log("No users found. Adding default admin:", adminUser)
       this.addUser(adminUser)
     }
   }

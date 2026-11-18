@@ -175,7 +175,7 @@ export function DashboardSidebarNew({ ...props }: React.ComponentProps<typeof Si
         <div className="flex items-center gap-2 px-2">
           <Link href="/" className="flex items-center">
             <Image 
-              src="/Banga-1.png" 
+              src="/banga-logo.svg" 
               alt="FK Banga" 
               width={32} 
               height={32} 

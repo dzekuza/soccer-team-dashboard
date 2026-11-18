@@ -37,11 +37,6 @@ export async function GET(request: Request) {
         const { data: posts, error, count } = await query
             .range(from, to);
 
-        console.log("API Debug - Query result:", {
-            posts: posts?.length,
-            error,
-            count,
-        });
 
         if (error) {
             console.error("Error fetching posts:", error);
