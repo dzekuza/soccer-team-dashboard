@@ -9,6 +9,10 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Įsigykite players smaller, grow on hover
+
+- Player cut-outs rest at 78% of the old size (about 450px instead of 720px), bottom-anchored, and scale up on tile hover/focus (`md`+, transform 300ms, anchored to the outer bottom corner). `h-promo-player` is now 36rem; new `scale-promo-rest`.
+
 ## 2026-11-18 — Public layout, no loading screens, server-fetched landing
 
 - New `app/(public)/layout.tsx` (nav + main + footer once); 21 routes moved into the group; five wrapper-only `layout.tsx` files and every per-page nav/footer/`min-h-screen` removed. `PublicNavigation` is prop-less and highlights from the URL (dropdown parents now highlight too). See ADR-0010.

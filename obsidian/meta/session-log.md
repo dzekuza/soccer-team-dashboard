@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Įsigykite players smaller, grow on hover
+
+- **Changed:** `components/tickets-apparel-section.tsx` (bottom-anchored player, rest scale, group-hover/focus scale), `tailwind.config.ts` (`h-promo-player` 36rem, `scale-promo-rest`); design-system, catalog, changelog.
+- **Status:** measured at 1290px: rest 300x449 (was 480x720), hover 384x576 rising 156px (clip allowance 160px); other tile unaffected; `tsc` clean. Committed.
+- **Next:** check on a real touch device (no hover there, so the players stay at rest size).
+
 ## 2026-11-18 — Public layout, no loading screens, server-fetched landing
 
 - **Changed:** `app/(public)/*` (21 routes moved, layout added), `components/public-navigation.tsx` (pathname-based), `components/common/page-skeletons.tsx`, `components/ui/skeleton.tsx` (default `bg-surface`), `components/landing/*`, `views/landing-view.tsx`, `lib/posts.ts`, `components/latest-posts-section.tsx`, all list/detail pages' loading gates; vault (design-system, routing, catalogs, ADR-0010, changelog).

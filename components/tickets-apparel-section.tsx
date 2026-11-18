@@ -53,7 +53,7 @@ function PromoTile({
       className={cn(
         // Desktop: the player may rise above the tile into the heading band (as in
         // the design) while the bottom and sides stay clipped. Stacked: clip fully.
-        "relative flex min-h-promo flex-1 flex-col justify-end overflow-hidden p-16 md:overflow-visible md:[clip-path:inset(-10rem_0_0_0)]",
+        "group relative flex min-h-promo flex-1 flex-col justify-end overflow-hidden p-16 md:overflow-visible md:[clip-path:inset(-10rem_0_0_0)]",
         "focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white",
         onLeft ? "items-end" : "items-start",
       )}
@@ -72,8 +72,10 @@ function PromoTile({
         height={playerHeight}
         sizes="(min-width: 768px) 30vw, 60vw"
         className={cn(
-          "pointer-events-none absolute top-1/2 h-full w-auto max-w-none md:h-promo-player -translate-y-1/2",
-          onLeft ? "left-0" : "right-0",
+          // From md the player rests smaller and grows on hover/focus. Scaling from the
+          // outer bottom corner keeps it anchored and lets it rise into the heading band.
+          "pointer-events-none absolute bottom-0 h-full w-auto max-w-none md:h-promo-player md:scale-promo-rest md:transition-transform md:duration-300 md:ease-out-strong md:group-hover:scale-100 md:group-focus-visible:scale-100 motion-reduce:transition-none",
+          onLeft ? "left-0 origin-bottom-left" : "right-0 origin-bottom-right",
         )}
       />
       <span className="relative text-title font-bold text-white">{label}</span>

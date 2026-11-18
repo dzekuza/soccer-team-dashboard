@@ -85,7 +85,8 @@ so no `md:text-*` pairs and no `text-[Npx]`:
 | `text-headline` | 32 -> 48px | 1.25 | Section titles / `.h2-public` |
 | `text-title` | 24 -> 32px | 1.25 | Page `<h1>` (dashboard and public) |
 
-Layout tokens (in `tailwind.config.ts`): `min-h-promo` 420px promo tiles, `h-promo-player` 720px cut-out player height.
+Layout tokens (in `tailwind.config.ts`): `min-h-promo` 420px promo tiles, `h-promo-player` 576px cut-out player height (its hover size;
+it rests at `scale-promo-rest` = 0.78, about 450px, and scales to 1 on tile hover/focus from `md`).
 `text-headline` and `text-title` carry -0.02em tracking (matches the Figma specs).
 
 Weights: `font-bold` for headings, `font-semibold` for sub-heads, `font-medium` for UI.

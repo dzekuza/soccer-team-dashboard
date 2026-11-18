@@ -91,7 +91,11 @@ const config: Config = {
   			promo: '26.25rem'
   		},
   		height: {
-  			'promo-player': '45rem'
+  			// Player cut-out at its hover size; it rests at `scale-promo-rest` of this
+  			'promo-player': '36rem'
+  		},
+  		scale: {
+  			'promo-rest': '0.78'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
