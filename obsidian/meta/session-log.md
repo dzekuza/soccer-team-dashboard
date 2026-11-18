@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Hero news fix, Įsigykite section from Figma
+
+- **Changed:** `app/api/posts/route.ts` + `[id]/route.ts` (`fetchCache`); `components/tickets-apparel-section.tsx` rewritten from Figma 1100:81335; `public/landing/*` (4 assets, ~6.6 MB of PNG cut-outs, served via next/image); tailwind tokens `max-w-page`, `min-h-promo`, `h-promo-player`, tracking on headline/title.
+- **Status:** hero slide 1 shows the latest post with its cover; section matches the design at 1440px (heading 48/60, -0.96px tracking) and stacks cleanly at 390px, no overflow. Committed.
+- **Next:** hero slides 2-3 still point at missing `/ticketsbg.png` / `/shopbg.png`; each hero slide renders an `<h1>` (5 per page); add `fetchCache` to the other 7 `createClient` API routes; shared `(public)` layout.
+
 ## 2026-11-18 — Type scale
 
 - **Changed:** `fontSize` tokens in `tailwind.config.ts`; `*-public` helpers rebuilt on them; arbitrary px sizes and `<h1>` sizes mapped (48 files); design-system note, ADR-0005, changelog.

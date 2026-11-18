@@ -17,8 +17,8 @@ const config: Config = {
   		fontSize: {
   			// Fluid display scale; body/UI sizes use Tailwind's xs/sm/base/lg/xl.
   			display: ['clamp(2.5rem, 1.75rem + 3vw, 4rem)', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-  			headline: ['clamp(2rem, 1.6rem + 1.6vw, 3rem)', { lineHeight: '1.25' }],
-  			title: ['clamp(1.5rem, 1.3rem + 0.8vw, 2rem)', { lineHeight: '1.25' }]
+  			headline: ['clamp(2rem, 1.6rem + 1.6vw, 3rem)', { lineHeight: '1.25', letterSpacing: '-0.02em' }],
+  			title: ['clamp(1.5rem, 1.3rem + 0.8vw, 2rem)', { lineHeight: '1.25', letterSpacing: '-0.02em' }]
   		},
   		colors: {
   			background: 'hsl(var(--background))',
@@ -77,6 +77,15 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		minHeight: {
+  			promo: '26.25rem'
+  		},
+  		height: {
+  			'promo-player': '45rem'
+  		},
+  		maxWidth: {
+  			page: '90rem'
   		},
   		borderRadius: {
   			lg: 'var(--radius)',

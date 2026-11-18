@@ -9,6 +9,11 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Landing Įsigykite section and hero news fix
+
+- Hero news slide was empty: Next 14 cached the supabase-js response for `/api/posts?limit=1` from before the news import. Added `fetchCache = "force-no-store"` to `/api/posts` and `/api/posts/[id]`. The other 7 API routes using `createClient` have the same exposure.
+- `TicketsApparelSection` rebuilt from Figma node 1100:81335 (`Įsigykite` heading, Atributika + Bilietai tiles with player cut-outs). Assets in `public/landing/`; old `/ticketsbg.png` / `/shopbg.png` backgrounds are no longer used by it.
+
 ## 2026-11-18 — Type scale
 
 - Added fluid `text-display` / `text-headline` / `text-title` tokens; removed all `text-[Npx]`/`leading-[Npx]` values; `<h1>`s and `.h1-public`/`.h2-public` use the tokens. See ADR-0005.
