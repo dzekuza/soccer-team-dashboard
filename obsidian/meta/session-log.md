@@ -24,6 +24,11 @@ Entry format:
 - **Status:** anon read verified. Riteriai is listed with all zeros, as on the club site. B / M tabs on the landing page still have no table.
 - **Next:** `ii_lyga_a` (Banga B) and `moteru_a_lyga` (Banga M) tables + fixtures; refresh the tables after matches (no scheduled scrape yet).
 
+## 2026-11-18 — pushed and merged to master
+- **Changed:** pushed `e9797f1` and fast-forwarded `master` from `feat/supabase-rebuild-and-site-content`; pushed `master` (54d3f30 → e9797f1).
+- **Status:** repo, remote DB migrations `…01`–`…17` and vault are in sync. Feature branch still exists on GitHub.
+- **Next:** Vercel env vars; register own account first, then disable open signup in Supabase Auth; rotate the access token pasted in chat; delete the merged feature branch if unwanted.
+
 ## 2026-11-18 — pending role + ticket update guard (migration …17)
 - **Changed:** `20261118000017_pending_role_and_ticket_update_guard.sql` applied remotely: role CHECK now allows `pending` (default), later signups are `pending`, trigger `restrict_staff_ticket_updates` blocks staff from editing anything but validation fields. Committed locally, not pushed.
 - **Status:** 0 users in DB. First registrant still becomes admin while signup is open.
