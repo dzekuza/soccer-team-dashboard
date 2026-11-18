@@ -149,3 +149,6 @@ jspm_packages/
 
 # Scraped squad data contains birth dates (some minors) — never commit
 /supabase/fkbanga-squads.json
+
+# Static assets in public/ must be committed
+!public/**

@@ -40,6 +40,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Next up
 
+- **Push the image fix**: `origin/master` lacks `public/landing/*` (Įsigykite images 404 in production) until the commit that adds them is pushed. `.gitignore` now un-ignores `public/`.
 - Footer links `/privacy` and `/cookies` 404 (pages missing). `/contact` duplicates `/kontaktai` with a non-working form and a different address; decide whether to redirect it. Review the copied club content (phones, staff) with the club.
 - Finish ADR-0008 on the remaining pages: `naujienos`, `renginiai`, `parduotuve`, `lentele` still use `usePageAnimation`; fixtures detail and `/players/[id]` loading states.
 - Hero: slides 2-3 point at missing `/ticketsbg.png` / `/shopbg.png` (add images or reuse `public/landing/*`); every slide renders an `<h1>` (5 per page), should be one.

@@ -9,6 +9,10 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Fix: public images were never committed
+
+- `.gitignore` ignored every `png/jpg/jpeg/gif/svg/ico/webp`, so `public/landing/*` (Įsigykite section) and `public/club/*` were not in git and would 404 in production. Added `!public/**` and committed them. Earlier assets were only tracked because they were force-added.
+
 ## 2026-11-18 — Klubas, Pamaina, Kontaktai pages
 
 - New own pages `/klubas`, `/pamaina`, `/kontaktai` (replacing the links to fkbanga.lt); header and footer "Kontaktai" now point at them. See ADR-0009. New shared `PageHeading` / `ContentSection`, club components, `views/`, `lib/club-content.ts`, `lib/club-documents.ts`; removed `lib/site-links.ts`.
