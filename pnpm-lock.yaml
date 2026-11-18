@@ -104,9 +104,6 @@ importers:
       '@sparticuz/chromium':
         specifier: ^123.0.1
         version: 123.0.1(debug@4.4.3(supports-color@7.2.0))
-      '@stripe/react-stripe-js':
-        specifier: ^3.7.0
-        version: 3.9.0(@stripe/stripe-js@7.8.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@stripe/stripe-js':
         specifier: ^7.4.0
         version: 7.8.0
@@ -1847,13 +1844,6 @@ packages:
   '@sparticuz/chromium@123.0.1':
     resolution: {integrity: sha512-RPrA99xrddbXXZjhUH1WZkTCK3QDQ77t/0y+vULtiW1uAlWLBxorxGnNTuzBDk6eNolxOVFrXZ2aoAN+/eB5TA==}
     engines: {node: '>= 16'}
-
-  '@stripe/react-stripe-js@3.9.0':
-    resolution: {integrity: sha512-pN1Re7zUc3m61FFQROok685g3zsBQRzCmZDmTzO8iPU6zhLvu2JnC0LrG0FCzSp6kgGa8AQSzq4rpFSgyhkjKg==}
-    peerDependencies:
-      '@stripe/stripe-js': '>=1.44.1 <8.0.0'
-      react: '>=16.8.0 <20.0.0'
-      react-dom: '>=16.8.0 <20.0.0'
 
   '@stripe/stripe-js@7.8.0':
     resolution: {integrity: sha512-DNXRfYUgkZlrniQORbA/wH8CdFRhiBSE0R56gYU0V5vvpJ9WZwvGrz9tBAZmfq2aTgw6SK7mNpmTizGzLWVezw==}
@@ -6482,13 +6472,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-buffer
       - debug
-
-  '@stripe/react-stripe-js@3.9.0(@stripe/stripe-js@7.8.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
-    dependencies:
-      '@stripe/stripe-js': 7.8.0
-      prop-types: 15.8.1
-      react: 19.3.1
-      react-dom: 19.3.1(react@19.3.1)
 
   '@stripe/stripe-js@7.8.0': {}
 

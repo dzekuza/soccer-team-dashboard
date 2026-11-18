@@ -28,8 +28,8 @@ added or repointed (`public/placeholder-logo.svg`, `/banga-logo.svg`), the favic
 `metadata.icons`, and non-square team logos are sized fully in CSS.
 
 **Consequences.** Stripe.js is no longer downloaded outside checkout; a missing Stripe key no longer
-takes the whole site down (checkout will fail on its own). `@stripe/react-stripe-js` is now unused and
-can be removed from `package.json` (and both lockfiles). Use `console.error` / a logger for real
+takes the whole site down (checkout will fail on its own). `@stripe/react-stripe-js` was unused and has been removed
+(both lockfiles regenerated). Use `console.error` / a logger for real
 problems; do not commit debug logs.
 
 ---

@@ -23,7 +23,7 @@ Entry format:
 
 - **Changed:** `components/providers.tsx` (no Stripe), 29 files (139 `console.log` removed), `app/layout.tsx` (favicon), `public/placeholder-logo.svg`, `/Banga-1.png` references, `components/upcoming-matches.tsx`; removed `app/(public)/naujienos/test`; ADR-0012.
 - **Status:** `tsc` clean. In a production build (`next start`) the landing, players, results, match, standings and news pages show no console errors, warnings or logs; no Stripe requests outside checkout; favicon and placeholder return 200. The dev server still shows an intermittent "Invalid or unexpected token" on first load of a freshly compiled route (half-built chunk during HMR), which is not reproducible in production.
-- **Next:** remove `@stripe/react-stripe-js` (unused) and regenerate both lockfiles; the Chrome extension error `Could not establish connection` and Stripe's `postMessage` warning on checkout are not app bugs; LCP `priority` warning for the hero image is dev-only.
+- **Next:** (done: removed `@stripe/react-stripe-js`, lockfiles regenerated, build passes); the Chrome extension error `Could not establish connection` and Stripe's `postMessage` warning on checkout are not app bugs; LCP `priority` warning for the hero image is dev-only.
 
 ## 2026-11-18 — Match page redesign, server-rendered public list pages
 

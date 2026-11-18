@@ -43,7 +43,6 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Next up
 
-- Remove the now-unused `@stripe/react-stripe-js` dependency and regenerate `package-lock.json` + `pnpm-lock.yaml`.
 - Speed (continued): still client-fetched: renginiai, parduotuve/shop, prenumeratos/subscriptions, `naujienos/[id]`, `players/[id]`, `zaidejai/[id]` (loads all players to show one), landing match strip + standings widget. Remove unused `/api/*` routes after.
 - **Push the image fix**: `origin/master` lacks `public/landing/*` (Įsigykite images 404 in production) until the commit that adds them is pushed. `.gitignore` now un-ignores `public/`.
 - Footer links `/privacy` and `/cookies` 404 (pages missing). `/contact` duplicates `/kontaktai` with a non-working form and a different address; decide whether to redirect it. Review the copied club content (phones, staff) with the club.
