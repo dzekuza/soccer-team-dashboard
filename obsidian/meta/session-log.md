@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Animation audit and fixes (landing, fixtures, players)
+
+- **Changed:** `app/page.tsx` (no reveals; hero pause/reduced-motion/inert), `components/player-card.tsx` (hover layers, `PlayerGridSkeleton`), `app/zaidejai/page.tsx`, `app/players/page.tsx`, `app/zaidejai/[id]/page.tsx`, `hooks/use-page-animation.ts` (`unknown[]`), `tailwind.config.ts` (easing tokens, `hoverOnlyWhenSupported`); design-system Motion section, ADR-0008, changelog.
+- **Status:** `tsc` clean; verified on the Next 15 dev server: 500ms crossfade, hover pause/resume, reduced-motion stops autoplay, skeleton in SSR HTML, card hover 200ms with no dark band. Committed, not pushed.
+- **Next:** migrate `naujienos`, `renginiai`, `parduotuve`, `lentele` off `usePageAnimation`; fixtures detail still shows a full-screen "Kraunama..."; `/players/[id]` has no entrance (and 10 inline styles).
+
 ## 2026-11-18 — Įsigykite tiles full width
 
 - **Changed:** removed `mx-auto max-w-page` from the tiles wrapper in `components/tickets-apparel-section.tsx`; removed the unused `max-w-page` token; vault design-system + changelog.

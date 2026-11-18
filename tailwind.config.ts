@@ -2,6 +2,10 @@ import type { Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config: Config = {
+    // Wrap hover: variants in @media (hover: hover) so touch devices never get sticky hover.
+    future: {
+        hoverOnlyWhenSupported: true,
+    },
     darkMode: ["class"],
     content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -77,6 +81,11 @@ const config: Config = {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
+  		},
+  		transitionTimingFunction: {
+  			// Shared motion curves (strong ease-out for entrances/feedback, ease-in-out for on-screen movement)
+  			'out-strong': 'cubic-bezier(0.23, 1, 0.32, 1)',
+  			'in-out-strong': 'cubic-bezier(0.77, 0, 0.175, 1)'
   		},
   		minHeight: {
   			promo: '26.25rem'

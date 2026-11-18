@@ -13,7 +13,6 @@ import { TicketsApparelSection } from '@/components/tickets-apparel-section'
 import { PartnersSection } from '@/components/partners-section'
 import { UpcomingMatches } from '@/components/upcoming-matches'
 import { StandingsTable } from '@/components/standings-table'
-import { usePageAnimation } from '@/hooks/use-page-animation'
 
 interface Post {
   id: string
@@ -42,7 +41,8 @@ export default function LandingPage() {
   const [loading, setLoading] = useState(true)
   const [selectedTeam, setSelectedTeam] = useState("Banga A")
   const [selectedStandingsTeam, setSelectedStandingsTeam] = useState("Banga A")
-  const isVisible = usePageAnimation([latestPost, loading])
+  const [isPaused, setIsPaused] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
 
   const teamTabs = [
     { key: "Banga A", label: "Banga" },
@@ -70,13 +70,6 @@ export default function LandingPage() {
 
     fetchLatestPost()
   }, [])
-
-  // Update slides when latest post changes
-  useEffect(() => {
-    if (latestPost) {
-      console.log('Latest post updated:', latestPost)
-    }
-  }, [latestPost])
 
   const slides: Slide[] = [
     {
@@ -123,27 +116,34 @@ export default function LandingPage() {
     }
   ]
 
-  // Auto-advance slides
+  // Follow the visitor's reduced-motion setting
   useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
+    setPrefersReducedMotion(query.matches)
+    const onChange = (event: MediaQueryListEvent) => setPrefersReducedMotion(event.matches)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+
+  // Auto-advance slides; stop while the pointer or keyboard focus is on the hero
+  useEffect(() => {
+    if (isPaused || prefersReducedMotion) return
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length)
-    }, 5000) // Change slide every 5 seconds
+    }, 5000)
 
     return () => clearInterval(interval)
-  }, [slides.length])
+  }, [slides.length, isPaused, prefersReducedMotion])
 
   const goToSlide = (index: number) => {
-    console.log('Going to slide:', index)
     setCurrentSlide(index)
   }
 
   const goToPrevious = () => {
-    console.log('Going to previous slide')
     setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
   }
 
   const goToNext = () => {
-    console.log('Going to next slide')
     setCurrentSlide((prev) => (prev + 1) % slides.length)
   }
 
@@ -160,16 +160,21 @@ export default function LandingPage() {
       <PublicNavigation currentPage="home" />
       
       {/* Hero Section with Slider */}
-      <section className={`relative h-[600px] overflow-hidden transition-all duration-1000 ease-out ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <section
+        className="relative h-[600px] overflow-hidden"
+        onPointerEnter={(event) => event.pointerType === 'mouse' && setIsPaused(true)}
+        onPointerLeave={(event) => event.pointerType === 'mouse' && setIsPaused(false)}
+        onFocus={() => setIsPaused(true)}
+        onBlur={() => setIsPaused(false)}
+      >
         {/* Slides */}
         <div className="relative h-full">
           {slides.map((slide, index) => (
             <div
               key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? 'opacity-100' : 'opacity-0'
+              inert={index !== currentSlide}
+              className={`absolute inset-0 transition-opacity duration-500 ease-in-out-strong motion-reduce:transition-none ${
+                index === currentSlide ? 'opacity-100' : 'pointer-events-none opacity-0'
               }`}
             >
               {/* Background */}
@@ -248,15 +253,14 @@ export default function LandingPage() {
                 index === currentSlide ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
               }`}
               aria-label={`Go to slide ${index + 1}`}
+              aria-current={index === currentSlide}
             />
           ))}
         </div>
       </section>
 
       {/* Upcoming Matches Section */}
-      <section className={`w-full bg-background transition-all duration-1000 ease-out delay-200 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <section className="w-full bg-background">
         <div className="w-full max-w-none">
           <PublicTabs
             tabs={teamTabs}
@@ -272,9 +276,7 @@ export default function LandingPage() {
       </section>
 
       {/* Standings Section */}
-      <section className={`w-full bg-background transition-all duration-1000 ease-out delay-400 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <section className="w-full bg-background">
         <div className="w-full max-w-none">
           <div className="text-center py-8 border-t border-b border-surface">
             <h2 className="text-white text-headline font-bold">
@@ -295,25 +297,13 @@ export default function LandingPage() {
       </section>
 
       {/* Latest Posts Section */}
-      <div className={`transition-all duration-1000 ease-out delay-600 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
-        <LatestPostsSection />
-      </div>
+      <LatestPostsSection />
 
       {/* Tickets and Apparel Section */}
-      <div className={`transition-all duration-1000 ease-out delay-800 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
-        <TicketsApparelSection />
-      </div>
+      <TicketsApparelSection />
 
       {/* Partners Section */}
-      <div className={`transition-all duration-1000 ease-out delay-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
-        <PartnersSection />
-      </div>
+      <PartnersSection />
 
       <PublicFooter />
     </div>

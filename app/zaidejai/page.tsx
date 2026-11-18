@@ -4,14 +4,27 @@ import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { PublicNavigation } from "@/components/public-navigation"
 import { PublicFooter } from "@/components/public-footer"
-import { PlayerCard } from "@/components/player-card"
+import { PlayerCard, PlayerGridSkeleton } from "@/components/player-card"
 import { PublicTabs } from "@/components/ui/tabs"
 import type { Player } from "@/lib/types"
-import { usePageAnimation } from "@/hooks/use-page-animation"
 
 interface PlayerGroup {
   title: string
   players: Player[]
+}
+
+/** Page frame + skeleton grid, so loading does not replace the whole page. */
+function PlayersLoadingShell() {
+  return (
+    <div className="min-h-screen bg-background text-white">
+      <PublicNavigation currentPage="zaidejai" />
+      <div className="text-center py-8 border-b border-surface">
+        <h1 className="h1-public">Žaidėjai</h1>
+      </div>
+      <PlayerGridSkeleton />
+      <PublicFooter />
+    </div>
+  )
 }
 
 function PlayersContent() {
@@ -20,7 +33,6 @@ function PlayersContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<string>("all")
-  const isVisible = usePageAnimation([players, loading])
 
   // Handle URL parameter for team selection
   useEffect(() => {
@@ -109,13 +121,7 @@ function PlayersContent() {
   ]
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-white text-xl">Kraunama...</div>
-        </div>
-      </div>
-    )
+    return <PlayersLoadingShell />
   }
 
   if (error) {
@@ -135,9 +141,7 @@ function PlayersContent() {
       <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Content */}
-      <div className={`w-full transition-all duration-1000 ease-out ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <div className="w-full animate-in fade-in duration-200 ease-out-strong motion-reduce:animate-none">
         <div className="text-center py-8 border-b border-surface">
           <h1 className="h1-public">Žaidėjai</h1>
         </div>
@@ -177,13 +181,7 @@ function PlayersContent() {
 
 export default function PlayersPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background">
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-white text-xl">Kraunama...</div>
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<PlayersLoadingShell />}>
       <PlayersContent />
     </Suspense>
   )

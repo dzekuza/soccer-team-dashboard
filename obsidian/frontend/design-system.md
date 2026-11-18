@@ -38,6 +38,28 @@ block of `app/globals.css`, bound to Tailwind in `tailwind.config.ts`.
 | `text-muted-foreground` | `--muted-foreground` | `#B0B8D1` | Secondary text |
 | `font-sans` | `--font-sans` | DM Sans (variable) | All text; loaded by `next/font/google` (latin + latin-ext) |
 
+## Motion
+
+Restraint first: animate only to give feedback, show where something came from, or
+bridge a change that would otherwise teleport. No decorative entrances.
+
+| Token | Value | Use for |
+|-------|-------|---------|
+| `ease-out-strong` | `cubic-bezier(0.23, 1, 0.32, 1)` | Entrances, hover/press feedback |
+| `ease-in-out-strong` | `cubic-bezier(0.77, 0, 0.175, 1)` | Movement/crossfades that stay on screen |
+
+Budgets: hover/feedback 150-200ms, content fade-in 200ms, hero crossfade 500ms. Animate
+`opacity`/`transform` (or colour for hover), never `transition-all`. Gradients cannot
+transition: fade an overlay layer instead.
+
+- **No page-load stagger.** Do not wrap sections in `translate-y` + `duration-1000` reveals
+  (the old `usePageAnimation` pattern still used by `naujienos`, `renginiai`,
+  `parduotuve`, `lentele`). Loaded content fades in with
+  `animate-in fade-in duration-200 ease-out-strong motion-reduce:animate-none`.
+- **Loading shows the page frame + skeleton** (`PlayerGridSkeleton`), not a full-screen "Kraunama...".
+- **Hover is gated** (`future.hoverOnlyWhenSupported`): `hover:` only applies on hover-capable devices.
+- **Autoplay** (hero) pauses on pointer/focus and stops under `prefers-reduced-motion`; inactive slides are `inert`.
+
 ## Type scale
 
 DM Sans throughout. Body/UI use Tailwind's `text-xs` 12 / `sm` 14 / `base` 16 /

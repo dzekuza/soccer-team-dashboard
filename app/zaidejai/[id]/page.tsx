@@ -11,7 +11,6 @@ export default function PlayerDetailPage() {
   const [player, setPlayer] = useState<Player | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     const fetchPlayer = async () => {
@@ -39,16 +38,6 @@ export default function PlayerDetailPage() {
       fetchPlayer()
     }
   }, [params.id])
-
-  // Trigger animation after player data loads
-  useEffect(() => {
-    if (player && !loading) {
-      const timer = setTimeout(() => {
-        setIsVisible(true)
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [player, loading])
 
   const getPositionDisplay = (position: string | null | undefined) => {
     if (!position) return 'N/A'
@@ -103,14 +92,10 @@ export default function PlayerDetailPage() {
               <PublicNavigation currentPage="zaidejai" />
       
       {/* Main Player Layout */}
-      <div className={`flex flex-col lg:flex-row h-auto transition-all duration-1000 ease-out ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <div className="flex flex-col lg:flex-row h-auto animate-in fade-in duration-200 ease-out-strong motion-reduce:animate-none">
         {/* Player Image Section */}
         <div 
-          className={`w-full lg:w-1/2 h-96 lg:h-[500px] relative overflow-hidden bg-cover bg-center bg-no-repeat transition-all duration-1000 ease-out delay-200 ${
-            isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
+          className="w-full lg:w-1/2 h-96 lg:h-[500px] relative overflow-hidden bg-cover bg-center bg-no-repeat"
           style={{ 
             backgroundImage: `url('/c2cb6597d2c71c6025cb283eaf62bf578a893145.jpg')`
           }}
@@ -127,9 +112,7 @@ export default function PlayerDetailPage() {
         </div>
         
         {/* Player Info Section */}
-        <div className={`w-full lg:w-1/2 bg-background flex flex-col justify-end transition-all duration-1000 ease-out delay-400 ${
-          isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8'
-        }`}>
+        <div className="w-full lg:w-1/2 bg-background flex flex-col justify-end">
         {/* Player Name and Jersey Number - Inline */}
         <div className="flex flex-row justify-between items-end p-6 lg:p-12">
           {/* Player Name and Position */}
@@ -174,16 +157,12 @@ export default function PlayerDetailPage() {
     </div>
 
       {/* Statistics Section */}
-      <div className={`p-4 lg:p-6 transition-all duration-1000 ease-out delay-600 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <div className="p-4 lg:p-6">
         <h2 className="text-white text-2xl lg:text-3xl font-bold uppercase">Statistika</h2>
       </div>
       
       {/* Statistics Grid - Full Width */}
-      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-0 transition-all duration-1000 ease-out delay-800 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
         {/* Matches and Goals */}
         <div className="border border-[rgba(95,95,113,0.31)] p-4 lg:p-6">
           <div className="flex justify-between items-center mb-4">
@@ -283,9 +262,7 @@ export default function PlayerDetailPage() {
       </div>
       
       {/* Additional Stats Grid */}
-      <div className={`grid grid-cols-2 gap-0 transition-all duration-1000 ease-out delay-1000 ${
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-      }`}>
+      <div className="grid grid-cols-2 gap-0">
         {/* Red Cards */}
         <div className="border border-[rgba(95,95,113,0.31)] p-4 lg:p-6">
           <div className="text-white text-sm font-bold uppercase mb-2">Raudonos kortelės</div>

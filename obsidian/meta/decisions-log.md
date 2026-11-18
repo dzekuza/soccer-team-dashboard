@@ -10,6 +10,28 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0008 — Motion conventions: restraint, shared curves, no page-load stagger
+
+- **Status:** Accepted (landing, players pages done; other pages pending)
+- **Date:** 2026-11-18
+
+**Context.** Pages faded and slid every section in with `translate-y-8 duration-1000`
+and 200-1000ms delays (`usePageAnimation`), hiding the hero for the first second on a
+page people navigate to constantly. The hero crossfade took 1s of a 5s cycle with no
+pause, hover states used `transition-all` and an un-animatable gradient swap, hover stuck
+on touch devices, and loading replaced the whole page with "Kraunama...".
+
+**Decision.** Remove staggered reveals; fade loaded content in 200ms. Shared curves
+`ease-out-strong` / `ease-in-out-strong` in the Tailwind theme. `hoverOnlyWhenSupported`.
+Hero: 500ms crossfade, pause on hover/focus, stop under reduced motion, `inert` inactive
+slides. Player card hover: colour/opacity only, 200ms. Skeleton grid inside the page frame.
+
+**Consequences.** Pages feel faster (nothing waits on an animation). Four other pages still
+use `usePageAnimation`; migrate them when touched. Touch devices no longer show sticky
+hover on any page.
+
+---
+
 ## ADR-0007 — Upgrade to Next.js 15.5 and React 19
 
 - **Status:** Accepted (branch `chore/upgrade-next-15`)

@@ -9,6 +9,12 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Motion cleanup (landing, players)
+
+- Removed staggered 1s page-load reveals on the landing and players pages; loaded content fades in 200ms. Added `ease-out-strong` / `ease-in-out-strong` and `hoverOnlyWhenSupported`. See ADR-0008.
+- Hero carousel: 500ms crossfade, pauses on hover/focus, stops under reduced motion, inactive slides `inert`; removed debug `console.log`s.
+- Player cards: colour/opacity-only hover with tokens (no raw `orange-*`); players pages show a skeleton grid instead of a full-screen loader; player detail uses one fade instead of six directional reveals.
+
 ## 2026-11-18 — Įsigykite tiles full width
 
 - Removed the `max-w-page` / `mx-auto` wrapper from `TicketsApparelSection` (tiles span the full width) and dropped the unused `max-w-page` token.

@@ -5,6 +5,17 @@ import Link from "next/link"
 import type { Player } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 
+/** Placeholder grid shown while players load, in the same grid as the real cards. */
+export function PlayerGridSkeleton({ count = 8 }: { count?: number }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" aria-hidden="true">
+      {Array.from({ length: count }).map((_, index) => (
+        <PlayerCardSkeleton key={index} />
+      ))}
+    </div>
+  )
+}
+
 interface PlayerCardProps {
   player: Player
 }
@@ -116,9 +127,14 @@ export function PlayerCard({ player }: PlayerCardProps) {
 
   return (
     <Link href={`/zaidejai/${player.id}`} className="block">
-      <div className="bg-background flex flex-col items-start justify-start relative w-full border border-surface overflow-hidden hover:border-primary hover:bg-orange-500 transition-all duration-300 cursor-pointer group">
+      <div className="bg-background flex flex-col items-start justify-start relative w-full border border-surface overflow-hidden hover:border-primary hover:bg-primary transition-colors duration-200 ease-out-strong cursor-pointer group">
       {/* Player Image Section */}
-      <div className="relative w-full h-[250px] md:h-[400px] overflow-hidden group-hover:bg-gradient-to-br group-hover:from-orange-400 group-hover:to-orange-600">
+      <div className="relative w-full h-[250px] md:h-[400px] overflow-hidden">
+        {/* Brand wash behind the cut-out: gradients cannot transition, so fade a layer */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-br from-primary to-primary-strong opacity-0 transition-opacity duration-200 ease-out-strong group-hover:opacity-100"
+        />
         <Image
           src={getPlayerImageSrc(player)}
           alt={`${player.name} ${player.surname}`}
@@ -140,8 +156,12 @@ export function PlayerCard({ player }: PlayerCardProps) {
           {getPositionAbbreviation(player.position)}
         </div>
         
-        {/* Gradient Overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-background group-hover:bg-gradient-to-b group-hover:from-transparent group-hover:to-orange-500 transition-all duration-300" />
+        {/* Name fade-out: blends into the card colour, which turns orange on hover */}
+        <div className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-background transition-opacity duration-200 ease-out-strong group-hover:opacity-0" />
+        <div
+          aria-hidden="true"
+          className="absolute bottom-0 left-0 right-0 h-20 md:h-28 bg-gradient-to-b from-transparent to-primary opacity-0 transition-opacity duration-200 ease-out-strong group-hover:opacity-100"
+        />
         
         {/* Player Name */}
         <div className="absolute bottom-2 left-4 text-white">
@@ -155,7 +175,7 @@ export function PlayerCard({ player }: PlayerCardProps) {
       </div>
       
       {/* Stats Section */}
-      <div className="bg-background group-hover:bg-orange-500 p-3 md:p-4 w-full space-y-3 md:space-y-4 transition-colors duration-300">
+      <div className="bg-background group-hover:bg-primary p-3 md:p-4 w-full space-y-3 md:space-y-4 transition-colors duration-200 ease-out-strong">
         {/* Stats Row */}
         <div className="flex gap-4 md:gap-6 items-center justify-start w-full">
           <div className="flex flex-col gap-1 flex-1">

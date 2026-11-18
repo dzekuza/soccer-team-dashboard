@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export function usePageAnimation(dependencies: any[] = []) {
+export function usePageAnimation(dependencies: unknown[] = []) {
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {

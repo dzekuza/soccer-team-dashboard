@@ -13,6 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
+- Motion cleanup on landing + players pages (ADR-0008): no page-load stagger, calmer hero carousel, skeleton loading, hover only on hover-capable devices.
 - Next 15.5 / React 19 upgrade (ADR-0007) merged to `master` and pushed (`95a05bb`); builds and smoke-tests clean locally. Verify the Vercel deployment (needs real Stripe/Resend/QR env vars at build time).
 - Landing "Įsigykite" section rebuilt from Figma node 1100:81335 (`components/tickets-apparel-section.tsx`, assets in `public/landing/`).
 - Hero news slide fixed: Next 14 cached an empty supabase-js response for `/api/posts?limit=1`; routes now use `fetchCache = "force-no-store"` (ADR-0006).
@@ -38,6 +39,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Next up
 
+- Finish ADR-0008 on the remaining pages: `naujienos`, `renginiai`, `parduotuve`, `lentele` still use `usePageAnimation`; fixtures detail and `/players/[id]` loading states.
 - Hero: slides 2-3 point at missing `/ticketsbg.png` / `/shopbg.png` (add images or reuse `public/landing/*`); every slide renders an `<h1>` (5 per page), should be one.
 - After the upgrade: add `revalidate`/`cache` only where caching is wanted (fetches are uncached by default now). Add `loading.tsx` / `error.tsx` / `not-found.tsx` (1 exists), server-side auth for `/dashboard` (no `middleware.ts`; `AuthGuard` is not mounted), move the 24 client pages that fetch in `useEffect` to server components, pin the 4 `latest` deps, add `favicon.ico`.
 - Audit follow-ups: shared `(public)` layout (24 pages import nav/footer by hand), remove duplicate EN/LT routes, `<h1>`/`<main>` on pages missing them, reduced-motion + hero pause control, remaining non-token colours (`#FFCC00`, `#FF3B30`, `#111111`, `#222222`, `#5F5F71`, hero gradients).

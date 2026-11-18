@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { PublicNavigation } from "@/components/public-navigation"
-import { PlayerCard } from "@/components/player-card"
+import { PlayerCard, PlayerGridSkeleton } from "@/components/player-card"
 import { PublicTabs } from "@/components/ui/tabs"
 import type { Player } from "@/lib/types"
 
@@ -91,10 +91,12 @@ export default function PlayersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="flex items-center justify-center h-screen">
-          <div className="text-white text-xl">Kraunama...</div>
+      <div className="min-h-screen bg-background text-white">
+        <PublicNavigation currentPage="players" />
+        <div className="text-center py-8 border-b border-surface">
+          <h1 className="h1-public">Žaidėjai</h1>
         </div>
+        <PlayerGridSkeleton />
       </div>
     )
   }
