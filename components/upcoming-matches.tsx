@@ -13,9 +13,17 @@ interface Match {
   team2_logo?: string
   match_date: string
   venue?: string
-  score?: string
+  team1_score?: number | null
+  team2_score?: number | null
   status: string
   league_key?: string
+}
+
+const RECENT_RESULTS_LIMIT = 10
+
+function formatScore(match: Match): string {
+  if (match.team1_score == null || match.team2_score == null) return '-'
+  return `${match.team1_score} - ${match.team2_score}`
 }
 
 interface UpcomingMatchesProps {
@@ -37,35 +45,24 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
         const response = await fetch('/api/fixtures/public')
         if (response.ok) {
           const result = await response.json()
-          console.log('API response:', result)
-          
-          // Handle the API response structure
-          const data = result.data || result
-          console.log('All fixtures:', data.length)
-          console.log('Selected team:', selectedTeam)
-          console.log('Sample fixture:', data[0])
-          
-          // Filter by selected team and show all upcoming matches
-          const filtered = data.filter((fixture: Match) => {
-            const isUpcoming = fixture.status === 'upcoming' || 
-              (fixture.status !== 'completed' && new Date(fixture.match_date) >= new Date())
-            
-            console.log(`Checking fixture: ${fixture.team1} vs ${fixture.team2}, league: ${fixture.league_key}, status: ${fixture.status}, date: ${fixture.match_date}, isUpcoming: ${isUpcoming}`)
-            
-            // Filter by selected team using league_key (like the schedule page)
-            if (selectedTeam === 'Banga A') {
-              return isUpcoming && fixture.league_key === 'Banga A'
-            } else if (selectedTeam === 'Banga B') {
-              return isUpcoming && fixture.league_key === 'Banga B'
-            } else if (selectedTeam === 'Banga M') {
-              return isUpcoming && fixture.league_key === 'Banga M'
-            } else {
-              // Show all upcoming matches for all teams
-              return isUpcoming
-            }
-          })
-          
-          console.log('Filtered matches:', filtered.length, filtered)
+          const data: Match[] = result.data || result
+
+          const forTeam = (fixture: Match) =>
+            !selectedTeam || fixture.league_key === selectedTeam
+
+          const isUpcoming = (fixture: Match) =>
+            fixture.status === 'upcoming' ||
+            (fixture.status !== 'completed' && new Date(fixture.match_date) >= new Date())
+
+          const upcoming = data.filter((fixture) => forTeam(fixture) && isUpcoming(fixture))
+
+          // Off-season: no upcoming fixtures, so show the latest results instead
+          const filtered = upcoming.length > 0
+            ? upcoming
+            : data
+                .filter((fixture) => forTeam(fixture) && fixture.status === 'completed')
+                .sort((a, b) => b.match_date.localeCompare(a.match_date))
+                .slice(0, RECENT_RESULTS_LIMIT)
           setMatches(filtered)
         }
       } catch (error) {
@@ -185,7 +182,7 @@ export function UpcomingMatches({ selectedTeam }: UpcomingMatchesProps) {
               {/* Score or VS */}
               <div className="flex-shrink-0 mx-4">
                 <span className="text-white text-base font-medium">
-                  {match.score || '-'}
+                  {formatScore(match)}
                 </span>
               </div>
               

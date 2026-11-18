@@ -1,105 +1,171 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { ShoppingCart, Menu, ChevronDown, Clock3 } from "lucide-react"
-import { useState, useEffect } from "react"
-import { useCart } from "@/context/cart-context"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
-import { Button } from "@/components/ui/button"
-import { CartSheet } from "@/components/cart-sheet"
+import Link from "next/link";
+import Image from "next/image";
+import { ShoppingCart, Menu, ChevronDown, Clock3 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useCart } from "@/context/cart-context";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { CartSheet } from "@/components/cart-sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Match } from "@/lib/types"
+} from "@/components/ui/dropdown-menu";
+import { Match } from "@/lib/types";
 
 interface PublicNavigationProps {
-  currentPage?: string
+  currentPage?: string;
 }
 
-export function PublicNavigation({ currentPage = "events" }: PublicNavigationProps) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const [isCartSheetOpen, setIsCartSheetOpen] = useState(false)
-  const [upcomingMatch, setUpcomingMatch] = useState<Match | null>(null)
-  const { cart } = useCart()
-  
-  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0)
+export function PublicNavigation({
+  currentPage = "events",
+}: PublicNavigationProps) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartSheetOpen, setIsCartSheetOpen] = useState(false);
+  const [upcomingMatch, setUpcomingMatch] = useState<Match | null>(null);
+  const { cart } = useCart();
+
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     async function fetchUpcomingMatch() {
       try {
-        const response = await fetch('/api/matches/upcoming')
+        const response = await fetch("/api/matches/upcoming");
         if (response.ok) {
-          const data = await response.json()
-          setUpcomingMatch(data)
+          const data = await response.json();
+          setUpcomingMatch(data);
         }
       } catch (error) {
-        console.error('Failed to fetch upcoming match:', error)
+        console.error("Failed to fetch upcoming match:", error);
       }
     }
 
-    fetchUpcomingMatch()
-  }, [])
+    fetchUpcomingMatch();
+  }, []);
 
   const formatMatchDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     const months = [
-      'sausio', 'vasario', 'kovo', 'balandžio', 'gegužės', 'birželio',
-      'liepos', 'rugpjūčio', 'rugsėjo', 'spalio', 'lapkričio', 'gruodžio'
-    ]
-    return `${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`
-  }
+      "sausio",
+      "vasario",
+      "kovo",
+      "balandžio",
+      "gegužės",
+      "birželio",
+      "liepos",
+      "rugpjūčio",
+      "rugsėjo",
+      "spalio",
+      "lapkričio",
+      "gruodžio",
+    ];
+    return `${date.getDate()} ${months[date.getMonth()]}, ${date.getFullYear()}`;
+  };
 
   const formatMatchTime = (timeString: string) => {
-    return timeString?.substring(0, 5) || ''
-  }
+    return timeString?.substring(0, 5) || "";
+  };
 
   const navigationItems = [
     { href: "/", label: "Pradžia", page: "home", external: false },
-    { href: "https://darkorange-partridge-697021.hostingersite.com/klubas/", label: "Klubas", page: "klubas", external: true },
-    { href: "/naujienos", label: "Naujienos", page: "naujienos", external: false },
-    { 
-      label: "Komandos", 
+    {
+      href: "https://darkorange-partridge-697021.hostingersite.com/klubas/",
+      label: "Klubas",
+      page: "klubas",
+      external: true,
+    },
+    {
+      href: "/naujienos",
+      label: "Naujienos",
+      page: "naujienos",
+      external: false,
+    },
+    {
+      label: "Komandos",
       page: "komandos",
       dropdown: true,
       items: [
-        { href: "/zaidejai?team=BANGA A", label: "Banga A", page: "zaidejai", external: false },
-        { href: "/zaidejai?team=BANGA B", label: "Banga B", page: "zaidejai", external: false },
-        { href: "/zaidejai?team=BANGA M", label: "Banga M", page: "zaidejai", external: false }
-      ]
+        {
+          href: "/zaidejai?team=BANGA A",
+          label: "Banga A",
+          page: "zaidejai",
+          external: false,
+        },
+        {
+          href: "/zaidejai?team=BANGA B",
+          label: "Banga B",
+          page: "zaidejai",
+          external: false,
+        },
+        {
+          href: "/zaidejai?team=BANGA M",
+          label: "Banga M",
+          page: "zaidejai",
+          external: false,
+        },
+      ],
     },
-    { 
-      label: "Bilietai ir abonementai", 
+    {
+      label: "Bilietai ir abonementai",
       page: "tickets-subscriptions",
       dropdown: true,
       items: [
-        { href: "/renginiai", label: "Bilietai", page: "renginiai", external: false },
-        { href: "/prenumeratos", label: "Abonementai", page: "prenumeratos", external: false }
-      ]
+        {
+          href: "/renginiai",
+          label: "Bilietai",
+          page: "renginiai",
+          external: false,
+        },
+        {
+          href: "/prenumeratos",
+          label: "Abonementai",
+          page: "prenumeratos",
+          external: false,
+        },
+      ],
     },
-    { href: "https://darkorange-partridge-697021.hostingersite.com/pamaina/", label: "Akademija", page: "akademija", external: true },
-    { href: "/parduotuve", label: "Parduotuvė", page: "parduotuve", external: false },
+    {
+      href: "https://darkorange-partridge-697021.hostingersite.com/pamaina/",
+      label: "Akademija",
+      page: "akademija",
+      external: true,
+    },
+    {
+      href: "/parduotuve",
+      label: "Parduotuvė",
+      page: "parduotuve",
+      external: false,
+    },
 
-    { href: "https://darkorange-partridge-697021.hostingersite.com/kontaktai/", label: "Kontaktai", page: "kontaktai", external: true },
-  ]
+    {
+      href: "https://darkorange-partridge-697021.hostingersite.com/kontaktai/",
+      label: "Kontaktai",
+      page: "kontaktai",
+      external: true,
+    },
+  ];
 
   return (
     <>
       {/* Top subnavigation (match info) */}
-      <div className="bg-[#070F40] relative">
-        <div
-          className="border-b border-[rgba(95,95,113,0.3)] bg-gradient-to-b from-[#070f40]/80 to-transparent"
-        >
+      <div className="bg-[#070F40] sticky top-0 z-50">
+        <div className="border-b border-[rgba(95,95,113,0.3)] bg-gradient-to-b from-[#070f40]/80 to-transparent">
           <div className="w-full px-4 md:px-8 lg:px-16 h-10 flex items-center justify-between">
             {/* Left: date and time */}
             <div className="flex items-center gap-2 text-[#F15601] text-sm">
               <Clock3 className="h-4 w-4" />
               {upcomingMatch ? (
                 <span>
-                  {formatMatchDate(upcomingMatch.match_date!)}, {formatMatchTime(upcomingMatch.match_time!)}
+                  {formatMatchDate(upcomingMatch.match_date!)},{" "}
+                  {formatMatchTime(upcomingMatch.match_time!)}
                 </span>
               ) : (
                 <span>Nėra artimiausių rungtynių</span>
@@ -132,11 +198,12 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
             {/* Logo */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <Image 
-                  src="/Banga-1.png" 
-                  alt="FK Banga" 
-                  width={48} 
-                  height={48} 
+                <Image
+                  src="/banga-logo.svg"
+                  alt="FK Banga"
+                  width={56}
+                  height={56}
+                  priority
                   className="object-contain"
                 />
               </Link>
@@ -152,8 +219,8 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                         <Button
                           variant="ghost"
                           className={`flex items-center gap-1 transition-colors bg-transparent hover:bg-transparent focus:bg-transparent rounded-none ${
-                            currentPage === item.page 
-                              ? "text-[#F15601] border-b-2 border-[#F15601]" 
+                            currentPage === item.page
+                              ? "text-[#F15601] border-b-2 border-[#F15601]"
                               : "text-white hover:text-[#F15601] hover:border-b-2 hover:border-[#F15601]"
                           }`}
                         >
@@ -163,8 +230,11 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-[#0A165B] border-[#232C62] rounded-none">
                         {item.items?.map((dropdownItem) => (
-                          <DropdownMenuItem key={dropdownItem.href} className="rounded-none hover:bg-transparent focus:bg-transparent">
-                            <Link 
+                          <DropdownMenuItem
+                            key={dropdownItem.href}
+                            className="rounded-none hover:bg-transparent focus:bg-transparent"
+                          >
+                            <Link
                               href={dropdownItem.href || "#"}
                               className="text-white hover:text-[#F15601] w-full"
                             >
@@ -174,24 +244,24 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  )
+                  );
                 }
-                
+
                 return (
-                  <Link 
+                  <Link
                     key={item.href}
                     href={item.href || "#"}
                     className={`transition-colors ${
-                      currentPage === item.page 
-                        ? "text-[#F15601] border-b-2 border-[#F15601]" 
+                      currentPage === item.page
+                        ? "text-[#F15601] border-b-2 border-[#F15601]"
                         : "text-white hover:text-[#F15601] hover:border-b-2 hover:border-[#F15601]"
                     }`}
                   >
                     {item.label}
                   </Link>
-                )
+                );
               })}
-              
+
               {/* Shopping Cart */}
               <Button
                 variant="ghost"
@@ -220,7 +290,7 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                   {cartItemCount}
                 </div>
               </Button>
-              
+
               {/* Hamburger Menu */}
               <Button
                 variant="ghost"
@@ -239,9 +309,11 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
       <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
         <SheetContent className="bg-[#0A165B] text-white border-[#232C62] w-[300px] p-0">
           <SheetHeader className="border-b border-[#232C62] p-4">
-            <SheetTitle className="text-white text-xl font-bold text-left">Meniu</SheetTitle>
+            <SheetTitle className="text-white text-xl font-bold text-left">
+              Meniu
+            </SheetTitle>
           </SheetHeader>
-          
+
           <div className="flex flex-col p-4 space-y-2">
             {navigationItems.map((item) => {
               if (item.dropdown) {
@@ -251,13 +323,13 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                       {item.label}
                     </div>
                     {item.items?.map((dropdownItem) => (
-                      <Link 
+                      <Link
                         key={dropdownItem.href}
                         href={dropdownItem.href || "#"}
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`text-base py-2 px-8 transition-colors ${
-                          currentPage === dropdownItem.page 
-                            ? "text-[#F15601] border-l-2 border-[#F15601]" 
+                          currentPage === dropdownItem.page
+                            ? "text-[#F15601] border-l-2 border-[#F15601]"
                             : "text-white hover:text-[#F15601] hover:border-l-2 hover:border-[#F15601]"
                         }`}
                       >
@@ -265,23 +337,23 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
                       </Link>
                     ))}
                   </div>
-                )
+                );
               }
-              
+
               return (
-                <Link 
+                <Link
                   key={item.href}
                   href={item.href || "#"}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`text-lg py-3 px-4 transition-colors ${
-                    currentPage === item.page 
-                      ? "text-[#F15601] border-l-2 border-[#F15601]" 
+                    currentPage === item.page
+                      ? "text-[#F15601] border-l-2 border-[#F15601]"
                       : "text-white hover:text-[#F15601] hover:border-l-2 hover:border-[#F15601]"
                   }`}
                 >
                   {item.label}
                 </Link>
-              )
+              );
             })}
           </div>
         </SheetContent>
@@ -290,5 +362,5 @@ export function PublicNavigation({ currentPage = "events" }: PublicNavigationPro
       {/* Cart Sheet */}
       <CartSheet open={isCartSheetOpen} onOpenChange={setIsCartSheetOpen} />
     </>
-  )
+  );
 }

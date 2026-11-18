@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { Mail, Phone, Facebook, Instagram, Youtube } from "lucide-react"
+import Link from "next/link";
+import Image from "next/image";
+import { Mail, Phone, Facebook, Instagram, Youtube } from "lucide-react";
 
 export function PublicFooter() {
   return (
@@ -14,11 +14,11 @@ export function PublicFooter() {
           {/* Logo */}
           <div>
             <Link href="/" className="inline-block">
-              <Image 
-                src="/Banga-1.png" 
-                alt="FK Banga" 
-                width={88} 
-                height={88} 
+              <Image
+                src="/banga-logo.svg"
+                alt="FK Banga"
+                width={88}
+                height={88}
                 className="object-contain"
               />
             </Link>
@@ -31,17 +31,26 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-1">
               <li>
-                <Link href="/zaidejai?team=BANGA A" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/zaidejai?team=BANGA A"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Banga
                 </Link>
               </li>
               <li>
-                <Link href="/zaidejai?team=BANGA B" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/zaidejai?team=BANGA B"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Banga B
                 </Link>
               </li>
               <li>
-                <Link href="/zaidejai?team=BANGA M" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/zaidejai?team=BANGA M"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Merginos
                 </Link>
               </li>
@@ -55,22 +64,34 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-1">
               <li>
-                <Link href="/naujienos" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/naujienos"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Naujienos
                 </Link>
               </li>
               <li>
-                <Link href="/tvarkarastis" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/tvarkarastis"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Tvarkaraštis
                 </Link>
               </li>
               <li>
-                <Link href="/rezultatai" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/rezultatai"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Rezultatai
                 </Link>
               </li>
               <li>
-                <Link href="/lentele" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/lentele"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Turnyrinė lentelė
                 </Link>
               </li>
@@ -84,25 +105,35 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-1">
               <li>
-                <Link href="/contact" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/contact"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Kontaktai
                 </Link>
               </li>
               <li>
-                <Link href="/renginiai" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/renginiai"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Bilietai
                 </Link>
               </li>
+              <li></li>
               <li>
-
-              </li>
-              <li>
-                <Link href="/privacy" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/privacy"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Privatumo politika
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="text-white hover:text-[#F15601] transition-colors">
+                <Link
+                  href="/cookies"
+                  className="text-white hover:text-[#F15601] transition-colors"
+                >
                   Slapukų politika
                 </Link>
               </li>
@@ -116,8 +147,8 @@ export function PublicFooter() {
             </h3>
             <ul className="space-y-1">
               <li>
-                <a 
-                  href="mailto:pavel@fkbanga.lt" 
+                <a
+                  href="mailto:pavel@fkbanga.lt"
                   className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
                 >
                   <Mail className="w-4 h-4" />
@@ -125,8 +156,8 @@ export function PublicFooter() {
                 </a>
               </li>
               <li>
-                <a 
-                  href="tel:+37046452782" 
+                <a
+                  href="tel:+37046452782"
                   className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
                 >
                   <Phone className="w-4 h-4" />
@@ -142,11 +173,11 @@ export function PublicFooter() {
           {/* Logo */}
           <div>
             <Link href="/" className="inline-block">
-              <Image 
-                src="/Banga-1.png" 
-                alt="FK Banga" 
-                width={88} 
-                height={88} 
+              <Image
+                src="/banga-logo.svg"
+                alt="FK Banga"
+                width={88}
+                height={88}
                 className="object-contain"
               />
             </Link>
@@ -163,17 +194,26 @@ export function PublicFooter() {
                 </h3>
                 <ul className="space-y-1">
                   <li>
-                    <Link href="/zaidejai?team=BANGA A" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/zaidejai?team=BANGA A"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Banga
                     </Link>
                   </li>
                   <li>
-                    <Link href="/zaidejai?team=BANGA B" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/zaidejai?team=BANGA B"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Banga B
                     </Link>
                   </li>
                   <li>
-                    <Link href="/zaidejai?team=BANGA M" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/zaidejai?team=BANGA M"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Merginos
                     </Link>
                   </li>
@@ -187,22 +227,34 @@ export function PublicFooter() {
                 </h3>
                 <ul className="space-y-1">
                   <li>
-                    <Link href="/naujienos" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/naujienos"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Naujienos
                     </Link>
                   </li>
                   <li>
-                    <Link href="/tvarkarastis" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/tvarkarastis"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Tvarkaraštis
                     </Link>
                   </li>
                   <li>
-                    <Link href="/rezultatai" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/rezultatai"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Rezultatai
                     </Link>
                   </li>
                   <li>
-                    <Link href="/lentele" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/lentele"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Turnyrinė lentelė
                     </Link>
                   </li>
@@ -219,25 +271,35 @@ export function PublicFooter() {
                 </h3>
                 <ul className="space-y-1">
                   <li>
-                    <Link href="/contact" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/contact"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Kontaktai
                     </Link>
                   </li>
                   <li>
-                    <Link href="/renginiai" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/renginiai"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Bilietai
                     </Link>
                   </li>
+                  <li></li>
                   <li>
-                    
-                  </li>
-                  <li>
-                    <Link href="/privacy" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/privacy"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Privatumo politika
                     </Link>
                   </li>
                   <li>
-                    <Link href="/cookies" className="text-white hover:text-[#F15601] transition-colors">
+                    <Link
+                      href="/cookies"
+                      className="text-white hover:text-[#F15601] transition-colors"
+                    >
                       Slapukų politika
                     </Link>
                   </li>
@@ -251,8 +313,8 @@ export function PublicFooter() {
                 </h3>
                 <ul className="space-y-1">
                   <li>
-                    <a 
-                      href="mailto:pavel@fkbanga.lt" 
+                    <a
+                      href="mailto:pavel@fkbanga.lt"
                       className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
                     >
                       <Mail className="w-4 h-4" />
@@ -260,8 +322,8 @@ export function PublicFooter() {
                     </a>
                   </li>
                   <li>
-                    <a 
-                      href="tel:+37046452782" 
+                    <a
+                      href="tel:+37046452782"
                       className="flex items-center gap-2 text-white hover:text-[#F15601] transition-colors"
                     >
                       <Phone className="w-4 h-4" />
@@ -286,25 +348,25 @@ export function PublicFooter() {
 
             {/* Social media */}
             <div className="flex items-center gap-6">
-              <a 
-                href="https://facebook.com/fkbanga" 
-                target="_blank" 
+              <a
+                href="https://facebook.com/fkbanga"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-[#F15601] transition-colors"
               >
                 <Facebook className="w-4 h-4" />
               </a>
-              <a 
-                href="https://instagram.com/fkbanga" 
-                target="_blank" 
+              <a
+                href="https://instagram.com/fkbanga"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-[#F15601] transition-colors"
               >
                 <Instagram className="w-4 h-4" />
               </a>
-              <a 
-                href="https://youtube.com/fkbanga" 
-                target="_blank" 
+              <a
+                href="https://youtube.com/fkbanga"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-[#F15601] transition-colors"
               >
@@ -315,5 +377,5 @@ export function PublicFooter() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

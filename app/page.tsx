@@ -25,6 +25,17 @@ interface Post {
   created_at: string
 }
 
+interface Slide {
+  id: number
+  type: 'post' | 'tickets' | 'store' | 'photo'
+  title: string
+  image: string
+  bgColor?: string
+  description?: string
+  buttonText?: string
+  buttonLink?: string
+}
+
 export default function LandingPage() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [latestPost, setLatestPost] = useState<Post | null>(null)
@@ -60,15 +71,6 @@ export default function LandingPage() {
     fetchLatestPost()
   }, [])
 
-  // Auto-advance slides
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % 3)
-    }, 5000) // Change slide every 5 seconds
-
-    return () => clearInterval(interval)
-  }, [])
-
   // Update slides when latest post changes
   useEffect(() => {
     if (latestPost) {
@@ -76,7 +78,7 @@ export default function LandingPage() {
     }
   }, [latestPost])
 
-  const slides = [
+  const slides: Slide[] = [
     {
       id: 1,
       type: 'post',
@@ -106,8 +108,29 @@ export default function LandingPage() {
       buttonText: 'Apsipirkti',
       buttonLink: '/parduotuve',
       bgColor: 'bg-gradient-to-r from-[#0A165B] to-[#1a2b6b]'
+    },
+    {
+      id: 4,
+      type: 'photo',
+      title: 'FK Banga žaidėjai dėkoja sirgaliams po rungtynių',
+      image: '/hero/banga-20260830.png'
+    },
+    {
+      id: 5,
+      type: 'photo',
+      title: 'FK Banga sirgaliai tribūnose',
+      image: '/hero/fanai-2026.png'
     }
   ]
+
+  // Auto-advance slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length)
+    }, 5000) // Change slide every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [slides.length])
 
   const goToSlide = (index: number) => {
     console.log('Going to slide:', index)
@@ -116,12 +139,12 @@ export default function LandingPage() {
 
   const goToPrevious = () => {
     console.log('Going to previous slide')
-    setCurrentSlide((prev) => (prev - 1 + 3) % 3)
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)
   }
 
   const goToNext = () => {
     console.log('Going to next slide')
-    setCurrentSlide((prev) => (prev + 1) % 3)
+    setCurrentSlide((prev) => (prev + 1) % slides.length)
   }
 
   if (loading) {
@@ -150,20 +173,26 @@ export default function LandingPage() {
               }`}
             >
               {/* Background */}
-              <div className={`absolute inset-0 ${slide.bgColor}`}>
+              <div className={`absolute inset-0 ${slide.bgColor ?? 'bg-[#0A165B]'}`}>
                 {slide.image && (
                   <div className="absolute inset-0">
                     <Image
                       src={slide.image}
                       alt={slide.title}
                       fill
-                      className="object-cover opacity-20"
+                      priority={index === 0}
+                      sizes="100vw"
+                      className={slide.type === 'photo' ? 'object-cover' : 'object-cover opacity-20'}
                     />
                   </div>
+                )}
+                {slide.type === 'photo' && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A165B]/70 via-transparent to-transparent" />
                 )}
               </div>
               
                              {/* Content */}
+               {slide.type !== 'photo' && (
                <div className="relative z-10 h-full flex items-end">
                  <div className="w-full px-4 md:px-16 pb-16">
                    <div className="max-w-2xl">
@@ -173,7 +202,7 @@ export default function LandingPage() {
                      <p className="text-xl md:text-2xl text-white/90 mb-8 leading-relaxed">
                        {slide.description}
                      </p>
-                     <Link href={slide.buttonLink}>
+                     <Link href={slide.buttonLink ?? '/'}>
                        <Button 
                          size="lg" 
                          className="bg-[#F15601] hover:bg-[#E04A00] text-white text-lg px-8 py-4 h-auto rounded-none"
@@ -184,6 +213,7 @@ export default function LandingPage() {
                    </div>
                  </div>
                </div>
+               )}
             </div>
           ))}
         </div>
