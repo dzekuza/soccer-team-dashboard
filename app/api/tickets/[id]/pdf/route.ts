@@ -9,7 +9,7 @@ function escapeHtml(text: string | undefined) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;")
+    .replace(/'/g, "&#039;");
 }
 
 function monthLt(dateISO: string) {
@@ -21,13 +21,12 @@ function monthLt(dateISO: string) {
   return `${months[d.getMonth()]} ${d.getDate()}d`
 }
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    // Await params for dynamic API routes per Next.js 15+ requirements
-    const { params } = await Promise.resolve(context)
-    const ticket = await dbService.getTicketWithDetails(params.id)
+    const { id } = await context.params
+    const ticket = await dbService.getTicketWithDetails(id)
     if (!ticket) {
-      console.error("[PDF API] Ticket not found for id:", params.id)
+      console.error("[PDF API] Ticket not found for id:", id)
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 })
     }
 

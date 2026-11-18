@@ -1,9 +1,9 @@
 import { supabaseService } from "@/lib/supabase-service";
 import { TicketsClient } from "./tickets-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function TicketsPage() {
-  noStore();
+  await connection();
   const { data: tickets, error } = await supabaseService.getTicketsWithDetails();
 
   if (error) {

@@ -4,10 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbService } from "@/lib/db-service";
 import { renderTicketHtml } from "@/lib/ticket-html";
 
-export async function GET(
-    request: NextRequest,
-    { params }: { params: { id: string } },
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     try {
         const { id } = params;
         const ticket = await dbService.getTicketWithDetails(id);

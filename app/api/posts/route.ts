@@ -2,9 +2,6 @@ import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
-// force-dynamic alone does not stop Next 14 caching supabase-js HTTP calls,
-// which served stale empty results after the news import.
-export const fetchCache = "force-no-store";
 
 export async function GET(request: Request) {
     try {

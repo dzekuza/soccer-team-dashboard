@@ -74,17 +74,17 @@
     "jspdf": "latest",
     "jszip": "^3.10.1",
     "lucide-react": "^0.454.0",
-    "next": "14.2.4",
+    "next": "^15.5.29",
     "next-themes": "^0.4.4",
     "node-fetch": "^3.3.2",
     "pdf-lib": "^1.17.1",
     "qr-scanner": "latest",
     "qrcode": "latest",
     "qrcode.react": "^4.2.0",
-    "react": "^18.3.1",
+    "react": "^19.3.1",
     "react-big-calendar": "^1.19.3",
     "react-day-picker": "8.10.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.3.1",
     "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.54.1",
     "react-qr-code": "^2.0.16",
@@ -104,14 +104,14 @@
     "@types/node": "^22.15.32",
     "@types/pdfmake": "^0.2.11",
     "@types/qrcode": "^1.5.5",
-    "@types/react": "^18.3.3",
+    "@types/react": "^19.3.0",
     "@types/react-big-calendar": "^1.16.2",
-    "@types/react-dom": "^18.3.0",
+    "@types/react-dom": "^19.3.0",
     "@types/recharts": "^2.0.1",
     "@types/uuid": "^10.0.0",
     "dotenv": "^16.6.1",
     "eslint": "8.57.0",
-    "eslint-config-next": "14.2.4",
+    "eslint-config-next": "^15.5.29",
     "postcss": "^8.5",
     "puppeteer": "^24.16.2",
     "puppeteer-core": "^23.11.1",
@@ -120,5 +120,11 @@
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.20.5",
     "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "react-day-picker": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }

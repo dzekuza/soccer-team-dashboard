@@ -1,11 +1,11 @@
 import { supabaseService } from "@/lib/supabase-service";
 import PostsClient from "./posts-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export const dynamic = 'force-dynamic'
 
 export default async function PostsPage() {
-  noStore();
+  await connection();
   try {
     const postsData = await supabaseService.getPosts();
 

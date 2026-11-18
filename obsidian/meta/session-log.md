@@ -19,6 +19,12 @@ Entry format:
 - **Next:** the first thing to do next session
 ```
 
+## 2026-11-18 — Next 15 / React 19 upgrade and caching review
+
+- **Changed:** deps + both lockfiles; 21 files by async-request codemod, 3 handlers fixed by hand, `noStore` -> `connection()` (10 pages); `next.config.mjs` (tracing root, types enforced); `/api/templates/[name]` bug; player images -> WebP; ADR-0007, tech-stack, changelog. On branch `chore/upgrade-next-15`.
+- **Status:** `tsc` clean; full `next build` passes with dummy server env vars; isolated dev smoke test OK (11 pages, 4 APIs, no console errors). Not merged/pushed. A user `next dev` shares `.next` with builds: my `rm -rf .next` interrupted it earlier.
+- **Next:** merge branch after a real-env Vercel preview; add `loading.tsx`/`error.tsx`/`not-found.tsx`; server-side auth for `/dashboard` (no middleware, `AuthGuard` unused); convert client-fetch pages to server components; pin `latest` deps.
+
 ## 2026-11-18 — Hero news fix, Įsigykite section from Figma
 
 - **Changed:** `app/api/posts/route.ts` + `[id]/route.ts` (`fetchCache`); `components/tickets-apparel-section.tsx` rewritten from Figma 1100:81335; `public/landing/*` (4 assets, ~6.6 MB of PNG cut-outs, served via next/image); tailwind tokens `max-w-page`, `min-h-promo`, `h-promo-player`, tracking on headline/title.

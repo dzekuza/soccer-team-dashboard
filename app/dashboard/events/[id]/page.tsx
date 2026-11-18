@@ -1,15 +1,16 @@
 import { supabaseService } from "@/lib/supabase-service";
 import EventDetailClient from "./event-detail-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 interface PageProps {
-    params: {
+    params: Promise<{
         id: string;
-    };
+    }>;
 }
 
-export default async function EventDetailPage({ params }: PageProps) {
-    noStore();
+export default async function EventDetailPage(props: PageProps) {
+    const params = await props.params;
+    await connection();
     const { id } = params;
 
     try {

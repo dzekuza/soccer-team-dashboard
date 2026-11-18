@@ -10,9 +10,37 @@ consequences. Use [[templates/adr-note]] for new entries. Newest first.
 
 ---
 
+## ADR-0007 — Upgrade to Next.js 15.5 and React 19
+
+- **Status:** Accepted (branch `chore/upgrade-next-15`)
+- **Date:** 2026-11-18
+
+**Context.** The app ran Next 14.2.4 / React 18 (30+ patch releases behind, with
+published security fixes), against the project standard of Next 15. Next 14 also cached
+supabase-js responses by default, which caused stale empty news (ADR-0006).
+
+**Decision.** Move to `next@15.5.29`, `react@19`, matching `@types` and
+`eslint-config-next`. Applied the official `next-async-request-api` codemod (21 files),
+fixed three handlers that awaited `context` instead of `context.params`, replaced
+`unstable_noStore` with `connection()` (10 pages), removed the `fetchCache` workaround,
+regenerated `pnpm-lock.yaml` (Vercel installs with pnpm), dropped
+`typescript.ignoreBuildErrors` (types are clean and now enforced), and set
+`outputFileTracingRoot` (a stray `package-lock.json` sits in the parent folder). Stayed on 15 (not 16) per the project standard.
+
+**Consequences.** Fetch results are no longer cached implicitly: add `revalidate`/`cache`
+where caching is wanted. The type check caught a real bug: `PUT/DELETE /api/templates/[name]`
+read `params.id`, so saving an email template never matched a row; it now matches by `name`.
+`react-day-picker@8` is unsupported on React 19 (works; migrate to v9 later). `images.unoptimized`
+stays `true` until an `images.remotePatterns` allow-list exists, so large assets must be
+pre-sized (the Įsigykite player images went 6.5 MB -> 0.2 MB as WebP).
+`next build` needs real server env vars (Stripe, Resend, QR secret) at build time because several
+routes construct SDK clients at module scope.
+
+---
+
 ## ADR-0006 — API routes opt out of Next's fetch cache
 
-- **Status:** Accepted for `/api/posts` and `/api/posts/[id]`; other `createClient` routes pending.
+- **Status:** Superseded by ADR-0007 (Next 15 does not cache fetches by default; the `fetchCache` exports were removed).
 - **Date:** 2026-11-18
 
 **Context.** The hero's news slide was empty. `/api/posts?limit=1` returned `[]` even

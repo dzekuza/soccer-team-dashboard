@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { supabaseService } from "@/lib/supabase-service"
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // Try to fetch ticket details first
     const ticket = await supabaseService.getTicketWithDetails(params.id)

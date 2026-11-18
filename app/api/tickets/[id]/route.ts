@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { dbService } from "@/lib/db-service"
 
-export async function GET(request: NextRequest, context: { params: { id: string } }) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    // Await params for dynamic API routes per Next.js 15+ requirements
-    const { params } = await Promise.resolve(context)
-    const ticket = await dbService.getTicketWithDetails(params.id)
+    const { id } = await context.params
+    const ticket = await dbService.getTicketWithDetails(id)
 
     if (!ticket) {
       return NextResponse.json({ error: "Ticket not found" }, { status: 404 })
@@ -18,11 +17,10 @@ export async function GET(request: NextRequest, context: { params: { id: string 
   }
 }
 
-export async function DELETE(request: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    // Await params for dynamic API routes per Next.js 15+ requirements
-    const { params } = await Promise.resolve(context)
-    const success = await dbService.deleteTicket(params.id)
+    const { id } = await context.params
+    const success = await dbService.deleteTicket(id)
 
     if (!success) {
       return NextResponse.json({ error: "Ticket not found or could not be deleted" }, { status: 404 })

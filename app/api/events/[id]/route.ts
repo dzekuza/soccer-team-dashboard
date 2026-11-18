@@ -5,10 +5,13 @@ import { supabaseService } from "@/lib/supabase-service"
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(
-  request: NextRequest,
-  { params: { id } }: { params: { id: string } },
-) {
+export async function GET(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
+
+  const {
+    id
+  } = params;
+
   if (!id) {
     return NextResponse.json({ error: "Event ID is required" }, { status: 400 })
   }

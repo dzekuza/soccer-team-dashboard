@@ -13,6 +13,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## Done recently
 
+- Next 15.5 / React 19 upgrade on branch `chore/upgrade-next-15` (ADR-0007): builds and smoke-tests clean; awaiting Vercel preview + merge.
 - Landing "Įsigykite" section rebuilt from Figma node 1100:81335 (`components/tickets-apparel-section.tsx`, assets in `public/landing/`).
 - Hero news slide fixed: Next 14 cached an empty supabase-js response for `/api/posts?limit=1`; routes now use `fetchCache = "force-no-store"` (ADR-0006).
 - Fluid type-scale tokens `text-display` / `text-headline` / `text-title` replace arbitrary px sizes (ADR-0005).
@@ -33,12 +34,12 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 
 ## In progress
 
-- Nothing half-done. Local `master` is ahead of `origin/master` (palette/fonts, type scale, posts cache fix, Įsigykite section, docs); not pushed yet.
+- Upgrade branch `chore/upgrade-next-15` is committed locally, not merged or pushed. Local `master` is ahead of `origin/master` (palette/fonts, type scale, posts cache fix, Įsigykite section, docs); not pushed.
 
 ## Next up
 
 - Hero: slides 2-3 point at missing `/ticketsbg.png` / `/shopbg.png` (add images or reuse `public/landing/*`); every slide renders an `<h1>` (5 per page), should be one.
-- Add `fetchCache = "force-no-store"` to the other 7 API routes using `createClient` (same stale-cache exposure as posts).
+- After the upgrade: add `revalidate`/`cache` only where caching is wanted (fetches are uncached by default now). Add `loading.tsx` / `error.tsx` / `not-found.tsx` (1 exists), server-side auth for `/dashboard` (no `middleware.ts`; `AuthGuard` is not mounted), move the 24 client pages that fetch in `useEffect` to server components, pin the 4 `latest` deps, add `favicon.ico`.
 - Audit follow-ups: shared `(public)` layout (24 pages import nav/footer by hand), remove duplicate EN/LT routes, `<h1>`/`<main>` on pages missing them, reduced-motion + hero pause control, remaining non-token colours (`#FFCC00`, `#FF3B30`, `#111111`, `#222222`, `#5F5F71`, hero gradients).
 - Set the Supabase env vars (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_*`) in Vercel; deployment from `master` may already be building. `npm run build` locally also needs a Stripe key (fails at `/api/checkout/shop` without it).
 - Banga B / Banga M: import schedules and league tables (landing tabs empty); point `teams.logo` at the new `team-logo` bucket files.
@@ -53,7 +54,7 @@ Public landing page polish on the Supabase project "Banga" (`bjrddghusbkpxjgwbwl
 ## Blockers & open questions
 
 - Open signup is still enabled in Supabase Auth: register your own account first (becomes admin), then disable signup. Later signups are `pending`.
-- `.env.local` URL and anon key point at Banga (verified); `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` still need checking (see `.env.example`); `/api/players` 500s until present.
+- `.env.local` has the Banga URL/anon key and now also `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (presence checked, not values). Missing locally: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `QR_CODE_SECRET`, `ADMIN_EMAIL`; `next build` fails without them (SDKs built at module scope).
 - Old project inaccessible, so hand-made table schemas are guesses.
 - Two `next dev` servers in this folder share `.next` and break each other's chunks; run one.
 

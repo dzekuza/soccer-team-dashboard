@@ -1,9 +1,9 @@
 import { supabaseService } from "@/lib/supabase-service";
 import { MatchesClient } from "./matches-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function MatchesPage() {
-  noStore();
+  await connection();
   const { data: matches, error } = await supabaseService.getMatches();
 
   if (error) {

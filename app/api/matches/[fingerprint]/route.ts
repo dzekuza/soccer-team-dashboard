@@ -2,10 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { fingerprint: string } },
-) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ fingerprint: string }> }) {
+  const params = await props.params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -56,10 +54,8 @@ export async function PUT(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { fingerprint: string } },
-) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ fingerprint: string }> }) {
+  const params = await props.params;
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

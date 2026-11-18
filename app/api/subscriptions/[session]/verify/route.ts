@@ -10,10 +10,8 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { session: string } },
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ session: string }> }) {
+  const params = await props.params;
   try {
     const { session } = params;
 

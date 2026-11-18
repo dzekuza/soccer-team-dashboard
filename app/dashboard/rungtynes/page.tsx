@@ -1,10 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { MatchesClient } from "./matches-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function MatchesPage() {
-  noStore();
+  await connection();
   
   const cookieStore = await cookies();
   const supabase = createServerClient(

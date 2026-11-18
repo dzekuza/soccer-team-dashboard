@@ -7,10 +7,8 @@ const supabaseAdmin = createClient(
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
 );
 
-export async function POST(
-    request: NextRequest,
-    { params }: { params: { id: string } },
-) {
+export async function POST(request: NextRequest, props: { params: Promise<{ id: string }> }) {
+    const params = await props.params;
     try {
         const { tracking_number } = await request.json();
         const orderId = params.id;

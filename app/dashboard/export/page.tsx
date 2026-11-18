@@ -1,9 +1,9 @@
 import { supabaseService } from "@/lib/supabase-service";
 import ExportClient from "./export-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function ExportPage() {
-    noStore();
+    await connection();
     try {
         const eventsData = supabaseService.getEvents();
         const ticketsData = supabaseService.getTicketsWithDetails();

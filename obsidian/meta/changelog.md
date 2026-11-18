@@ -9,6 +9,13 @@ Chronological log of notable changes to the project. Newest first.
 This is a human-curated log — not a mirror of `git log`. Record *why*, not just
 *what*; the diff already covers *what*.
 
+## 2026-11-18 — Next.js 15 / React 19 upgrade
+
+- `next` 14.2.4 -> 15.5.29, `react`/`react-dom` 18 -> 19, types and `eslint-config-next` to match; both lockfiles regenerated. See ADR-0007.
+- Async request APIs codemod (21 files); `unstable_noStore` -> `connection()`; removed `fetchCache` workaround and `generator: 'v0.dev'`; type errors now fail the build.
+- Fixed `PUT/DELETE /api/templates/[name]` (matched on a non-existent `id` param; now `name`).
+- Įsigykite player images converted to 2x WebP (6.5 MB -> 0.2 MB).
+
 ## 2026-11-18 — Landing Įsigykite section and hero news fix
 
 - Hero news slide was empty: Next 14 cached the supabase-js response for `/api/posts?limit=1` from before the news import. Added `fetchCache = "force-no-store"` to `/api/posts` and `/api/posts/[id]`. The other 7 API routes using `createClient` have the same exposure.

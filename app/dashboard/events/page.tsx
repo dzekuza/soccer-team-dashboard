@@ -1,9 +1,9 @@
 import { supabaseService } from "@/lib/supabase-service";
 import EventsClient from "./events-client";
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 
 export default async function EventsPage() {
-  noStore();
+  await connection();
   try {
     const eventsData = supabaseService.getEventsWithTiers();
     const teamsData = supabaseService.getTeams();

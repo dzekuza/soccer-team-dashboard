@@ -17,7 +17,8 @@ async function getSupabaseClient() {
   );
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, props: { params: Promise<{ name: string }> }) {
+  const params = await props.params;
   const supabase = await getSupabaseClient();
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -29,7 +30,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     const { data, error } = await supabase
       .from('email_templates')
       .update(templateUpdates)
-      .eq('id', params.id)
+      .eq('name', params.name)
       .select()
       .single();
 
@@ -44,7 +45,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, props: { params: Promise<{ name: string }> }) {
+  const params = await props.params;
   const supabase = await getSupabaseClient();
   try {
     const { data: { user } } = await supabase.auth.getUser();
@@ -55,7 +57,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     const { error } = await supabase
       .from('email_templates')
       .delete()
-      .eq('id', params.id);
+      .eq('name', params.name);
 
     if (error) throw error;
     return NextResponse.json({ success: true });
